@@ -20,11 +20,15 @@
 #ifndef HOOK_H
 #define HOOK_H
 
+#include "window.h"
+
 struct mwm_manage_hook
 {
-    quint64_t id;
+    uint64_t id;
     void (* hook)(struct mwm_window * window);
 };
+
+void manage_hooks_apply(struct mwm_window * window);
 
 #endif
 

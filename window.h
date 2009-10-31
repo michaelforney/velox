@@ -28,9 +28,11 @@ struct mwm_window
 {
     xcb_window_t window_id;
 
-    bool floating;
-    uint16_t x, y;
+    int16_t x, y;
     uint16_t width, height;
+    uint16_t border_width;
+
+    bool floating;
     uint64_t tags;
 };
 

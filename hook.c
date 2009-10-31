@@ -19,3 +19,11 @@
 
 #include "hook.h"
 
+struct mwm_manage_hook * manage_hooks;
+
+void manage_hooks_apply(struct mwm_window * window)
+{
+}
+
+/* Manage hooks */
+
