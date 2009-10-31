@@ -45,8 +45,29 @@ enum net_atom_t
     NET_WM_NAME
 };
 
-xcb_atom_t wm_atoms[3];
-xcb_atom_t net_atoms[2];
+static const uint8_t wm_atoms_size = 3;
+static const uint8_t net_atoms_size = 2;
+
+xcb_atom_t wm_atoms[wm_atoms_size];
+xcb_atom_t net_atoms[net_atoms_size];
+
+/* X cursors */
+enum cursor_id_t
+{
+    POINTER_ID = 68,
+    RESIZE_ID = 120,
+    MOVE_ID = 52
+};
+enum cursor_type_t
+{
+    POINTER,
+    RESIZE,
+    MOVE
+};
+
+static const uint8_t cursor_type_size = 3;
+
+xcb_cursor_t cursors[cursor_type_size];
 
 /* MWM variables */
 bool running = true;
@@ -54,6 +75,7 @@ bool running = true;
 void setup()
 {
     xcb_screen_iterator_t screen_iterator;
+    xcb_font_t cursor_font;
     xcb_intern_atom_cookie_t * wm_atom_cookies, * net_atom_cookies;
     uint32_t mask;
     uint32_t values[1];
@@ -68,8 +90,8 @@ void setup()
     root = screen->root;
 
     /* Setup atoms */
-    wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(3 * sizeof(xcb_intern_atom_cookie_t));
-    net_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(2 * sizeof(xcb_intern_atom_cookie_t));
+    wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(wm_atoms_size * sizeof(xcb_intern_atom_cookie_t));
+    net_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(net_atoms_size * sizeof(xcb_intern_atom_cookie_t));
 
     wm_atom_cookies[WM_PROTOCOLS] = xcb_intern_atom(c, false, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
     wm_atom_cookies[WM_DELETE_WINDOW] = xcb_intern_atom(c, false, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
@@ -87,6 +109,20 @@ void setup()
 
     free(wm_atom_cookies);
     free(net_atom_cookies);
+
+    /* Setup cursors */
+    cursor_font = xcb_generate_id(c);
+    xcb_open_font(c, cursor_font, strlen("cursor"), "cursor");
+
+    cursors[POINTER] = xcb_generate_id(c);
+    cursors[RESIZE] = xcb_generate_id(c);
+    cursors[MOVE] = xcb_generate_id(c);
+
+    xcb_create_glyph_cursor(c, cursors[POINTER], cursor_font, cursor_font, POINTER_ID, POINTER_ID + 1, 0, 0, 0, 0, 0, 0);
+    xcb_create_glyph_cursor(c, cursors[RESIZE], cursor_font, cursor_font, RESIZE_ID, RESIZE_ID + 1, 0, 0, 0, 0, 0, 0);
+    xcb_create_glyph_cursor(c, cursors[MOVE], cursor_font, cursor_font, MOVE_ID, MOVE_ID + 1, 0, 0, 0, 0, 0, 0);
+
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, net_atoms[NET_SUPPORTED], ATOM, 32, net_atoms_size, net_atoms);
 
     mask = XCB_CW_EVENT_MASK;
     values[0] = XCB_EVENT_MASK_BUTTON_PRESS |
@@ -294,6 +330,11 @@ void run()
 
 void cleanup()
 {
+    /* X cursors */
+    xcb_free_cursor(c, cursors[POINTER]);
+    xcb_free_cursor(c, cursors[RESIZE]);
+    xcb_free_cursor(c, cursors[MOVE]);
+
     xcb_disconnect(c);
 }
 
