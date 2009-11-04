@@ -36,12 +36,19 @@ struct mwm_window
     uint64_t tags;
 };
 
-// typedef struct mwm_window mwm_window_t;
+//struct mwm_window_list_element;
 
 void window_initialize();
 struct mwm_window * window_lookup(xcb_window_t window_id);
 void window_insert(struct mwm_window * window);
 void window_delete(xcb_window_t window_id);
+
+//struct mwm_window_list_element * window_stack_lookup(xcb_window_t window_id);
+//struct mwm_window_list_element * window_stack_next(struct mwm_window_list_element * current);
+//struct mwm_window_list_element * window_stack_begin();
+//void window_stack_swap(uint16_t first, uint16_t second);
+//void window_stack_delete(uint16_t location);
+//void window_stack_insert(uint16_t location, struct mwm_window * window);
 
 #endif
 

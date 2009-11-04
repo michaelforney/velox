@@ -19,3 +19,10 @@
 
 #include "layout.h"
 
+void arrange_tile(uint16_t window_count, struct mwm_window * windows)
+{
+}
+
+// tile.identifier = "Tile";
+// tile.arrange = &arrange_tile;
+

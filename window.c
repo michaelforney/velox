@@ -23,9 +23,16 @@
 #include <stdint.h>
 #include <string.h>
 
+struct mwm_window_stack_element
+{
+    struct mwm_window * window;
+    struct mwm_window_stack_element * next;
+};
+
 static uint16_t window_table_size = 1024;
 
-struct mwm_window ** windows = NULL;
+static struct mwm_window ** windows = NULL;
+static struct mwm_window_stack_element * window_stack = NULL;
 
 static void window_table_realloc()
 {
@@ -89,4 +96,23 @@ void window_delete(xcb_window_t window_id)
         }
     }
 }
+
+/*
+struct mwm_window_stack_element * window_stack_next(struct mwm_window_list_element * current)
+{
+    return current->next;
+}
+
+struct mwm_window_stack_element * window_stack_begin()
+{
+    return window_stack;
+}
+
+void window_stack_delete(uint16_t location)
+{
+    mwm_window_stack_element * element;
+}
+
+void window_stack_insert(uint16_t location, struct mwm_window * window);
+*/
 

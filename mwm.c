@@ -24,6 +24,7 @@
 
 #include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
+#include <xcb/xcb_icccm.h>
 
 #include "window.h"
 #include "hook.h"
@@ -33,14 +34,17 @@ xcb_connection_t * c;
 xcb_screen_t * screen;
 xcb_window_t root;
 
+uint16_t screen_width = 0;
+uint16_t screen_height = 0;
+
 /* X atoms */
-enum wm_atom_t
+enum
 {
     WM_PROTOCOLS,
     WM_DELETE_WINDOW,
     WM_STATE
 };
-enum net_atom_t
+enum
 {
     NET_SUPPORTED,
     NET_WM_NAME
@@ -53,13 +57,13 @@ xcb_atom_t wm_atoms[wm_atoms_size];
 xcb_atom_t net_atoms[net_atoms_size];
 
 /* X cursors */
-enum cursor_id_t
+enum
 {
     POINTER_ID = 68,
     RESIZE_ID = 120,
     MOVE_ID = 52
 };
-enum cursor_type_t
+enum
 {
     POINTER,
     RESIZE,
@@ -89,6 +93,8 @@ void setup()
 
     screen = screen_iterator.data;
     root = screen->root;
+    screen_width = screen->width_in_pixels;
+    screen_height = screen->height_in_pixels;
 
     /* Setup atoms */
     wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(wm_atoms_size * sizeof(xcb_intern_atom_cookie_t));
@@ -135,7 +141,7 @@ void setup()
                 XCB_EVENT_MASK_PROPERTY_CHANGE;
     values[1] = cursors[POINTER];
 
-    xcb_configure_window(c, root, mask, values);
+    xcb_change_window_attributes(c, root, mask, values);
 }
 
 void configure_window(struct mwm_window * window)
@@ -200,6 +206,8 @@ void manage(xcb_window_t window_id)
     window->width = geometry->width;
     window->height = geometry->height;
 
+    configure_window(window);
+
     /* Events */
     mask = XCB_CW_EVENT_MASK;
     values[0] = XCB_EVENT_MASK_ENTER_WINDOW |
@@ -212,6 +220,14 @@ void manage(xcb_window_t window_id)
 
 void unmanage(struct mwm_window * window)
 {
+    window_delete(window->window_id);
+
+    free(window);
+}
+
+void focus(struct mwm_window * window)
+{
+    // TODO: Implement
 }
 
 void manage_existing_windows()
@@ -278,11 +294,88 @@ void button_press(xcb_button_press_event_t * event)
 void configure_request(xcb_configure_request_event_t * event)
 {
     printf("configure_request\n");
+    
+    struct mwm_window * window = NULL;
+
+    window = window_lookup(event->window);
+
+    if (window)
+    {
+        printf("configure_request for already managed window... ignoring\n");
+
+        /*if (event->value_mask & XCB_CONFIG_WINDOW_X)
+        {
+            window->x = event->x;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_Y)
+        {
+            window->x = event->y;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_WIDTH)
+        {
+            window->x = event->width;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
+        {
+            window->x = event->height;
+        }*/
+
+        if (event->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH)
+        {
+            window->border_width = event->border_width;
+            // TODO: Make sure this is right
+        }
+    }
+    else
+    {
+        uint16_t mask = 0;
+        uint32_t values[7];
+        uint8_t field = 0;
+        
+        if (event->value_mask & XCB_CONFIG_WINDOW_X)
+        {
+            values[field++] = event->x;
+            mask |= XCB_CONFIG_WINDOW_X;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_Y)
+        {
+            values[field++] = event->y;
+            mask |= XCB_CONFIG_WINDOW_Y;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_WIDTH)
+        {
+            values[field++] = event->width;
+            mask |= XCB_CONFIG_WINDOW_WIDTH;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
+        {
+            values[field++] = event->height;
+            mask |= XCB_CONFIG_WINDOW_HEIGHT;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_SIBLING)
+        {
+            values[field++] = event->sibling;
+            mask |= XCB_CONFIG_WINDOW_SIBLING;
+        }
+        if (event->value_mask & XCB_CONFIG_WINDOW_STACK_MODE)
+        {
+            values[field++] = event->stack_mode;
+            mask |= XCB_CONFIG_WINDOW_STACK_MODE;
+        }
+
+        xcb_configure_window(c, event->window, mask, values);
+    }
 }
 
 void configure_notify(xcb_configure_notify_event_t * event)
 {
     printf("configure_notify\n");
+
+    if (event->window == root)
+    {
+        screen_width = event->width;
+        screen_height = event->height;
+    }
 }
 
 void destroy_notify(xcb_destroy_notify_event_t * event)
@@ -291,12 +384,24 @@ void destroy_notify(xcb_destroy_notify_event_t * event)
 
     printf("destroy_notify\n");
 
-    
+    window = window_lookup(event->window);
+    if (window)
+    {
+        unmanage(window);
+    }
 }
 
 void enter_notify(xcb_enter_notify_event_t * event)
 {
+    struct mwm_window * window;
+
     printf("enter_notify\n");
+
+    window = window_lookup(event->window);
+    if (window)
+    {
+        focus(window);
+    }
 }
 
 void expose(xcb_expose_event_t * event)
@@ -312,21 +417,47 @@ void expose(xcb_expose_event_t * event)
 void focus_in(xcb_focus_in_event_t * event)
 {
     printf("focus_in\n");
+    
+    // TODO: Prevent focus stealing?
 }
 
 void key_press(xcb_key_press_event_t * event)
 {
     printf("key_press\n");
+    
+    // TODO: Handle key shortcuts
 }
 
 void mapping_notify(xcb_mapping_notify_event_t * event)
 {
     printf("mapping_notify\n");
+
+    if (event->response_type == XCB_MAPPING_KEYBOARD)
+    {
+        /* TODO: Deal with keyboard map changes
+         * This probably needs xcb-keysyms
+         */
+    }
 }
 
 void map_request(xcb_map_request_event_t * event)
 {
     printf("map_request\n");
+    
+    struct mwm_window * maybe_window;
+    xcb_get_window_attributes_cookie_t window_attributes_cookie;
+    xcb_get_window_attributes_reply_t * window_attributes;
+
+    window_attributes_cookie = xcb_get_window_attributes(c, event->window);
+
+    maybe_window = window_lookup(event->window);
+
+    window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
+
+    if (!maybe_window && !window_attributes->override_redirect)
+    {
+        manage(event->window);
+    }
 }
 
 void property_notify(xcb_property_notify_event_t * event)
@@ -337,6 +468,15 @@ void property_notify(xcb_property_notify_event_t * event)
 void unmap_notify(xcb_unmap_notify_event_t * event)
 {
     printf("unmap_notify\n");
+
+    struct mwm_window * window;
+
+    window = window_lookup(event->window);
+
+    if (window)
+    {
+        unmanage(window);
+    }
 }
 
 void run()

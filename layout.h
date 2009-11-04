@@ -30,5 +30,7 @@ struct mwm_layout
     void (* arrange)(uint16_t window_count, struct mwm_window * windows);
 };
 
+struct mwm_layout tile;
+
 #endif
 
