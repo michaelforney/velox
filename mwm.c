@@ -76,6 +76,8 @@ xcb_cursor_t cursors[cursor_type_size];
 
 /* MWM variables */
 bool running = true;
+uint64_t current_tags = 0;
+struct mwm_window_stack * stack = NULL;
 
 void setup()
 {
@@ -84,8 +86,6 @@ void setup()
     xcb_intern_atom_cookie_t * wm_atom_cookies, * net_atom_cookies;
     uint32_t mask;
     uint32_t values[2];
-
-    window_initialize();
 
     c = xcb_connect(NULL, NULL);
 
@@ -139,7 +139,7 @@ void setup()
                 XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
                 XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
                 XCB_EVENT_MASK_PROPERTY_CHANGE;
-    values[1] = cursors[POINTER];
+    values[1] = cursors[RESIZE];
 
     xcb_change_window_attributes(c, root, mask, values);
 }
@@ -162,6 +162,46 @@ void configure_window(struct mwm_window * window)
     xcb_send_event(c, false, window->window_id, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &event);
 }
 
+void arrange()
+{
+    printf("arrange()\n");
+
+    struct mwm_window_stack * current_element = stack;
+
+    for (; current_element != NULL; current_element = current_element->next)
+    {
+        struct mwm_window * window = current_element->window;
+        uint16_t mask;
+        uint32_t values[4];
+
+        printf("window: %i\n", window);
+
+        window->x = 0;
+        window->y = 0;
+        window->width = 960;
+        window->height = 600;
+
+        printf("window: %i\n", window);
+
+        mask = XCB_CONFIG_WINDOW_X |
+               XCB_CONFIG_WINDOW_Y |
+               XCB_CONFIG_WINDOW_WIDTH |
+               XCB_CONFIG_WINDOW_HEIGHT;
+        values[0] = window->x;
+        values[1] = window->y;
+        values[2] = window->width;
+        values[3] = window->height;
+
+        printf("window: %i\n", window);
+
+        xcb_configure_window(c, window->window_id, mask, values);
+
+        configure_window(window);
+    }
+
+    printf("end loop\n");
+}
+
 void manage(xcb_window_t window_id)
 {
     printf("manage(%i)\n", window_id);
@@ -175,6 +215,7 @@ void manage(xcb_window_t window_id)
     xcb_window_t transient_id = 0;
     uint32_t mask;
     uint32_t values[1];
+    uint32_t property_values[2];
 
     transient_for_cookie = xcb_get_property(c, false, window_id, WM_TRANSIENT_FOR, WINDOW, 0, 1);
     geometry_cookie = xcb_get_geometry(c, window_id);
@@ -186,11 +227,10 @@ void manage(xcb_window_t window_id)
     transient_for_reply = xcb_get_property_reply(c, transient_for_cookie, NULL);
     transient_id = *((xcb_window_t *) xcb_get_property_value(transient_for_reply));
 
-    free(transient_for_reply);
-
-    if (transient_id)
+    if (transient_for_reply->type == WINDOW && transient_id)
     {
-        transient = window_lookup(transient_id);
+        printf("transient_id: %i\n", transient_id);
+        transient = window_stack_lookup(stack, transient_id);
         window->tags = transient->tags;
     }
     else
@@ -198,8 +238,12 @@ void manage(xcb_window_t window_id)
         manage_hooks_apply(window);
     }
 
+    free(transient_for_reply);
+
     /* Geometry */
     geometry = xcb_get_geometry_reply(c, geometry_cookie, NULL);
+
+    printf("x: %i, y: %i, width: %i, height: %i\n", geometry->x, geometry->y, geometry->width, geometry->height);
 
     window->x = geometry->x;
     window->y = geometry->y;
@@ -215,12 +259,28 @@ void manage(xcb_window_t window_id)
                 XCB_EVENT_MASK_PROPERTY_CHANGE |
                 XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 
-    xcb_configure_window(c, window_id, mask, values);
+    xcb_change_window_attributes(c, window_id, mask, values);
+
+    stack = window_stack_insert(stack, window);
+
+    xcb_map_window(c, window->window_id);
+
+    property_values[0] = XCB_WM_STATE_NORMAL;
+    property_values[1] = 0;
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+
+    arrange();
 }
 
 void unmanage(struct mwm_window * window)
 {
-    window_delete(window->window_id);
+    uint32_t property_values[2];
+
+    stack = window_stack_delete(stack, window->window_id);
+
+    property_values[0] = XCB_WM_STATE_WITHDRAWN;
+    property_values[1] = 0;
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
 
     free(window);
 }
@@ -297,7 +357,7 @@ void configure_request(xcb_configure_request_event_t * event)
     
     struct mwm_window * window = NULL;
 
-    window = window_lookup(event->window);
+    window = window_stack_lookup(stack, event->window);
 
     if (window)
     {
@@ -373,6 +433,7 @@ void configure_notify(xcb_configure_notify_event_t * event)
 
     if (event->window == root)
     {
+        printf("window is root\n");
         screen_width = event->width;
         screen_height = event->height;
     }
@@ -384,7 +445,7 @@ void destroy_notify(xcb_destroy_notify_event_t * event)
 
     printf("destroy_notify\n");
 
-    window = window_lookup(event->window);
+    window = window_stack_lookup(stack, event->window);
     if (window)
     {
         unmanage(window);
@@ -397,7 +458,7 @@ void enter_notify(xcb_enter_notify_event_t * event)
 
     printf("enter_notify\n");
 
-    window = window_lookup(event->window);
+    window = window_stack_lookup(stack, event->event);
     if (window)
     {
         focus(window);
@@ -450,11 +511,17 @@ void map_request(xcb_map_request_event_t * event)
 
     window_attributes_cookie = xcb_get_window_attributes(c, event->window);
 
-    maybe_window = window_lookup(event->window);
+    printf("window_id: %i\n", event->window);
+
+    maybe_window = window_stack_lookup(stack, event->window);
+
+    printf("maybe_window: %i\n", maybe_window);
 
     window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
 
-    if (!maybe_window && !window_attributes->override_redirect)
+    printf("window_attributes: %i\n", window_attributes);
+
+    if (!maybe_window && window_attributes && !window_attributes->override_redirect)
     {
         manage(event->window);
     }
@@ -463,15 +530,26 @@ void map_request(xcb_map_request_event_t * event)
 void property_notify(xcb_property_notify_event_t * event)
 {
     printf("property_notify\n");
+
+    xcb_get_atom_name_cookie_t atom_name_cookie;
+    xcb_get_atom_name_reply_t * atom_name;
+
+    atom_name_cookie = xcb_get_atom_name(c, event->atom);
+    atom_name = xcb_get_atom_name_reply(c, atom_name_cookie, NULL);
+
+    if (atom_name)
+    {
+        //printf("atom: %s\n", xcb_get_atom_name_name(atom_name));
+    }
 }
 
 void unmap_notify(xcb_unmap_notify_event_t * event)
 {
-    printf("unmap_notify\n");
+    printf("unmap_notify: %i\n", event->window);
 
     struct mwm_window * window;
 
-    window = window_lookup(event->window);
+    window = window_stack_lookup(stack, event->window);
 
     if (window)
     {

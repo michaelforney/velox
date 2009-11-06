@@ -24,9 +24,11 @@
 
 struct mwm_tag
 {
-    uint8_t id;
+    uint64_t id;
     struct mwm_layout * layout;
 };
+
+struct mwm_tag tags[64];
 
 #endif
 

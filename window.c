@@ -23,96 +23,82 @@
 #include <stdint.h>
 #include <string.h>
 
-struct mwm_window_stack_element
+struct mwm_window * window_stack_lookup(struct mwm_window_stack * stack, xcb_window_t window_id)
 {
-    struct mwm_window * window;
-    struct mwm_window_stack_element * next;
-};
+    for (; stack != NULL && stack->window->window_id != window_id; stack = stack->next);
 
-static uint16_t window_table_size = 1024;
-
-static struct mwm_window ** windows = NULL;
-static struct mwm_window_stack_element * window_stack = NULL;
-
-static void window_table_realloc()
-{
-    uint16_t new_size;
-
-    /* Reallocation method */
-    new_size = window_table_size * 2;
-
-    windows = (struct mwm_window **) realloc(windows, new_size * sizeof(struct mwm_window *));
-    memset(windows + window_table_size, NULL, new_size - window_table_size);
-    window_table_size = new_size;
-}
-
-void window_initialize()
-{
-    windows = (struct mwm_window **) malloc(window_table_size * sizeof(struct mwm_window *));
-}
-
-struct mwm_window * window_lookup(xcb_window_t window_id)
-{
-    int index;
-
-    for (index = 0; index < window_table_size; index++)
+    if (stack == NULL)
     {
-        if (windows[index] != NULL && windows[index]->window_id == window_id)
-        {
-            return windows[index];
-        }
+        return NULL;
     }
 
-    return NULL;
+    return stack->window;
 }
 
-void window_insert(struct mwm_window * window)
+struct mwm_window_stack * window_stack_delete(struct mwm_window_stack * stack, xcb_window_t window_id)
 {
-    int index;
+    struct mwm_window_stack * previous_element = NULL;
+    struct mwm_window_stack * current_element = NULL;
 
-    for (index = 0; index < window_table_size; index++)
+    if (stack == NULL)
     {
-        if (windows[index] == NULL)
-        {
-            windows[index] = window;
-            return;
-        }
+        return NULL;
+    }
+    else if (stack->window->window_id == window_id)
+    {
+        struct mwm_window_stack * new_stack = stack->next;
+
+        free(stack);
+        return new_stack;
     }
 
-    window_table_size *= 2;
-    window_insert(window);
-}
+    for (previous_element = stack, current_element = stack->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
 
-void window_delete(xcb_window_t window_id)
-{
-    int index;
-
-    for (index = 0; index < window_table_size; index++)
+    if (current_element != NULL)
     {
-        if (windows[index] != NULL && windows[index]->window_id == window_id)
-        {
-            windows[window_id] = NULL;
-            return;
-        }
+        previous_element->next = current_element->next;
+        free(current_element);
     }
+
+    return stack;
 }
 
-/*
-struct mwm_window_stack_element * window_stack_next(struct mwm_window_list_element * current)
+struct mwm_window_stack * window_stack_move_to_front(struct mwm_window_stack * stack, xcb_window_t window_id)
 {
-    return current->next;
+    struct mwm_window_stack * previous_element = NULL;
+    struct mwm_window_stack * current_element = NULL;
+
+    if (stack == NULL)
+    {
+        return NULL;
+    }
+    else if (stack->window->window_id == window_id)
+    {
+        return stack;
+    }
+
+    for (previous_element = stack, current_element = stack->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
+
+    if (current_element != NULL)
+    {
+        previous_element->next = current_element->next;
+        current_element->next = stack;
+
+        return current_element;
+    }
+
+    return stack;
 }
 
-struct mwm_window_stack_element * window_stack_begin()
+struct mwm_window_stack * window_stack_insert(struct mwm_window_stack * stack, struct mwm_window * window)
 {
-    return window_stack;
-}
+    struct mwm_window_stack * new_stack;
 
-void window_stack_delete(uint16_t location)
-{
-    mwm_window_stack_element * element;
-}
+    new_stack = (struct mwm_window_stack *) malloc(sizeof(struct mwm_window_stack));
 
-void window_stack_insert(uint16_t location, struct mwm_window * window);
-*/
+    new_stack->window = window;
+    new_stack->next = stack;
+
+    return new_stack;
+}
 

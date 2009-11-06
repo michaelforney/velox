@@ -27,7 +27,7 @@
 struct mwm_layout
 {
     const char * identifier;
-    void (* arrange)(uint16_t window_count, struct mwm_window * windows);
+    void (* arrange)(struct mwm_window_stack * stack);
 };
 
 struct mwm_layout tile;
