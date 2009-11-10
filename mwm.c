@@ -144,6 +144,11 @@ void setup()
     xcb_change_window_attributes(c, root, mask, values);
 }
 
+/**
+ * Sends a synthetic configure request to the window
+ *
+ * @param window The window to send the request to
+ */
 void configure_window(struct mwm_window * window)
 {
     xcb_configure_notify_event_t event;
@@ -363,29 +368,19 @@ void configure_request(xcb_configure_request_event_t * event)
     {
         printf("configure_request for already managed window... ignoring\n");
 
-        /*if (event->value_mask & XCB_CONFIG_WINDOW_X)
-        {
-            window->x = event->x;
-        }
-        if (event->value_mask & XCB_CONFIG_WINDOW_Y)
-        {
-            window->x = event->y;
-        }
-        if (event->value_mask & XCB_CONFIG_WINDOW_WIDTH)
-        {
-            window->x = event->width;
-        }
-        if (event->value_mask & XCB_CONFIG_WINDOW_HEIGHT)
-        {
-            window->x = event->height;
-        }*/
-
-        if (event->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH)
+        /* Case 3 of the ICCCM 4.1.5 */
+        if (event->value_mask & (XCB_CONFIG_WINDOW_BORDER_WIDTH | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT))
         {
             window->border_width = event->border_width;
             // TODO: Make sure this is right
         }
+        /* Case 1 of the ICCCM 4.1.5 */
+        else
+        {
+            configure_window(window);
+        }
     }
+    /* Case 2 of the ICCCM 4.1.5 */
     else
     {
         uint16_t mask = 0;
