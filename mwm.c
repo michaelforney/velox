@@ -149,7 +149,7 @@ void setup()
  *
  * @param window The window to send the request to
  */
-void configure_window(struct mwm_window * window)
+void synthetic_configure(struct mwm_window * window)
 {
     xcb_configure_notify_event_t event;
 
@@ -195,7 +195,7 @@ void arrange()
 
         xcb_configure_window(c, window->window_id, mask, values);
 
-        configure_window(window);
+        synthetic_configure(window);
     }
 
     printf("end loop\n");
@@ -249,7 +249,7 @@ void manage(xcb_window_t window_id)
     window->width = geometry->width;
     window->height = geometry->height;
 
-    configure_window(window);
+    synthetic_configure(window);
 
     /* Events */
     mask = XCB_CW_EVENT_MASK;
@@ -378,7 +378,7 @@ void configure_request(xcb_configure_request_event_t * event)
         else
         {
             printf("configure_request: case 1\n");
-            configure_window(window);
+            synthetic_configure(window);
         }
     }
     /* Case 2 of the ICCCM 4.1.5 */
