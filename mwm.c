@@ -491,8 +491,7 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
     if (event->response_type == XCB_MAPPING_KEYBOARD)
     {
         /* TODO: Deal with keyboard map changes
-         * This probably needs xcb-keysyms
-         */
+         * This probably needs xcb-keysyms */
     }
 }
 
