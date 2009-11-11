@@ -574,28 +574,40 @@ void run()
         {
             case XCB_BUTTON_PRESS:
                 button_press((xcb_button_press_event_t *) event);
+                break;
             case XCB_CONFIGURE_REQUEST:
                 configure_request((xcb_configure_request_event_t *) event);
+                break;
             case XCB_CONFIGURE_NOTIFY:
                 configure_notify((xcb_configure_notify_event_t *) event);
+                break;
             case XCB_DESTROY_NOTIFY:
                 destroy_notify((xcb_destroy_notify_event_t *) event);
+                break;
             case XCB_ENTER_NOTIFY:
                 enter_notify((xcb_enter_notify_event_t *) event);
+                break;
             case XCB_EXPOSE:
                 expose((xcb_expose_event_t *) event);
+                break;
             case XCB_FOCUS_IN:
                 focus_in((xcb_focus_in_event_t *) event);
+                break;
             case XCB_KEY_PRESS:
                 key_press((xcb_key_press_event_t *) event);
+                break;
             case XCB_MAPPING_NOTIFY:
                 mapping_notify((xcb_mapping_notify_event_t *) event);
+                break;
             case XCB_MAP_REQUEST:
                 map_request((xcb_map_request_event_t *) event);
+                break;
             case XCB_PROPERTY_NOTIFY:
                 property_notify((xcb_property_notify_event_t *) event);
+                break;
             case XCB_UNMAP_NOTIFY:
                 unmap_notify((xcb_unmap_notify_event_t *) event);
+                break;
 
             default:
                 break;
