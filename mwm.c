@@ -179,14 +179,10 @@ void arrange()
         uint16_t mask;
         uint32_t values[4];
 
-        printf("window: %i\n", window);
-
         window->x = 0;
         window->y = 0;
         window->width = 960;
         window->height = 600;
-
-        printf("window: %i\n", window);
 
         mask = XCB_CONFIG_WINDOW_X |
                XCB_CONFIG_WINDOW_Y |
@@ -196,8 +192,6 @@ void arrange()
         values[1] = window->y;
         values[2] = window->width;
         values[3] = window->height;
-
-        printf("window: %i\n", window);
 
         xcb_configure_window(c, window->window_id, mask, values);
 
@@ -279,13 +273,7 @@ void manage(xcb_window_t window_id)
 
 void unmanage(struct mwm_window * window)
 {
-    uint32_t property_values[2];
-
     stack = window_stack_delete(stack, window->window_id);
-
-    property_values[0] = XCB_WM_STATE_WITHDRAWN;
-    property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
 
     free(window);
 }
@@ -366,17 +354,17 @@ void configure_request(xcb_configure_request_event_t * event)
 
     if (window)
     {
-        printf("configure_request for already managed window... ignoring\n");
-
         /* Case 3 of the ICCCM 4.1.5 */
         if (event->value_mask & (XCB_CONFIG_WINDOW_BORDER_WIDTH | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT))
         {
+            printf("configure_request: case 3\n");
             window->border_width = event->border_width;
             // TODO: Make sure this is right
         }
         /* Case 1 of the ICCCM 4.1.5 */
         else
         {
+            printf("configure_request: case 1\n");
             configure_window(window);
         }
     }
@@ -386,7 +374,9 @@ void configure_request(xcb_configure_request_event_t * event)
         uint16_t mask = 0;
         uint32_t values[7];
         uint8_t field = 0;
-        
+
+        printf("configure_request: case 2\n");
+
         if (event->value_mask & XCB_CONFIG_WINDOW_X)
         {
             values[field++] = event->x;
@@ -426,6 +416,8 @@ void configure_notify(xcb_configure_notify_event_t * event)
 {
     printf("configure_notify\n");
 
+    printf("window_id: %i\n", event->window);
+
     if (event->window == root)
     {
         printf("window is root\n");
@@ -440,6 +432,8 @@ void destroy_notify(xcb_destroy_notify_event_t * event)
 
     printf("destroy_notify\n");
 
+    printf("window_id: %i\n", event->window);
+
     window = window_stack_lookup(stack, event->window);
     if (window)
     {
@@ -453,6 +447,8 @@ void enter_notify(xcb_enter_notify_event_t * event)
 
     printf("enter_notify\n");
 
+    printf("window_id: %i\n", event->event);
+
     window = window_stack_lookup(stack, event->event);
     if (window)
     {
@@ -464,6 +460,8 @@ void expose(xcb_expose_event_t * event)
 {
     printf("expose\n");
 
+    printf("window_id: %i\n", event->window);
+
     if (event->count == 0)
     {
         bar_draw();
@@ -474,20 +472,24 @@ void focus_in(xcb_focus_in_event_t * event)
 {
     printf("focus_in\n");
     
+    printf("window_id: %i\n", event->event);
+
     // TODO: Prevent focus stealing?
 }
 
 void key_press(xcb_key_press_event_t * event)
 {
     printf("key_press\n");
-    
+
+    printf("window_id: %i\n", event->event);
+
     // TODO: Handle key shortcuts
 }
 
 void mapping_notify(xcb_mapping_notify_event_t * event)
 {
     printf("mapping_notify\n");
-
+ 
     if (event->response_type == XCB_MAPPING_KEYBOARD)
     {
         /* TODO: Deal with keyboard map changes
@@ -547,7 +549,19 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
 
     if (window)
     {
+        uint32_t property_values[2];
+
+        printf("setting state to withdrawn\n");
+
+        xcb_grab_server(c);
+
+        property_values[0] = XCB_WM_STATE_WITHDRAWN;
+        property_values[1] = 0;
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+
         unmanage(window);
+
+        xcb_ungrab_server(c);
     }
 }
 
