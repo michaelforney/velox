@@ -295,6 +295,8 @@ void manage_existing_windows()
     xcb_get_window_attributes_reply_t ** window_attributes_replies;
     xcb_get_property_cookie_t * property_cookies;
     xcb_get_property_reply_t ** property_replies;
+    xcb_get_property_cookie_t * state_cookies;
+    xcb_get_property_reply_t ** state_replies;
 
     query_cookie = xcb_query_tree(c, root);
     query = xcb_query_tree_reply(c, query_cookie, NULL);
@@ -305,30 +307,41 @@ void manage_existing_windows()
     window_attributes_replies = (xcb_get_window_attributes_reply_t **) malloc(child_count * sizeof(xcb_get_window_attributes_reply_t *));
     property_cookies = (xcb_get_property_cookie_t *) malloc(child_count * sizeof(xcb_get_property_cookie_t));
     property_replies = (xcb_get_property_reply_t **) malloc(child_count * sizeof(xcb_get_property_reply_t *));
+    state_cookies = (xcb_get_property_cookie_t *) malloc(child_count * sizeof(xcb_get_property_cookie_t));
+    state_replies = (xcb_get_property_reply_t **) malloc(child_count * sizeof(xcb_get_property_reply_t *));
+
+    printf("child_count: %i\n", child_count);
 
     for (child = 0; child < child_count; child++)
     {
         window_attributes_cookies[child] = xcb_get_window_attributes(c, children[child]);
         property_cookies[child] = xcb_get_property(c, false, children[child], WM_TRANSIENT_FOR, WINDOW, 0, 1);
+        state_cookies[child] = xcb_get_property(c, false, children[child], wm_atoms[WM_STATE], WM_HINTS, 0, 2);
     }
     for (child = 0; child < child_count; child++)
     {
         window_attributes_replies[child] = xcb_get_window_attributes_reply(c, window_attributes_cookies[child], NULL);
         property_replies[child] = xcb_get_property_reply(c, property_cookies[child], NULL);
+        state_replies[child] = xcb_get_property_reply(c, state_cookies[child], NULL);
 
         if (window_attributes_replies[child]->override_redirect || *(xcb_window_t *) xcb_get_property_value(property_replies[child]))
         {
             printf("override_redirect or transient\n");
             continue;
         }
-        if (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE)
+
+        printf("map_state: %i\n", window_attributes_replies[child]->map_state);
+
+        printf("state: %i\n", ((uint32_t *) xcb_get_property_value(state_replies[child]))[0]);
+
+        if (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE || ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC)
         {
             manage(children[child]);
         }
     }
     for (child = 0; child < child_count; child++)
     {
-        if (*(xcb_window_t *) xcb_get_property_value(property_replies[child]) && window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE)
+        if (*(xcb_window_t *) xcb_get_property_value(property_replies[child]) && (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE || ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC))
         {
             manage(children[child]);
         }
@@ -610,6 +623,7 @@ void run()
                 break;
 
             default:
+                printf("unhandled event type: %x\n", event->response_type);
                 break;
         }
 
