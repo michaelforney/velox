@@ -167,6 +167,25 @@ void synthetic_configure(struct mwm_window * window)
     xcb_send_event(c, false, window->window_id, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &event);
 }
 
+/**
+ * Sends a synthetic unmap request to the window
+ *
+ * See section 4.1.4 of the ICCCM
+ *
+ * @param wnidow The window to send the request to
+ */
+void synthetic_unmap(struct mwm_window * window)
+{
+    xcb_unmap_notify_event_t event;
+
+    event.response_type = XCB_UNMAP_NOTIFY;
+    event.event = root;
+    event.window = window->window_id;
+    event.from_configure = false;
+
+    xcb_send_event(c, false, root, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char *) &event);
+}
+
 void arrange()
 {
     printf("arrange()\n");
