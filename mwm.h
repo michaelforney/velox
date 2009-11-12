@@ -20,13 +20,12 @@
 #ifndef MWM_H
 #define MWM_H
 
-int bar_height = 14;
+#include <xcb/xcb.h>
 
-struct client_t
-{
-    char name[256];
-    int x, y, w, h;
-}
+extern xcb_connection_t * c;
+
+extern uint16_t screen_width;
+extern uint16_t screen_height;
 
 #endif
 

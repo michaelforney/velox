@@ -21,12 +21,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
-#include <xcb/xcb.h>
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
 
 #include "window.h"
+#include "tag.h"
 #include "hook.h"
 
 /* X specific variables */
@@ -77,7 +78,10 @@ xcb_cursor_t cursors[cursor_type_size];
 /* MWM variables */
 bool running = true;
 uint64_t current_tags = 0;
-struct mwm_window_stack * stack = NULL;
+struct mwm_window_stack * visible_windows = NULL;
+struct mwm_window_stack * hidden_windows = NULL;
+struct mwm_layout * current_layout = NULL;
+uint16_t pending_mwm_unmaps = 0;
 
 void setup()
 {
@@ -144,6 +148,30 @@ void setup()
     xcb_change_window_attributes(c, root, mask, values);
 }
 
+void show_window(struct mwm_window * window)
+{
+    uint32_t property_values[2];
+
+    property_values[0] = XCB_WM_STATE_NORMAL;
+    property_values[1] = 0;
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+
+    xcb_map_window(c, window->window_id);
+}
+
+void hide_window(struct mwm_window * window)
+{
+    uint32_t property_values[2];
+
+    property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
+    property_values[1] = 0;
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+
+    pending_mwm_unmaps++;
+
+    xcb_unmap_window(c, window->window_id);
+}
+
 /**
  * Sends a synthetic configure request to the window
  *
@@ -186,38 +214,93 @@ void synthetic_unmap(struct mwm_window * window)
     xcb_send_event(c, false, root, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char *) &event);
 }
 
+void toggle_tag(struct mwm_tag * tag)
+{
+    if (current_tags & tag->id)
+    {
+        struct mwm_window_stack * current_element = NULL;
+        struct mwm_window_stack * previous_element = NULL;
+
+        current_tags &= ~tag->id;
+
+        while (visible_windows != NULL && !visible_windows->window->tags & current_tags)
+        {
+            struct mwm_window_stack * new_visible_windows = NULL;
+
+            hide_window(visible_windows->window);
+
+            hidden_windows = window_stack_insert(hidden_windows, visible_windows->window);
+
+            new_visible_windows = visible_windows->next;
+            free(visible_windows);
+            visible_windows = new_visible_windows;
+        }
+
+        if (visible_windows != NULL)
+        {
+            for (previous_element = visible_windows, current_element = visible_windows->next; current_element != NULL; previous_element = current_element, current_element = current_element->next)
+            {
+                if (!current_element->window->tags & current_tags)
+                {
+                    hide_window(current_element->window);
+
+                    hidden_windows = window_stack_insert(hidden_windows, current_element->window);
+
+                    previous_element->next = current_element->next;
+                    free(current_element);
+                }
+            }
+        }
+    }
+    else
+    {
+        struct mwm_window_stack * current_element = NULL;
+        struct mwm_window_stack * previous_element = NULL;
+
+        current_tags &= tag->id;
+
+        while (hidden_windows != NULL && hidden_windows->window->tags & current_tags)
+        {
+            struct mwm_window_stack * new_hidden_windows = NULL;
+
+            show_window(hidden_windows->window);
+
+            visible_windows = window_stack_insert(hidden_windows, visible_windows->window);
+
+            new_hidden_windows = hidden_windows->next;
+            free(hidden_windows);
+            hidden_windows = new_hidden_windows;
+        }
+
+        if (hidden_windows != NULL)
+        {
+            for (previous_element = hidden_windows, current_element = hidden_windows->next; current_element != NULL; previous_element = current_element, current_element = current_element->next)
+            {
+                if (current_element->window->tags & current_tags)
+                {
+                    show_window(current_element->window);
+
+                    visible_windows = window_stack_insert(visible_windows, current_element->window);
+
+                    previous_element->next = current_element->next;
+                    free(current_element);
+                }
+            }
+        }
+    }
+}
+
+void set_tag(struct mwm_tag * tag)
+{
+    current_tags = tag->id;
+}
+
 void arrange()
 {
     printf("arrange()\n");
 
-    struct mwm_window_stack * current_element = stack;
-
-    for (; current_element != NULL; current_element = current_element->next)
-    {
-        struct mwm_window * window = current_element->window;
-        uint16_t mask;
-        uint32_t values[4];
-
-        window->x = 0;
-        window->y = 0;
-        window->width = 960;
-        window->height = 600;
-
-        mask = XCB_CONFIG_WINDOW_X |
-               XCB_CONFIG_WINDOW_Y |
-               XCB_CONFIG_WINDOW_WIDTH |
-               XCB_CONFIG_WINDOW_HEIGHT;
-        values[0] = window->x;
-        values[1] = window->y;
-        values[2] = window->width;
-        values[3] = window->height;
-
-        xcb_configure_window(c, window->window_id, mask, values);
-
-        synthetic_configure(window);
-    }
-
-    printf("end loop\n");
+    assert(current_layout != NULL);
+    current_layout->arrange(visible_windows);
 }
 
 void manage(xcb_window_t window_id)
@@ -248,8 +331,16 @@ void manage(xcb_window_t window_id)
     if (transient_for_reply->type == WINDOW && transient_id)
     {
         printf("transient_id: %i\n", transient_id);
-        transient = window_stack_lookup(stack, transient_id);
-        window->tags = transient->tags;
+        transient = window_stack_lookup(visible_windows, transient_id);
+        if (transient == NULL)
+        {
+            transient = window_stack_lookup(hidden_windows, transient_id);
+        }
+
+        if (transient != NULL)
+        {
+            window->tags = transient->tags;
+        }
     }
     else
     {
@@ -279,20 +370,38 @@ void manage(xcb_window_t window_id)
 
     xcb_change_window_attributes(c, window_id, mask, values);
 
-    stack = window_stack_insert(stack, window);
+    if (current_tags & window->tags)
+    {
+        visible_windows = window_stack_insert(visible_windows, window);
 
-    xcb_map_window(c, window->window_id);
+        xcb_map_window(c, window->window_id);
 
-    property_values[0] = XCB_WM_STATE_NORMAL;
-    property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+        property_values[0] = XCB_WM_STATE_NORMAL;
+        property_values[1] = 0;
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
 
-    arrange();
+        arrange();
+    }
+    else
+    {
+        hide_window(window);
+        hidden_windows = window_stack_insert(visible_windows, window);
+    }
 }
 
 void unmanage(struct mwm_window * window)
 {
-    stack = window_stack_delete(stack, window->window_id);
+    // FIXME: This should be done a better way
+    if (window_stack_lookup(visible_windows, window->window_id) != NULL)
+    {
+        visible_windows = window_stack_delete(visible_windows, window->window_id);
+
+        arrange();
+    }
+    else
+    {
+        hidden_windows = window_stack_delete(hidden_windows, window->window_id);
+    }
 
     free(window);
 }
@@ -382,7 +491,7 @@ void configure_request(xcb_configure_request_event_t * event)
     
     struct mwm_window * window = NULL;
 
-    window = window_stack_lookup(stack, event->window);
+    window = window_stack_lookup(visible_windows, event->window);
 
     if (window)
     {
@@ -399,6 +508,12 @@ void configure_request(xcb_configure_request_event_t * event)
             printf("configure_request: case 1\n");
             synthetic_configure(window);
         }
+    }
+    /* Case 1 of the ICCCM 4.1.5 */
+    else if (window_stack_lookup(hidden_windows, event->window) != NULL) // Will this ever happen?
+    {
+        printf("configure_request: case 1\n");
+        synthetic_configure(window);
     }
     /* Case 2 of the ICCCM 4.1.5 */
     else
@@ -466,8 +581,13 @@ void destroy_notify(xcb_destroy_notify_event_t * event)
 
     printf("window_id: %i\n", event->window);
 
-    window = window_stack_lookup(stack, event->window);
-    if (window)
+    window = window_stack_lookup(visible_windows, event->window);
+    if (window == NULL)
+    {
+        window = window_stack_lookup(hidden_windows, event->window);
+    }
+
+    if (window != NULL)
     {
         unmanage(window);
     }
@@ -481,8 +601,13 @@ void enter_notify(xcb_enter_notify_event_t * event)
 
     printf("window_id: %i\n", event->event);
 
-    window = window_stack_lookup(stack, event->event);
-    if (window)
+    window = window_stack_lookup(visible_windows, event->event);
+    if (window == NULL)
+    {
+        window = window_stack_lookup(hidden_windows, event->event);
+    }
+
+    if (window != NULL)
     {
         focus(window);
     }
@@ -541,7 +666,7 @@ void map_request(xcb_map_request_event_t * event)
 
     printf("window_id: %i\n", event->window);
 
-    maybe_window = window_stack_lookup(stack, event->window);
+    maybe_window = window_stack_lookup(hidden_windows, event->window); // Do I need to look in visible_windows?
 
     printf("maybe_window: %i\n", maybe_window);
 
@@ -577,9 +702,9 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
 
     struct mwm_window * window;
 
-    window = window_stack_lookup(stack, event->window);
+    window = window_stack_lookup(visible_windows, event->window); // Do I need to check in hidden_windows?
 
-    if (window)
+    if (window != NULL)
     {
         uint32_t property_values[2];
 
