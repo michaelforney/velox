@@ -37,12 +37,13 @@ struct mwm_layout_state
 
 enum
 {
-    TILE
-}
+    TILE,
+    LAYOUT_SIZE
+};
 
-const uint16_t layout_size = 1;
+//extern const uint16_t layout_size;
 
-struct mwm_layout * layouts[layout_size];
+struct mwm_layout * layouts[LAYOUT_SIZE];
 
 void setup_layouts();
 

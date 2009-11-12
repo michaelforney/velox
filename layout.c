@@ -17,6 +17,9 @@
  *
  */
 
+#include <stdint.h>
+#include <stdlib.h>
+
 #include "mwm.h"
 #include "layout.h"
 
@@ -76,7 +79,7 @@ void tile_arrange(struct mwm_window_stack * windows)
         window->x = screen_width = 2;
         window->y = screen_height * window_index / window_count;
         window->width = screen_width / 2;
-        window->height = streen_height / window_count;
+        window->height = screen_height / window_count;
 
         mask = XCB_CONFIG_WINDOW_X |
                XCB_CONFIG_WINDOW_Y |
