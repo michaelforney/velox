@@ -30,7 +30,21 @@ struct mwm_layout
     void (* arrange)(struct mwm_window_stack * stack);
 };
 
-struct mwm_layout tile;
+struct mwm_layout_state
+{
+    uint16_t values[32];
+};
+
+enum
+{
+    TILE
+}
+
+const uint16_t layout_size = 1;
+
+struct mwm_layout * layouts[layout_size];
+
+void setup_layouts();
 
 #endif
 
