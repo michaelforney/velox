@@ -42,7 +42,7 @@ void tile_arrange(struct mwm_window_stack * windows)
         return;
     }
 
-    /* Arange the master */
+    /* Arrange the master */
     window = windows->window;
 
     if (windows->next == NULL)
