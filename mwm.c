@@ -81,7 +81,7 @@ uint64_t current_tags = 0;
 struct mwm_window_stack * visible_windows = NULL;
 struct mwm_window_stack * hidden_windows = NULL;
 struct mwm_layout * current_layout = NULL;
-uint16_t pending_mwm_unmaps = 0;
+uint16_t pending_unmaps = 0;
 
 void setup()
 {
@@ -146,6 +146,12 @@ void setup()
     values[1] = cursors[RESIZE];
 
     xcb_change_window_attributes(c, root, mask, values);
+
+    setup_layouts();
+    setup_tags();
+
+    current_layout = layouts[TILE];
+    current_tags = tags[TAG_TERM]->id;
 }
 
 void show_window(struct mwm_window * window)
@@ -167,7 +173,7 @@ void hide_window(struct mwm_window * window)
     property_values[1] = 0;
     xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
 
-    pending_mwm_unmaps++;
+    pending_unmaps++;
 
     xcb_unmap_window(c, window->window_id);
 }
@@ -184,7 +190,7 @@ void synthetic_configure(struct mwm_window * window)
     event.response_type = XCB_CONFIGURE_NOTIFY;
     event.event = window->window_id;
     event.window = window->window_id;
-    event.above_sibling = 0;
+    event.above_sibling = XCB_NONE;
     event.x = window->x;
     event.y = window->y;
     event.width = window->width;
@@ -345,6 +351,7 @@ void manage(xcb_window_t window_id)
     else
     {
         manage_hooks_apply(window);
+        window->tags = ~0;
     }
 
     free(transient_for_reply);
@@ -567,7 +574,7 @@ void configure_notify(xcb_configure_notify_event_t * event)
 
     if (event->window == root)
     {
-        printf("window is root\n");
+        printf("!!!!!window is root\n");
         screen_width = event->width;
         screen_height = event->height;
     }
@@ -702,6 +709,12 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
 
     struct mwm_window * window;
 
+    if (pending_unmaps > 0)
+    {
+        pending_unmaps--;
+        return;
+    }
+
     window = window_stack_lookup(visible_windows, event->window); // Do I need to check in hidden_windows?
 
     if (window != NULL)
@@ -777,6 +790,9 @@ void run()
 
 void cleanup()
 {
+    cleanup_tags();
+    cleanup_layouts();
+
     /* X cursors */
     xcb_free_cursor(c, cursors[POINTER]);
     xcb_free_cursor(c, cursors[RESIZE]);

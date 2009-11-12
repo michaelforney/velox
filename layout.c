@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "mwm.h"
 #include "layout.h"
@@ -31,6 +32,10 @@ void tile_arrange(struct mwm_window_stack * windows)
     uint32_t values[4];
     uint16_t window_count = 0;
     uint16_t window_index = 0;
+
+    printf("tile_arrange\n");
+
+    printf("screen_width: %i, screen_height: %i\n", screen_width, screen_height);
 
     if (windows == NULL)
     {
@@ -65,6 +70,8 @@ void tile_arrange(struct mwm_window_stack * windows)
     values[2] = window->width;
     values[3] = window->height;
 
+    printf("arranging master: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
+
     xcb_configure_window(c, window->window_id, mask, values);
     synthetic_configure(window);
 
@@ -76,10 +83,10 @@ void tile_arrange(struct mwm_window_stack * windows)
     {
         window = current_element->window;
 
-        window->x = screen_width = 2;
-        window->y = screen_height * window_index / window_count;
+        window->x = screen_width / 2;
+        window->y = screen_height * window_index / (window_count - 1);
         window->width = screen_width / 2;
-        window->height = screen_height / window_count;
+        window->height = screen_height / (window_count - 1);
 
         mask = XCB_CONFIG_WINDOW_X |
                XCB_CONFIG_WINDOW_Y |
@@ -91,6 +98,8 @@ void tile_arrange(struct mwm_window_stack * windows)
         values[2] = window->width;
         values[3] = window->height;
 
+        printf("arranging slave: %i\n", window->window_id);
+
         xcb_configure_window(c, window->window_id, mask, values);
         synthetic_configure(window);
     }
@@ -101,5 +110,10 @@ void setup_layouts()
     layouts[TILE] = (struct mwm_layout *) malloc(sizeof(struct mwm_layout));
     layouts[TILE]->identifier = "Tile";
     layouts[TILE]->arrange = &tile_arrange;
+}
+
+void cleanup_layouts()
+{
+    free(layouts[TILE]);
 }
 
