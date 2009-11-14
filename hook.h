@@ -22,13 +22,22 @@
 
 #include "window.h"
 
+struct mwm_startup_hook
+{
+    uint64_t id;
+    void (* hook)();
+};
+
 struct mwm_manage_hook
 {
     uint64_t id;
     void (* hook)(struct mwm_window * window);
 };
 
-void manage_hooks_apply(struct mwm_window * window);
+void run_startup_hooks();
+void run_manage_hooks(struct mwm_window * window);
+
+void startup_terminal();
 
 #endif
 

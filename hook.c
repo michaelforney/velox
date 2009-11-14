@@ -17,12 +17,39 @@
  *
  */
 
+#include "mwm.h"
 #include "hook.h"
 
-struct mwm_manage_hook * manage_hooks;
+typedef void (* startup_hook_t)();
+typedef void (* manage_hook_t)(struct mwm_window *);
 
-void manage_hooks_apply(struct mwm_window * window)
+startup_hook_t startup_hooks[] = {
+    &spawn_terminal
+};
+
+manage_hook_t manage_hooks[] = {
+};
+
+void run_startup_hooks()
 {
+    uint16_t startup_hooks_count = sizeof(startup_hooks) / sizeof(startup_hook_t);
+    uint16_t startup_hook_index;
+
+    for (startup_hook_index = 0; startup_hook_index < startup_hooks_count; startup_hook_index++)
+    {
+        startup_hooks[startup_hook_index]();
+    }
+}
+
+void run_manage_hooks(struct mwm_window * window)
+{
+    uint16_t manage_hooks_count = sizeof(manage_hooks) / sizeof(manage_hook_t);
+    uint16_t manage_hook_index;
+
+    for (manage_hook_index = 0; manage_hook_index < manage_hooks_count; manage_hook_index++)
+    {
+        manage_hooks[manage_hook_index](window);
+    }
 }
 
 /* Manage hooks */
