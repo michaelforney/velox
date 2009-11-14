@@ -6,9 +6,7 @@ project(mwm)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(XCB REQUIRED xcb)
-pkg_check_modules(XCB-ATOM REQUIRED xcb-atom)
-pkg_check_modules(XCB-ICCCM REQUIRED xcb-icccm)
+pkg_check_modules(XCB REQUIRED xcb xcb-atom xcb-icccm xcb-keysyms)
 
 add_executable(mwm
     mwm.c
@@ -19,7 +17,7 @@ add_executable(mwm
     bar.c
 )
 
-target_link_libraries(mwm ${XCB-ATOM_LIBRARIES} ${XCB-ICCCM_LIBRARIES} ${XCB_LIBRARIES})
+target_link_libraries(mwm ${XCB_LIBRARIES})
 
 install(TARGETS mwm DESTINATION bin)
 
