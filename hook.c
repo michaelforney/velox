@@ -24,7 +24,6 @@ typedef void (* startup_hook_t)();
 typedef void (* manage_hook_t)(struct mwm_window *);
 
 startup_hook_t startup_hooks[] = {
-    &spawn_terminal
 };
 
 manage_hook_t manage_hooks[] = {
@@ -53,4 +52,5 @@ void run_manage_hooks(struct mwm_window * window)
 }
 
 /* Manage hooks */
+// TODO: Define some of these :)
 

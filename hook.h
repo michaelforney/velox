@@ -37,7 +37,5 @@ struct mwm_manage_hook
 void run_startup_hooks();
 void run_manage_hooks(struct mwm_window * window);
 
-void startup_terminal();
-
 #endif
 
