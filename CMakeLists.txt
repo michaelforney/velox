@@ -6,7 +6,7 @@ project(mwm)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(XCB REQUIRED xcb xcb-atom xcb-icccm xcb-keysyms)
+pkg_check_modules(XCB REQUIRED xcb xcb-atom xcb-icccm)
 
 add_executable(mwm
     mwm.c
@@ -15,6 +15,7 @@ add_executable(mwm
     hook.c
     tag.c
     bar.c
+    keys.c
 )
 
 target_link_libraries(mwm ${XCB_LIBRARIES})
