@@ -27,5 +27,7 @@ extern xcb_connection_t * c;
 extern uint16_t screen_width;
 extern uint16_t screen_height;
 
+void spawn(const char ** cmd);
+
 #endif
 

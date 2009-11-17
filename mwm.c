@@ -26,14 +26,18 @@
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
 
+#include <X11/keysym.h>
+
 #include "window.h"
 #include "tag.h"
 #include "hook.h"
+#include "keys.h"
 
-/* X specific variables */
+/* X variables */
 xcb_connection_t * c;
 xcb_screen_t * screen;
 xcb_window_t root;
+xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 uint16_t screen_width = 0;
 uint16_t screen_height = 0;
@@ -75,6 +79,9 @@ static const uint8_t cursor_type_size = 3;
 
 xcb_cursor_t cursors[cursor_type_size];
 
+/* MWM Constants */
+const uint16_t border_width = 1;
+
 /* MWM variables */
 bool running = true;
 uint64_t current_tags = 0;
@@ -83,11 +90,16 @@ struct mwm_window_stack * hidden_windows = NULL;
 struct mwm_layout * current_layout = NULL;
 uint16_t pending_unmaps = 0;
 
+uint32_t border_color;
+
 void setup()
 {
     xcb_screen_iterator_t screen_iterator;
     xcb_font_t cursor_font;
     xcb_intern_atom_cookie_t * wm_atom_cookies, * net_atom_cookies;
+    xcb_intern_atom_reply_t * atom_reply;
+    xcb_alloc_named_color_cookie_t border_color_cookie;
+    xcb_alloc_named_color_reply_t * border_color_reply;
     uint32_t mask;
     uint32_t values[2];
 
@@ -100,6 +112,8 @@ void setup()
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
 
+    border_color_cookie = xcb_alloc_named_color(c, screen->default_colormap, strlen("green"), "green");
+
     /* Setup atoms */
     wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(wm_atoms_size * sizeof(xcb_intern_atom_cookie_t));
     net_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(net_atoms_size * sizeof(xcb_intern_atom_cookie_t));
@@ -110,16 +124,6 @@ void setup()
 
     net_atom_cookies[NET_SUPPORTED] = xcb_intern_atom(c, false, strlen("_NET_SUPPORTED"), "_NET_SUPPORTED");
     net_atom_cookies[NET_WM_NAME] = xcb_intern_atom(c, false, strlen("_NET_WM_NAME"), "_NET_WM_NAME");
-
-    wm_atoms[WM_PROTOCOLS] = xcb_intern_atom_reply(c, wm_atom_cookies[WM_PROTOCOLS], NULL)->atom;
-    wm_atoms[WM_DELETE_WINDOW] = xcb_intern_atom_reply(c, wm_atom_cookies[WM_DELETE_WINDOW], NULL)->atom;
-    wm_atoms[WM_STATE] = xcb_intern_atom_reply(c, wm_atom_cookies[WM_STATE], NULL)->atom;
-
-    net_atoms[NET_SUPPORTED] = xcb_intern_atom_reply(c, net_atom_cookies[NET_SUPPORTED], NULL)->atom;
-    net_atoms[NET_WM_NAME] = xcb_intern_atom_reply(c, net_atom_cookies[NET_WM_NAME], NULL)->atom;
-
-    free(wm_atom_cookies);
-    free(net_atom_cookies);
 
     /* Setup cursors */
     cursor_font = xcb_generate_id(c);
@@ -136,16 +140,46 @@ void setup()
     xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, net_atoms[NET_SUPPORTED], ATOM, 32, net_atoms_size, net_atoms);
 
     mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
-    values[0] = XCB_EVENT_MASK_BUTTON_PRESS |
+    values[0] = //XCB_EVENT_MASK_KEY_PRESS |
+                XCB_EVENT_MASK_BUTTON_PRESS |
                 XCB_EVENT_MASK_ENTER_WINDOW |
                 XCB_EVENT_MASK_LEAVE_WINDOW |
                 XCB_EVENT_MASK_STRUCTURE_NOTIFY |
                 XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
                 XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
                 XCB_EVENT_MASK_PROPERTY_CHANGE;
-    values[1] = cursors[RESIZE];
+    values[1] = cursors[POINTER];
 
     xcb_change_window_attributes(c, root, mask, values);
+
+    border_color_reply = xcb_alloc_named_color_reply(c, border_color_cookie, NULL);
+
+    border_color = border_color_reply->pixel;
+
+    printf("border_color_reply: %i\n", border_color_reply);
+    printf("exact_red: %i, exact_green: %i, exact_blue: %i\n", border_color_reply->exact_red, border_color_reply->exact_green, border_color_reply->exact_blue);
+
+    free(border_color_reply);
+
+    atom_reply = xcb_intern_atom_reply(c, wm_atom_cookies[WM_PROTOCOLS], NULL);
+    wm_atoms[WM_PROTOCOLS] = atom_reply->atom;
+    free(atom_reply);
+    atom_reply = xcb_intern_atom_reply(c, wm_atom_cookies[WM_DELETE_WINDOW], NULL);
+    wm_atoms[WM_DELETE_WINDOW] = atom_reply->atom;
+    free(atom_reply);
+    atom_reply = xcb_intern_atom_reply(c, wm_atom_cookies[WM_STATE], NULL);
+    wm_atoms[WM_STATE] = atom_reply->atom;
+    free(atom_reply);
+
+    atom_reply = xcb_intern_atom_reply(c, net_atom_cookies[NET_SUPPORTED], NULL);
+    net_atoms[NET_SUPPORTED] = atom_reply->atom;
+    free(atom_reply);
+    atom_reply = xcb_intern_atom_reply(c, net_atom_cookies[NET_WM_NAME], NULL);
+    net_atoms[NET_WM_NAME] = atom_reply->atom;
+    free(atom_reply);
+
+    free(wm_atom_cookies);
+    free(net_atom_cookies);
 
     setup_layouts();
     setup_tags();
@@ -301,12 +335,20 @@ void set_tag(struct mwm_tag * tag)
     current_tags = tag->id;
 }
 
+void set_focus(xcb_window_t window_id)
+{
+    xcb_set_input_focus(c, XCB_INPUT_FOCUS_POINTER_ROOT, window_id, XCB_TIME_CURRENT_TIME);
+    xcb_flush(c);
+}
+
 void arrange()
 {
     printf("arrange()\n");
 
     assert(current_layout != NULL);
     current_layout->arrange(visible_windows);
+
+    xcb_flush(c);
 }
 
 void manage(xcb_window_t window_id)
@@ -350,7 +392,6 @@ void manage(xcb_window_t window_id)
     }
     else
     {
-        manage_hooks_apply(window);
         window->tags = ~0;
     }
 
@@ -365,17 +406,27 @@ void manage(xcb_window_t window_id)
     window->y = geometry->y;
     window->width = geometry->width;
     window->height = geometry->height;
+    window->border_width = border_width;
 
-    synthetic_configure(window);
+    mask = XCB_CONFIG_WINDOW_BORDER_WIDTH;
+    values[0] = window->border_width;
+    
+    run_manage_hooks(window);
 
-    /* Events */
-    mask = XCB_CW_EVENT_MASK;
-    values[0] = XCB_EVENT_MASK_ENTER_WINDOW |
+    xcb_configure_window(c, window->window_id, mask, values);
+
+    /* Events and border color */
+    // FIXME: Why doesn't this work?
+    mask = /* XCB_CW_BORDER_PIXEL | */ XCB_CW_EVENT_MASK;
+    // values[0] = screen->white_pixel;
+    values[/* 1 */ 0] = XCB_EVENT_MASK_ENTER_WINDOW |
                 XCB_EVENT_MASK_FOCUS_CHANGE |
                 XCB_EVENT_MASK_PROPERTY_CHANGE |
                 XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 
     xcb_change_window_attributes(c, window_id, mask, values);
+
+    synthetic_configure(window);
 
     if (current_tags & window->tags)
     {
@@ -386,6 +437,8 @@ void manage(xcb_window_t window_id)
         property_values[0] = XCB_WM_STATE_NORMAL;
         property_values[1] = 0;
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+
+        set_focus(visible_windows->window->window_id);
 
         arrange();
     }
@@ -411,6 +464,15 @@ void unmanage(struct mwm_window * window)
     }
 
     free(window);
+
+    if (visible_windows)
+    {
+        set_focus(visible_windows->window->window_id);
+    }
+    else
+    {
+        set_focus(root);
+    }
 }
 
 void focus(struct mwm_window * window)
@@ -483,6 +545,22 @@ void manage_existing_windows()
 
         free(window_attributes_replies[child]);
         free(property_replies[child]);
+    }
+}
+
+void spawn(const char ** cmd)
+{
+    if (fork() == 0)
+    {
+        if (c)
+        {
+            close(xcb_get_file_descriptor(c));
+        }
+        
+        setsid();
+        printf("executing\n");
+        execvp(cmd[0], cmd);
+        exit(0);
     }
 }
 
@@ -564,6 +642,8 @@ void configure_request(xcb_configure_request_event_t * event)
 
         xcb_configure_window(c, event->window, mask, values);
     }
+
+    xcb_flush(c);
 }
 
 void configure_notify(xcb_configure_notify_event_t * event)
@@ -616,7 +696,7 @@ void enter_notify(xcb_enter_notify_event_t * event)
 
     if (window != NULL)
     {
-        focus(window);
+        set_focus(window->window_id);
     }
 }
 
@@ -643,21 +723,69 @@ void focus_in(xcb_focus_in_event_t * event)
 
 void key_press(xcb_key_press_event_t * event)
 {
-    printf("key_press\n");
+    xcb_keysym_t keysym = 0;
+    uint16_t key_binding_index;
+    uint16_t key_bindings_count = 4; // FIXME
 
-    printf("window_id: %i\n", event->event);
+    keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
-    // TODO: Handle key shortcuts
+    printf("keysym: %i\n", keysym);
+    printf("modifiers: %i\n", event->state);
+
+    for (key_binding_index = 0; key_binding_index < key_bindings_count; key_binding_index++)
+    {
+        if (keysym == key_bindings[key_binding_index].keysym && event->state == key_bindings[key_binding_index].modifiers)
+        {
+            key_bindings[key_binding_index].function();
+        }
+    }
 }
 
 void mapping_notify(xcb_mapping_notify_event_t * event)
 {
-    printf("mapping_notify\n");
+    printf("mapping_notify: %i\n", event->request);
  
-    if (event->response_type == XCB_MAPPING_KEYBOARD)
+    if (event->request == XCB_MAPPING_KEYBOARD)
     {
-        /* TODO: Deal with keyboard map changes
-         * This probably needs xcb-keysyms */
+        xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
+        xcb_keysym_t * keysyms;
+        uint16_t key_bindings_count = 4; //sizeof(key_bindings) / sizeof(struct mwm_key_binding);
+        uint16_t key_binding_index;
+        uint16_t keysym_index;
+        uint16_t extra_modifier_index;
+        uint16_t extra_modifiers[] = { 0, XCB_MOD_MASK_LOCK }; // TODO: Numlock?
+        uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
+        struct mwm_key_binding key_binding;
+
+        printf("grabbing keys\n");
+
+        keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, event->first_keycode, event->count);
+
+        xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
+
+        free(keyboard_mapping);
+        keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
+        keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
+        for (key_binding_index = 0; key_binding_index < key_bindings_count; key_binding_index++)
+        {
+            key_binding = key_bindings[key_binding_index];
+
+            for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
+            {
+                if (keysyms[keysym_index] == key_binding.keysym)
+                {
+                    key_binding.keycode = event->first_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
+                    break;
+                }
+            }
+            
+            for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
+            {
+                xcb_grab_key(c, true, root, key_binding.modifiers | extra_modifiers[extra_modifier_index], key_binding.keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
+            }
+        }
+
+        xcb_flush(c);
     }
 }
 
@@ -731,6 +859,8 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
 
         unmanage(window);
 
+        xcb_flush(c);
+
         xcb_ungrab_server(c);
     }
 }
@@ -780,7 +910,7 @@ void run()
                 break;
 
             default:
-                printf("unhandled event type: %x\n", event->response_type);
+                printf("unhandled event type: %i\n", event->response_type);
                 break;
         }
 
