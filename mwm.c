@@ -372,7 +372,7 @@ void manage(xcb_window_t window_id)
     window = (struct mwm_window *) malloc(sizeof(struct mwm_window));
 
     window->window_id = window_id;
-    
+
     transient_for_reply = xcb_get_property_reply(c, transient_for_cookie, NULL);
     transient_id = *((xcb_window_t *) xcb_get_property_value(transient_for_reply));
 
@@ -410,7 +410,7 @@ void manage(xcb_window_t window_id)
 
     mask = XCB_CONFIG_WINDOW_BORDER_WIDTH;
     values[0] = window->border_width;
-    
+
     run_manage_hooks(window);
 
     xcb_configure_window(c, window->window_id, mask, values);
@@ -556,7 +556,7 @@ void spawn(const char ** cmd)
         {
             close(xcb_get_file_descriptor(c));
         }
-        
+
         setsid();
         printf("executing\n");
         execvp(cmd[0], cmd);
@@ -573,7 +573,7 @@ void button_press(xcb_button_press_event_t * event)
 void configure_request(xcb_configure_request_event_t * event)
 {
     printf("configure_request\n");
-    
+
     struct mwm_window * window = NULL;
 
     window = window_stack_lookup(visible_windows, event->window);
@@ -715,7 +715,7 @@ void expose(xcb_expose_event_t * event)
 void focus_in(xcb_focus_in_event_t * event)
 {
     printf("focus_in\n");
-    
+
     printf("window_id: %i\n", event->event);
 
     // TODO: Prevent focus stealing?
@@ -744,7 +744,7 @@ void key_press(xcb_key_press_event_t * event)
 void mapping_notify(xcb_mapping_notify_event_t * event)
 {
     printf("mapping_notify: %i\n", event->request);
- 
+
     if (event->request == XCB_MAPPING_KEYBOARD)
     {
         xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
@@ -778,7 +778,7 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
                     break;
                 }
             }
-            
+
             for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
             {
                 xcb_grab_key(c, true, root, key_binding.modifiers | extra_modifiers[extra_modifier_index], key_binding.keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
@@ -792,7 +792,7 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
 void map_request(xcb_map_request_event_t * event)
 {
     printf("map_request\n");
-    
+
     struct mwm_window * maybe_window;
     xcb_get_window_attributes_cookie_t window_attributes_cookie;
     xcb_get_window_attributes_reply_t * window_attributes;
