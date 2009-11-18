@@ -688,14 +688,14 @@ void enter_notify(xcb_enter_notify_event_t * event)
     printf("window_id: %i\n", event->event);
 
     window = window_stack_lookup(visible_windows, event->event);
-    if (window == NULL)
-    {
-        window = window_stack_lookup(hidden_windows, event->event);
-    }
 
     if (window != NULL)
     {
         set_focus(window->window_id);
+    }
+    else if (event->event == root)
+    {
+        set_focus(root);
     }
 }
 
