@@ -17,17 +17,24 @@
  *
  */
 
-#include <stdio.h>
+#ifndef KEYBINDINGS_H
+#define KEYBINDINGS_H
 
-#include "mwm.h"
-#include "keys.h"
+#include <xcb/xcb.h>
 
-void spawn_terminal()
+#include <X11/keysym.h>
+
+static const xcb_mod_mask_t mod_mask = XCB_MOD_MASK_4;
+
+struct mwm_key_binding
 {
-    printf("spawning terminal\n");
-    const char * cmd[] = { "urxvt", NULL };
-    spawn(cmd);
-}
+    uint16_t modifiers;
+    xcb_keysym_t keysym;
+    xcb_keycode_t keycode;
+    void (* function)();
+};
+
+void spawn_terminal();
 
 struct mwm_key_binding key_bindings[] = {
     /* Commands */
@@ -48,4 +55,6 @@ struct mwm_key_binding key_bindings[] = {
     { mod_mask, XK_8, 0, NULL },
     { mod_mask, XK_9, 0, NULL }
 };
+
+#endif
 

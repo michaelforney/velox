@@ -31,7 +31,7 @@
 #include "window.h"
 #include "tag.h"
 #include "hook.h"
-#include "keys.h"
+#include "keybindings.h"
 
 /* X variables */
 xcb_connection_t * c;
