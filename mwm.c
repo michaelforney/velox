@@ -58,11 +58,8 @@ enum
     NET_WM_NAME
 };
 
-static const uint8_t wm_atoms_size = 3;
-static const uint8_t net_atoms_size = 2;
-
-xcb_atom_t wm_atoms[wm_atoms_size];
-xcb_atom_t net_atoms[net_atoms_size];
+xcb_atom_t wm_atoms[3];
+xcb_atom_t net_atoms[2];
 
 /* X cursors */
 enum
@@ -80,7 +77,7 @@ enum
 
 static const uint8_t cursor_type_size = 3;
 
-xcb_cursor_t cursors[cursor_type_size];
+xcb_cursor_t cursors[3];
 
 /* MWM variables */
 bool running = true;
@@ -120,8 +117,8 @@ void setup()
     border_focus_color_cookie = xcb_alloc_color(c, screen->default_colormap, border_focus_color[0], border_focus_color[1], border_focus_color[2]);
 
     /* Setup atoms */
-    wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(wm_atoms_size * sizeof(xcb_intern_atom_cookie_t));
-    net_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(net_atoms_size * sizeof(xcb_intern_atom_cookie_t));
+    wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(sizeof(wm_atoms) / sizeof(xcb_atom_t) * sizeof(xcb_intern_atom_cookie_t));
+    net_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(sizeof(net_atoms) / sizeof(xcb_atom_t) * sizeof(xcb_intern_atom_cookie_t));
 
     wm_atom_cookies[WM_PROTOCOLS] = xcb_intern_atom(c, false, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
     wm_atom_cookies[WM_DELETE_WINDOW] = xcb_intern_atom(c, false, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
@@ -142,7 +139,7 @@ void setup()
     xcb_create_glyph_cursor(c, cursors[RESIZE], cursor_font, cursor_font, RESIZE_ID, RESIZE_ID + 1, 0, 0, 0, 0, 0, 0);
     xcb_create_glyph_cursor(c, cursors[MOVE], cursor_font, cursor_font, MOVE_ID, MOVE_ID + 1, 0, 0, 0, 0, 0, 0);
 
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, net_atoms[NET_SUPPORTED], ATOM, 32, net_atoms_size, net_atoms);
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, net_atoms[NET_SUPPORTED], ATOM, 32, sizeof(net_atoms) / sizeof(xcb_atom_t), net_atoms);
 
     mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
     values[0] = XCB_EVENT_MASK_BUTTON_PRESS |
@@ -724,7 +721,10 @@ void enter_notify(xcb_enter_notify_event_t * event)
 
     if (window != NULL)
     {
-        set_focus(window->window_id);
+        if (event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
+        {
+            set_focus(window->window_id);
+        }
     }
     else if (event->event == root)
     {

@@ -24,8 +24,6 @@
 
 #include <X11/keysym.h>
 
-static const xcb_mod_mask_t mod_mask = XCB_MOD_MASK_4;
-
 struct mwm_key_binding
 {
     uint16_t modifiers;

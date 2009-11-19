@@ -17,24 +17,26 @@
  *
  */
 
-struct mwm_key_binding key_bindings[] = {
+#define MOD_MASK XCB_MOD_MASK_4
+
+static const struct mwm_key_binding key_bindings[] = {
     /* Commands */
-    { mod_mask | XCB_MOD_MASK_SHIFT, XK_Return, 0, &spawn_terminal },
+    { MOD_MASK | XCB_MOD_MASK_SHIFT, XK_Return, 0, &spawn_terminal },
 
     /* Window focus */
-    { mod_mask, XK_H, 0, NULL },
-    { mod_mask, XK_T, 0, NULL },
+    { MOD_MASK, XK_H, 0, NULL },
+    { MOD_MASK, XK_T, 0, NULL },
 
     /* Tag key bindings */
-    { mod_mask, XK_1, 0, NULL },
-    { mod_mask, XK_2, 0, NULL },
-    { mod_mask, XK_3, 0, NULL },
-    { mod_mask, XK_4, 0, NULL },
-    { mod_mask, XK_5, 0, NULL },
-    { mod_mask, XK_6, 0, NULL },
-    { mod_mask, XK_7, 0, NULL },
-    { mod_mask, XK_8, 0, NULL },
-    { mod_mask, XK_9, 0, NULL }
+    { MOD_MASK, XK_1, 0, NULL },
+    { MOD_MASK, XK_2, 0, NULL },
+    { MOD_MASK, XK_3, 0, NULL },
+    { MOD_MASK, XK_4, 0, NULL },
+    { MOD_MASK, XK_5, 0, NULL },
+    { MOD_MASK, XK_6, 0, NULL },
+    { MOD_MASK, XK_7, 0, NULL },
+    { MOD_MASK, XK_8, 0, NULL },
+    { MOD_MASK, XK_9, 0, NULL }
 };
 
 struct mwm_layout layouts[] = {
@@ -42,8 +44,8 @@ struct mwm_layout layouts[] = {
     { "Grid", &grid_arrange }
 };
 
-uint16_t border_color[3] = { 0x9999, 0x9999, 0x9999 };
-uint16_t border_focus_color[3] = { 0x3333,  0x8888, 0x3333 };
+uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
+uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
 
-const uint16_t border_width = 5;
+const uint16_t border_width = 2;
 
