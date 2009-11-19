@@ -82,9 +82,6 @@ static const uint8_t cursor_type_size = 3;
 
 xcb_cursor_t cursors[cursor_type_size];
 
-/* MWM Constants */
-const uint16_t border_width = 1;
-
 /* MWM variables */
 bool running = true;
 uint64_t current_tags = 0;
