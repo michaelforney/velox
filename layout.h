@@ -32,20 +32,25 @@ struct mwm_layout
 
 struct mwm_layout_state
 {
-    uint16_t values[32];
+    uint16_t pad[32];
+};
+
+struct mwm_tile_layout_state
+{
+    uint16_t master_factor;
+    uint16_t master_count;
+    uint16_t columnt_count;
+    uint16_t pad[29];
 };
 
 enum
 {
     TILE,
-    LAYOUT_SIZE
+    GRID
 };
 
-//extern const uint16_t layout_size;
-
-struct mwm_layout * layouts[LAYOUT_SIZE];
-
-void setup_layouts();
+void tile_arrange(struct mwm_window_stack * stack);
+void grid_arrange(struct mwm_window_stack * stack);
 
 #endif
 

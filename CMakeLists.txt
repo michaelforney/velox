@@ -18,7 +18,7 @@ add_executable(mwm
     keybinding.c
 )
 
-target_link_libraries(mwm ${XCB_LIBRARIES})
+target_link_libraries(mwm ${XCB_LIBRARIES} m)
 
 install(TARGETS mwm DESTINATION bin)
 

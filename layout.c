@@ -20,9 +20,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "mwm.h"
-#include "layout.h"
+#include "window.h"
 
 void tile_arrange(struct mwm_window_stack * windows)
 {
@@ -105,15 +106,64 @@ void tile_arrange(struct mwm_window_stack * windows)
     }
 }
 
-void setup_layouts()
+void grid_arrange(struct mwm_window_stack * windows)
 {
-    layouts[TILE] = (struct mwm_layout *) malloc(sizeof(struct mwm_layout));
-    layouts[TILE]->identifier = "Tile";
-    layouts[TILE]->arrange = &tile_arrange;
-}
+    struct mwm_window * window = NULL;
+    struct mwm_window_stack * current_element = NULL;
+    uint16_t mask;
+    uint32_t values[4];
+    uint16_t window_count = 0;
+    uint16_t rows = 0;
+    uint16_t cols = 0;
+    uint16_t row = 0;
+    uint16_t col = 0;
+    bool perfect = false;
 
-void cleanup_layouts()
-{
-    free(layouts[TILE]);
+    printf("grid_arrange\n");
+
+    if (windows == NULL)
+    {
+        return;
+    }
+
+    /* Calculate number of windows */
+    for (current_element = windows; current_element != NULL; current_element = current_element->next, window_count++);
+
+    cols = (uint16_t) ceil(sqrt(window_count));
+    rows = (window_count > (cols - 1) * cols) ? cols : cols - 1;
+    perfect = window_count == (rows * cols);
+    printf("rows: %i, cols: %i\n", rows, cols);
+    printf("window_count: %i\n", window_count);
+
+    for (current_element = windows; current_element != NULL; current_element = current_element->next)
+    {
+        if (row >= rows)
+        {
+            row = 0;
+            ++col;
+        }
+
+        window = current_element->window;
+
+        window->x = col * screen_width / cols;
+        window->y = row * screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows);
+        window->width = screen_width / cols;
+        window->height = screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows);
+
+        mask = XCB_CONFIG_WINDOW_X |
+               XCB_CONFIG_WINDOW_Y |
+               XCB_CONFIG_WINDOW_WIDTH |
+               XCB_CONFIG_WINDOW_HEIGHT;
+
+        values[0] = window->x;
+        values[1] = window->y;
+        values[2] = window->width;
+        values[3] = window->height;
+
+        xcb_configure_window(c, window->window_id, mask, values);
+        synthetic_configure(window);
+
+        ++row;
+    }
 }
 
