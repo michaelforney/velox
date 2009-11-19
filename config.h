@@ -42,3 +42,6 @@ struct mwm_layout layouts[] = {
     { "Grid", &grid_arrange }
 };
 
+uint16_t border_color[3] = { 0x9999, 0x9999, 0x9999 };
+uint16_t border_focus_color[3] = { 0x3333,  0x8888, 0x3333 };
+

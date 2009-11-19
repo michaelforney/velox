@@ -32,7 +32,7 @@
 #include "window.h"
 #include "tag.h"
 #include "hook.h"
-#include "keybindings.h"
+#include "keybinding.h"
 
 #include "config.h"
 
@@ -93,7 +93,8 @@ struct mwm_window_stack * hidden_windows = NULL;
 struct mwm_layout * current_layout = NULL;
 uint16_t pending_unmaps = 0;
 
-uint32_t border_color;
+uint32_t border_pixel;
+uint32_t border_focus_pixel;
 
 void setup()
 {
@@ -101,8 +102,10 @@ void setup()
     xcb_font_t cursor_font;
     xcb_intern_atom_cookie_t * wm_atom_cookies, * net_atom_cookies;
     xcb_intern_atom_reply_t * atom_reply;
-    xcb_alloc_named_color_cookie_t border_color_cookie;
-    xcb_alloc_named_color_reply_t * border_color_reply;
+    xcb_alloc_color_cookie_t border_color_cookie;
+    xcb_alloc_color_cookie_t border_focus_color_cookie;
+    xcb_alloc_color_reply_t * border_color_reply;
+    xcb_alloc_color_reply_t * border_focus_color_reply;
     uint32_t mask;
     uint32_t values[2];
 
@@ -115,7 +118,9 @@ void setup()
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
 
-    border_color_cookie = xcb_alloc_named_color(c, screen->default_colormap, strlen("green"), "green");
+    /* Allocate colors */
+    border_color_cookie = xcb_alloc_color(c, screen->default_colormap, border_color[0], border_color[1], border_color[2]);
+    border_focus_color_cookie = xcb_alloc_color(c, screen->default_colormap, border_focus_color[0], border_focus_color[1], border_focus_color[2]);
 
     /* Setup atoms */
     wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(wm_atoms_size * sizeof(xcb_intern_atom_cookie_t));
@@ -154,14 +159,14 @@ void setup()
 
     xcb_change_window_attributes(c, root, mask, values);
 
-    border_color_reply = xcb_alloc_named_color_reply(c, border_color_cookie, NULL);
+    border_color_reply = xcb_alloc_color_reply(c, border_color_cookie, NULL);
+    border_focus_color_reply = xcb_alloc_color_reply(c, border_focus_color_cookie, NULL);
 
-    border_color = border_color_reply->pixel;
-
-    printf("border_color_reply: %i\n", border_color_reply);
-    printf("exact_red: %i, exact_green: %i, exact_blue: %i\n", border_color_reply->exact_red, border_color_reply->exact_green, border_color_reply->exact_blue);
+    border_pixel = border_color_reply->pixel;
+    border_focus_pixel = border_focus_color_reply->pixel;
 
     free(border_color_reply);
+    free(border_focus_color_reply);
 
     atom_reply = xcb_intern_atom_reply(c, wm_atom_cookies[WM_PROTOCOLS], NULL);
     wm_atoms[WM_PROTOCOLS] = atom_reply->atom;
@@ -338,6 +343,29 @@ void set_tag(struct mwm_tag * tag)
 
 void set_focus(xcb_window_t window_id)
 {
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus;
+
+    focus_cookie = xcb_get_input_focus(c);
+    focus = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+
+    if (focus->focus == window_id)
+    {
+        return;
+    }
+
+    if (window_id != root)
+    {
+        uint16_t mask = XCB_CW_BORDER_PIXEL;
+        uint32_t values[1];
+
+        values[0] = border_focus_pixel;
+        xcb_change_window_attributes(c, window_id, mask, values);
+
+        values[0] = border_pixel;
+        xcb_change_window_attributes(c, focus->focus, mask, values);
+    }
+
     xcb_set_input_focus(c, XCB_INPUT_FOCUS_POINTER_ROOT, window_id, XCB_TIME_CURRENT_TIME);
     xcb_flush(c);
 }
@@ -364,7 +392,7 @@ void manage(xcb_window_t window_id)
     xcb_get_geometry_reply_t * geometry = NULL;
     xcb_window_t transient_id = 0;
     uint32_t mask;
-    uint32_t values[1];
+    uint32_t values[2];
     uint32_t property_values[2];
 
     transient_for_cookie = xcb_get_property(c, false, window_id, WM_TRANSIENT_FOR, WINDOW, 0, 1);
@@ -417,10 +445,9 @@ void manage(xcb_window_t window_id)
     xcb_configure_window(c, window->window_id, mask, values);
 
     /* Events and border color */
-    // FIXME: Why doesn't this work?
-    mask = /* XCB_CW_BORDER_PIXEL | */ XCB_CW_EVENT_MASK;
-    // values[0] = screen->white_pixel;
-    values[/* 1 */ 0] = XCB_EVENT_MASK_ENTER_WINDOW |
+    mask = XCB_CW_BORDER_PIXEL | XCB_CW_EVENT_MASK;
+    values[0] = border_pixel;
+    values[1] = XCB_EVENT_MASK_ENTER_WINDOW |
                 XCB_EVENT_MASK_FOCUS_CHANGE |
                 XCB_EVENT_MASK_PROPERTY_CHANGE |
                 XCB_EVENT_MASK_STRUCTURE_NOTIFY;
@@ -744,6 +771,7 @@ void key_press(xcb_key_press_event_t * event)
     {
         if (keysym == key_bindings[key_binding_index].keysym && event->state == key_bindings[key_binding_index].modifiers)
         {
+            assert(key_bindings[key_binding_index].function);
             key_bindings[key_binding_index].function();
         }
     }
