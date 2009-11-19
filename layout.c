@@ -50,15 +50,15 @@ void tile_arrange(struct mwm_window_stack * windows)
     {
         window->x = 0;
         window->y = 0;
-        window->width = screen_width;
-        window->height = screen_height;
+        window->width = screen_width - (2 * window->border_width);
+        window->height = screen_height - (2 * window->border_width);
     }
     else
     {
         window->x = 0;
         window->y = 0;
-        window->width = screen_width / 2;
-        window->height = screen_height;
+        window->width = screen_width / 2 - (2 * window->border_width);
+        window->height = screen_height - (2 * window->border_width);
     }
 
     mask = XCB_CONFIG_WINDOW_X |
@@ -86,8 +86,8 @@ void tile_arrange(struct mwm_window_stack * windows)
 
         window->x = screen_width / 2;
         window->y = screen_height * window_index / (window_count - 1);
-        window->width = screen_width / 2;
-        window->height = screen_height / (window_count - 1);
+        window->width = screen_width / 2 - (2 * window->border_width);
+        window->height = screen_height / (window_count - 1) - (2 * window->border_width);
 
         mask = XCB_CONFIG_WINDOW_X |
                XCB_CONFIG_WINDOW_Y |
@@ -147,8 +147,8 @@ void grid_arrange(struct mwm_window_stack * windows)
 
         window->x = col * screen_width / cols;
         window->y = row * screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows);
-        window->width = screen_width / cols;
-        window->height = screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows);
+        window->width = screen_width / cols - (2 * window->border_width);
+        window->height = screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows) - (2 * window->border_width);
 
         mask = XCB_CONFIG_WINDOW_X |
                XCB_CONFIG_WINDOW_Y |
