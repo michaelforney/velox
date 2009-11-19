@@ -28,10 +28,13 @@
 
 #include <X11/keysym.h>
 
+#include "mwm.h"
 #include "window.h"
 #include "tag.h"
 #include "hook.h"
 #include "keybindings.h"
+
+#include "config.h"
 
 /* X variables */
 xcb_connection_t * c;
@@ -180,10 +183,9 @@ void setup()
     free(wm_atom_cookies);
     free(net_atom_cookies);
 
-    setup_layouts();
     setup_tags();
 
-    current_layout = layouts[TILE];
+    current_layout = &layouts[TILE];
     current_tags = tags[TAG_TERM]->id;
 }
 
@@ -563,6 +565,13 @@ void spawn(const char ** cmd)
     }
 }
 
+void spawn_terminal()
+{
+    printf("spawning terminal\n");
+    const char * cmd[] = { "urxvt", NULL };
+    spawn(cmd);
+}
+
 /* X event handlers */
 void button_press(xcb_button_press_event_t * event)
 {
@@ -920,7 +929,6 @@ void run()
 void cleanup()
 {
     cleanup_tags();
-    cleanup_layouts();
 
     /* X cursors */
     xcb_free_cursor(c, cursors[POINTER]);

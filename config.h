@@ -1,4 +1,4 @@
-/* mwm: mwm.h
+/* mwm: config.h
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -17,18 +17,28 @@
  *
  */
 
-#ifndef MWM_H
-#define MWM_H
+struct mwm_key_binding key_bindings[] = {
+    /* Commands */
+    { mod_mask | XCB_MOD_MASK_SHIFT, XK_Return, 0, &spawn_terminal },
 
-#include <xcb/xcb.h>
+    /* Window focus */
+    { mod_mask, XK_H, 0, NULL },
+    { mod_mask, XK_T, 0, NULL },
 
-extern xcb_connection_t * c;
+    /* Tag key bindings */
+    { mod_mask, XK_1, 0, NULL },
+    { mod_mask, XK_2, 0, NULL },
+    { mod_mask, XK_3, 0, NULL },
+    { mod_mask, XK_4, 0, NULL },
+    { mod_mask, XK_5, 0, NULL },
+    { mod_mask, XK_6, 0, NULL },
+    { mod_mask, XK_7, 0, NULL },
+    { mod_mask, XK_8, 0, NULL },
+    { mod_mask, XK_9, 0, NULL }
+};
 
-extern uint16_t screen_width;
-extern uint16_t screen_height;
-
-void spawn(const char ** cmd);
-void spawn_terminal();
-
-#endif
+struct mwm_layout layouts[] = {
+    { "Tile", &tile_arrange },
+    { "Grid", &grid_arrange }
+};
 
