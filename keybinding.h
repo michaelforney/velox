@@ -1,4 +1,4 @@
-/* mwm: keys.c
+/* mwm: keybinding.h
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef KEYBINDINGS_H
-#define KEYBINDINGS_H
+#ifndef KEYBINDING_H
+#define KEYBINDING_H
 
 #include <xcb/xcb.h>
 
@@ -32,28 +32,6 @@ struct mwm_key_binding
     xcb_keysym_t keysym;
     xcb_keycode_t keycode;
     void (* function)();
-};
-
-void spawn_terminal();
-
-struct mwm_key_binding key_bindings[] = {
-    /* Commands */
-    { mod_mask | XCB_MOD_MASK_SHIFT, XK_Return, 0, &spawn_terminal },
-
-    /* Window focus */
-    { mod_mask, XK_H, 0, NULL },
-    { mod_mask, XK_T, 0, NULL },
-
-    /* Tag key bindings */
-    { mod_mask, XK_1, 0, NULL },
-    { mod_mask, XK_2, 0, NULL },
-    { mod_mask, XK_3, 0, NULL },
-    { mod_mask, XK_4, 0, NULL },
-    { mod_mask, XK_5, 0, NULL },
-    { mod_mask, XK_6, 0, NULL },
-    { mod_mask, XK_7, 0, NULL },
-    { mod_mask, XK_8, 0, NULL },
-    { mod_mask, XK_9, 0, NULL }
 };
 
 #endif

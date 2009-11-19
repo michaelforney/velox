@@ -15,7 +15,7 @@ add_executable(mwm
     hook.c
     tag.c
     bar.c
-    keybindings.c
+    keybinding.c
 )
 
 target_link_libraries(mwm ${XCB_LIBRARIES})

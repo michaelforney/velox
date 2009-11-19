@@ -1,4 +1,4 @@
-/* mwm: keys.c
+/* mwm: keybinding.c
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -19,12 +19,5 @@
 
 #include <stdio.h>
 
-#include "mwm.h"
-
-void spawn_terminal()
-{
-    printf("spawning terminal\n");
-    const char * cmd[] = { "urxvt", NULL };
-    spawn(cmd);
-}
+#include "keybinding.h"
 
