@@ -30,5 +30,8 @@ extern uint16_t screen_height;
 void spawn(const char ** cmd);
 void spawn_terminal();
 
+void focus_next();
+void focus_previous();
+
 #endif
 

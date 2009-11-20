@@ -335,7 +335,7 @@ void set_tag(struct mwm_tag * tag)
     current_tags = tag->id;
 }
 
-void set_focus(xcb_window_t window_id)
+void focus(xcb_window_t window_id)
 {
     xcb_get_input_focus_cookie_t focus_cookie;
     xcb_get_input_focus_reply_t * focus;
@@ -360,8 +360,96 @@ void set_focus(xcb_window_t window_id)
         xcb_change_window_attributes(c, focus->focus, mask, values);
     }
 
+    free(focus);
+
     xcb_set_input_focus(c, XCB_INPUT_FOCUS_POINTER_ROOT, window_id, XCB_TIME_CURRENT_TIME);
     xcb_flush(c);
+}
+
+void focus_next()
+{
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus_reply;
+
+    printf("focus_next()");
+
+    focus_cookie = xcb_get_input_focus(c);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+
+    if (focus_reply->focus == root)
+    {
+        if (visible_windows)
+        {
+            focus(visible_windows->window->window_id);
+        }
+    }
+    else
+    {
+        struct mwm_window_stack * current_element;
+
+        for (current_element = visible_windows; current_element != NULL; current_element = current_element->next)
+        {
+            if (current_element->window->window_id == focus_reply->focus)
+            {
+                xcb_window_t next_window_id;
+
+                if (current_element->next != NULL)
+                {
+                    next_window_id = current_element->next->window->window_id;
+                }
+                else
+                {
+                    assert(visible_windows);
+                    next_window_id = visible_windows->window->window_id;
+                }
+
+                focus(next_window_id);
+            }
+        }
+    }
+}
+
+void focus_previous()
+{
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus_reply;
+
+    printf("focus_previous()");
+
+    focus_cookie = xcb_get_input_focus(c);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+
+    if (focus_reply->focus == root)
+    {
+        if (visible_windows)
+        {
+            focus(visible_windows->window->window_id);
+        }
+    }
+    else
+    {
+        struct mwm_window_stack * previous_element;
+        struct mwm_window_stack * current_element;
+
+        assert(visible_windows);
+        if (visible_windows->window->window_id == focus_reply->focus)
+        {
+            for (current_element = visible_windows; current_element->next != NULL; current_element = current_element->next);
+            focus(current_element->window->window_id);
+        }
+        else
+        {
+            for (previous_element = visible_windows, current_element = visible_windows->next; current_element != NULL; previous_element = current_element, current_element = current_element->next)
+            {
+                if (current_element->window->window_id == focus_reply->focus)
+                {
+                    xcb_window_t next_window_id;
+
+                    focus(previous_element->window->window_id);
+                }
+            }
+        }
+    }
 }
 
 void arrange()
@@ -460,7 +548,7 @@ void manage(xcb_window_t window_id)
         property_values[1] = 0;
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
 
-        set_focus(visible_windows->window->window_id);
+        focus(visible_windows->window->window_id);
 
         arrange();
     }
@@ -489,17 +577,12 @@ void unmanage(struct mwm_window * window)
 
     if (visible_windows)
     {
-        set_focus(visible_windows->window->window_id);
+        focus(visible_windows->window->window_id);
     }
     else
     {
-        set_focus(root);
+        focus(root);
     }
-}
-
-void focus(struct mwm_window * window)
-{
-    // TODO: Implement
 }
 
 void manage_existing_windows()
@@ -723,12 +806,12 @@ void enter_notify(xcb_enter_notify_event_t * event)
     {
         if (event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
         {
-            set_focus(window->window_id);
+            focus(window->window_id);
         }
     }
     else if (event->event == root)
     {
-        set_focus(root);
+        focus(root);
     }
 }
 
@@ -757,7 +840,7 @@ void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
     uint16_t key_binding_index;
-    uint16_t key_bindings_count = 4; // FIXME
+    uint16_t key_bindings_count = sizeof(key_bindings) / sizeof(struct mwm_key_binding);
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
@@ -768,8 +851,10 @@ void key_press(xcb_key_press_event_t * event)
     {
         if (keysym == key_bindings[key_binding_index].keysym && event->state == key_bindings[key_binding_index].modifiers)
         {
-            assert(key_bindings[key_binding_index].function);
-            key_bindings[key_binding_index].function();
+            if (key_bindings[key_binding_index].function != NULL)
+            {
+                key_bindings[key_binding_index].function();
+            }
         }
     }
 }
@@ -782,7 +867,7 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
     {
         xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
         xcb_keysym_t * keysyms;
-        uint16_t key_bindings_count = 4; //sizeof(key_bindings) / sizeof(struct mwm_key_binding);
+        uint16_t key_bindings_count = sizeof(key_bindings) / sizeof(struct mwm_key_binding);
         uint16_t key_binding_index;
         uint16_t keysym_index;
         uint16_t extra_modifier_index;
