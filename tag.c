@@ -23,53 +23,58 @@
 
 void setup_tags()
 {
-    tags[TAG_TERM] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_TERM]->id = 1 << TAG_TERM;
-    tags[TAG_TERM]->name = "term";
+    tags = (struct mwm_tag *) malloc(TAG_COUNT * sizeof(struct mwm_tag));
 
-    tags[TAG_WWW] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_WWW]->id = 1 << TAG_WWW;
-    tags[TAG_WWW]->name = "www";
+    tags[TERM].id = 1 << TERM;
+    tags[TERM].name = "term";
+    tags[TERM].layouts = (struct mwm_layout **) malloc(2 * sizeof(struct mwm_layout *));
+    tags[TERM].layouts[0] = &layouts[TILE];
+    tags[TERM].layouts[1] = &layouts[GRID];
 
-    tags[TAG_IRC] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_IRC]->id = 1 << TAG_IRC;
-    tags[TAG_IRC]->name = "irc";
+    tags[WWW].id = 1 << WWW;
+    tags[WWW].name = "www";
+    tags[WWW].layouts = (struct mwm_layout **) malloc(0);
 
-    tags[TAG_IM] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_IM]->id = 1 << TAG_IM;
-    tags[TAG_IM]->name = "im";
+    tags[IRC].id = 1 << IRC;
+    tags[IRC].name = "irc";
+    tags[IRC].layouts = (struct mwm_layout **) malloc(0);
 
-    tags[TAG_CODE] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_CODE]->id = 1 << TAG_CODE;
-    tags[TAG_CODE]->name = "code";
+    tags[IM].id = 1 << IM;
+    tags[IM].name = "im";
+    tags[IM].layouts = (struct mwm_layout **) malloc(0);
 
-    tags[TAG_MAIL] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_MAIL]->id = 1 << TAG_MAIL;
-    tags[TAG_MAIL]->name = "mail";
+    tags[CODE].id = 1 << CODE;
+    tags[CODE].name = "code";
+    tags[CODE].layouts = (struct mwm_layout **) malloc(0);
 
-    tags[TAG_GFX] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_GFX]->id = 1 << TAG_GFX;
-    tags[TAG_GFX]->name = "gfx";
+    tags[MAIL].id = 1 << MAIL;
+    tags[MAIL].name = "mail";
+    tags[MAIL].layouts = (struct mwm_layout **) malloc(0);
 
-    tags[TAG_MUSIC] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_MUSIC]->id = 1 << TAG_MUSIC;
-    tags[TAG_MUSIC]->name = "music";
+    tags[GFX].id = 1 << GFX;
+    tags[GFX].name = "gfx";
+    tags[GFX].layouts = (struct mwm_layout **) malloc(0);
 
-    tags[TAG_MISC] = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    tags[TAG_MISC]->id = 1 << TAG_MISC;
-    tags[TAG_MISC]->name = "misc";
+    tags[MUSIC].id = 1 << MUSIC;
+    tags[MUSIC].name = "music";
+    tags[MUSIC].layouts = (struct mwm_layout **) malloc(0);
+
+    tags[MISC].id = 1 << MISC;
+    tags[MISC].name = "misc";
+    tags[MISC].layouts = (struct mwm_layout **) malloc(0);
 }
 
 void cleanup_tags()
 {
-    free(tags[TAG_TERM]);
-    free(tags[TAG_WWW]);
-    free(tags[TAG_IRC]);
-    free(tags[TAG_IM]);
-    free(tags[TAG_CODE]);
-    free(tags[TAG_MAIL]);
-    free(tags[TAG_GFX]);
-    free(tags[TAG_MUSIC]);
-    free(tags[TAG_MISC]);
+    free(tags[TERM].layouts);
+    free(tags[WWW].layouts);
+    free(tags[IRC].layouts);
+    free(tags[IM].layouts);
+    free(tags[CODE].layouts);
+    free(tags[MAIL].layouts);
+    free(tags[GFX].layouts);
+    free(tags[MUSIC].layouts);
+    free(tags[MISC].layouts);
+    free(tags);
 }
 

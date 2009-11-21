@@ -34,8 +34,6 @@
 #include "hook.h"
 #include "keybinding.h"
 
-#include "config.h"
-
 /* X variables */
 xcb_connection_t * c;
 xcb_screen_t * screen;
@@ -89,6 +87,11 @@ uint16_t pending_unmaps = 0;
 
 uint32_t border_pixel;
 uint32_t border_focus_pixel;
+
+/* MWM constants */
+const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
+const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
+const uint16_t border_width = 2;
 
 void setup()
 {
@@ -182,10 +185,12 @@ void setup()
     free(wm_atom_cookies);
     free(net_atom_cookies);
 
+    setup_layouts();
     setup_tags();
+    setup_key_bindings();
 
     current_layout = &layouts[TILE];
-    current_tags = tags[TAG_TERM]->id;
+    current_tags = tags[TERM].id;
 }
 
 void show_window(struct mwm_window * window)
@@ -937,21 +942,20 @@ void focus_in(xcb_focus_in_event_t * event)
 void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
-    uint16_t key_binding_index;
-    uint16_t key_bindings_count = sizeof(key_bindings) / sizeof(struct mwm_key_binding);
+    uint16_t index;
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
     printf("keysym: %i\n", keysym);
     printf("modifiers: %i\n", event->state);
 
-    for (key_binding_index = 0; key_binding_index < key_bindings_count; key_binding_index++)
+    for (index = 0; index < key_binding_count; index++)
     {
-        if (keysym == key_bindings[key_binding_index].keysym && event->state == key_bindings[key_binding_index].modifiers)
+        if (keysym == key_bindings[index].keysym && event->state == key_bindings[index].modifiers)
         {
-            if (key_bindings[key_binding_index].function != NULL)
+            if (key_bindings[index].function != NULL)
             {
-                key_bindings[key_binding_index].function();
+                key_bindings[index].function();
             }
         }
     }
@@ -965,11 +969,10 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
     {
         xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
         xcb_keysym_t * keysyms;
-        uint16_t key_bindings_count = sizeof(key_bindings) / sizeof(struct mwm_key_binding);
         uint16_t key_binding_index;
         uint16_t keysym_index;
         uint16_t extra_modifier_index;
-        uint16_t extra_modifiers[] = { 0, XCB_MOD_MASK_LOCK }; // TODO: Numlock?
+        uint16_t extra_modifiers[] = { 0, XCB_MOD_MASK_LOCK }; // TODO: Numlock
         uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
         struct mwm_key_binding key_binding;
 
@@ -982,7 +985,7 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
         free(keyboard_mapping);
         keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
         keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
-        for (key_binding_index = 0; key_binding_index < key_bindings_count; key_binding_index++)
+        for (key_binding_index = 0; key_binding_index < key_binding_count; key_binding_index++)
         {
             key_binding = key_bindings[key_binding_index];
 
@@ -1136,12 +1139,16 @@ void run()
 
 void cleanup()
 {
+    cleanup_key_bindings();
     cleanup_tags();
+    cleanup_layouts();
 
     /* X cursors */
     xcb_free_cursor(c, cursors[POINTER]);
     xcb_free_cursor(c, cursors[RESIZE]);
     xcb_free_cursor(c, cursors[MOVE]);
+
+    // TODO: Free colors
 
     xcb_disconnect(c);
 }

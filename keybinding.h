@@ -32,5 +32,11 @@ struct mwm_key_binding
     void (* function)();
 };
 
+extern struct mwm_key_binding * key_bindings;
+extern const uint16_t key_binding_count;
+
+void setup_key_bindings();
+void cleanup_key_bindings();
+
 #endif
 

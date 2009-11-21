@@ -24,6 +24,7 @@
 
 #include "mwm.h"
 #include "window.h"
+#include "layout.h"
 
 void tile_arrange(struct mwm_window_stack * windows)
 {
@@ -165,5 +166,21 @@ void grid_arrange(struct mwm_window_stack * windows)
 
         ++row;
     }
+}
+
+void setup_layouts()
+{
+    layouts = (struct mwm_layout *) malloc(LAYOUT_COUNT * sizeof(struct mwm_layout));
+
+    layouts[TILE].identifier = "Tile";
+    layouts[TILE].arrange = &tile_arrange;
+
+    layouts[GRID].identifier = "Grid";
+    layouts[GRID].arrange = &grid_arrange;
+}
+
+void cleanup_layouts()
+{
+    free(layouts);
 }
 

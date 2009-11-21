@@ -46,11 +46,14 @@ struct mwm_tile_layout_state
 enum
 {
     TILE,
-    GRID
+    GRID,
+    LAYOUT_COUNT
 };
 
-void tile_arrange(struct mwm_window_stack * stack);
-void grid_arrange(struct mwm_window_stack * stack);
+struct mwm_layout * layouts;
+
+void setup_layouts();
+void cleanup_layouts();
 
 #endif
 

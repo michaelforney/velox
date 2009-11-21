@@ -26,23 +26,24 @@ struct mwm_tag
 {
     uint64_t id;
     const char * name;
-    struct mwm_layout * layout;
+    struct mwm_layout ** layouts;
 };
 
 enum
 {
-    TAG_TERM,
-    TAG_WWW,
-    TAG_IRC,
-    TAG_IM,
-    TAG_CODE,
-    TAG_MAIL,
-    TAG_GFX,
-    TAG_MUSIC,
-    TAG_MISC
+    TERM,
+    WWW,
+    IRC,
+    IM,
+    CODE,
+    MAIL,
+    GFX,
+    MUSIC,
+    MISC,
+    TAG_COUNT
 };
 
-struct mwm_tag * tags[64];
+struct mwm_tag * tags;
 
 void setup_tags();
 
