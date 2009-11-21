@@ -62,7 +62,7 @@ xcb_atom_t net_atoms[2];
 /* X cursors */
 enum
 {
-    POINTER_ID = 68,
+    POINTER_ID = 56,
     RESIZE_ID = 120,
     MOVE_ID = 52
 };
