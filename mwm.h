@@ -27,11 +27,16 @@ extern xcb_connection_t * c;
 extern uint16_t screen_width;
 extern uint16_t screen_height;
 
+void arrange();
+
 void spawn(const char ** cmd);
 void spawn_terminal();
 
 void focus_next();
 void focus_previous();
+
+void move_next();
+void move_previous();
 
 #endif
 

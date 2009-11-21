@@ -26,6 +26,8 @@ static const struct mwm_key_binding key_bindings[] = {
     /* Window focus */
     { MOD_MASK, XK_h, 0, &focus_next },
     { MOD_MASK, XK_t, 0, &focus_previous },
+    { MOD_MASK | XCB_MOD_MASK_SHIFT, XK_h, 0, &move_next },
+    { MOD_MASK | XCB_MOD_MASK_SHIFT, XK_t, 0, &move_previous },
 
     /* Window operations */
     { MOD_MASK | XCB_MOD_MASK_SHIFT, XK_C, 0, NULL },

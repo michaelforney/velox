@@ -399,11 +399,12 @@ void focus_next()
                 }
                 else
                 {
-                    assert(visible_windows);
                     next_window_id = visible_windows->window->window_id;
                 }
 
                 focus(next_window_id);
+
+                break;
             }
         }
     }
@@ -414,7 +415,7 @@ void focus_previous()
     xcb_get_input_focus_cookie_t focus_cookie;
     xcb_get_input_focus_reply_t * focus_reply;
 
-    printf("focus_previous()");
+    printf("focus_previous()\n");
 
     focus_cookie = xcb_get_input_focus(c);
     focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
@@ -446,9 +447,106 @@ void focus_previous()
                     xcb_window_t next_window_id;
 
                     focus(previous_element->window->window_id);
+
+                    break;
                 }
             }
         }
+    }
+}
+
+void move_next()
+{
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus_reply;
+
+    printf("move_next()\n");
+
+    focus_cookie = xcb_get_input_focus(c);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+
+    if (visible_windows && visible_windows->next && focus_reply->focus != root)
+    {
+        struct mwm_window_stack * current_element;
+
+        if (visible_windows->window->window_id == focus_reply->focus)
+        {
+            struct mwm_window * first_window = visible_windows->window;
+
+            visible_windows->window = visible_windows->next->window;
+            visible_windows->next->window = first_window;
+        }
+        else
+        {
+            for (current_element = visible_windows; current_element != NULL; current_element = current_element->next)
+            {
+                if (current_element->window->window_id == focus_reply->focus)
+                {
+                    struct mwm_window_stack * next_element;
+                    struct mwm_window * next_window;
+
+                    if (current_element->next != NULL)
+                    {
+                        next_element = current_element->next;
+                    }
+                    else
+                    {
+                        next_element = visible_windows;
+                    }
+
+                    next_window = next_element->window;
+                    next_element->window = current_element->window;
+                    current_element->window = next_window;
+
+                    break;
+                }
+            }
+        }
+        arrange();
+    }
+}
+
+void move_previous()
+{
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus_reply;
+
+    printf("move_previous()\n");
+
+    focus_cookie = xcb_get_input_focus(c);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+
+    if (visible_windows && visible_windows->next && focus_reply->focus != root) /* There must be two visible windows for this to make any sense */
+    {
+        struct mwm_window_stack * current_element;
+        struct mwm_window_stack * previous_element;
+
+        if (visible_windows->window->window_id == focus_reply->focus)
+        {
+            struct mwm_window * current_window = visible_windows->window;
+
+            for (previous_element = visible_windows; previous_element->next != NULL; previous_element = previous_element->next);
+
+            visible_windows->window = previous_element->window;
+            previous_element->window = current_window;
+        }
+        else
+        {
+            for (previous_element = visible_windows, current_element = visible_windows->next; current_element != NULL; previous_element = current_element, current_element = current_element->next)
+            {
+                if (current_element->window->window_id == focus_reply->focus)
+                {
+                    struct mwm_window * current_window;
+
+                    current_window = current_element->window;
+                    current_element->window = previous_element->window;
+                    previous_element->window = current_window;
+
+                    break;
+                }
+            }
+        }
+        arrange();
     }
 }
 
