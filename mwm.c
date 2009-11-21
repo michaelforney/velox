@@ -73,8 +73,6 @@ enum
     MOVE
 };
 
-static const uint8_t cursor_type_size = 3;
-
 xcb_cursor_t cursors[3];
 
 /* MWM variables */
