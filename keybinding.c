@@ -45,16 +45,24 @@ void setup_key_bindings()
     key_bindings = (struct mwm_key_binding *) malloc(key_binding_count * sizeof(struct mwm_key_binding));
 
     /* Commands */
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT, XK_Return, &spawn_terminal)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_Return, &spawn_terminal)
 
     /* Window focus */
-    SETUP_KEY_BINDING(mod_mask, XK_h, &focus_next)
-    SETUP_KEY_BINDING(mod_mask, XK_t, &focus_previous)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT, XK_h, &move_next)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT, XK_t, &move_previous)
+    SETUP_KEY_BINDING(mod_mask,                         XK_h, &focus_next)
+    SETUP_KEY_BINDING(mod_mask,                         XK_t, &focus_previous)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_h, &move_next)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_t, &move_previous)
 
     /* Window operations */
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT, XK_c, NULL)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_c, NULL)
+
+    /* Layout modification */
+    SETUP_KEY_BINDING(mod_mask,                         XK_d, NULL) // Decrease master factor
+    SETUP_KEY_BINDING(mod_mask,                         XK_n, NULL) // Increase master factor
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_d, NULL) // Increase number of masters
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_n, NULL) // Decrease number of masters
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_d, NULL) // Increase number of columns
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_n, NULL) // Decrease number of columns
 
     /* Tags */
     SETUP_TAG_KEY_BINDINGS(1)
