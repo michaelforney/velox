@@ -754,7 +754,7 @@ void manage_existing_windows()
     }
 }
 
-void spawn(const char ** cmd)
+void spawn(const char ** command)
 {
     if (fork() == 0)
     {
@@ -765,7 +765,7 @@ void spawn(const char ** cmd)
 
         setsid();
         printf("executing\n");
-        execvp(cmd[0], cmd);
+        execvp(command[0], command);
         exit(0);
     }
 }
@@ -773,8 +773,24 @@ void spawn(const char ** cmd)
 void spawn_terminal()
 {
     printf("spawning terminal\n");
-    const char * cmd[] = { "urxvt", NULL };
-    spawn(cmd);
+    const char * command[] = { "urxvt", NULL };
+    spawn(command);
+}
+
+void spawn_dmenu()
+{
+    printf("spawning dmenu\n");
+    const char * command[] = {
+        "dmenu_run",
+        "-b",
+        "-fn", "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*",
+        "-nb", "#222222",
+        "-nf", "#999999",
+        "-sb", "#338833",
+        "-sf", "#FFFFFF",
+        NULL
+    };
+    spawn(command);
 }
 
 /* X event handlers */

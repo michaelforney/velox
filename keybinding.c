@@ -36,7 +36,7 @@
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
 struct mwm_key_binding * key_bindings;
-const uint16_t key_binding_count = 6 + (9 * 3);
+const uint16_t key_binding_count = 13 + (9 * 3);
 
 void setup_key_bindings()
 {
@@ -45,7 +45,8 @@ void setup_key_bindings()
     key_bindings = (struct mwm_key_binding *) malloc(key_binding_count * sizeof(struct mwm_key_binding));
 
     /* Commands */
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_Return, &spawn_terminal)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_Return,  &spawn_terminal)
+    SETUP_KEY_BINDING(mod_mask,                         XK_r,       &spawn_dmenu)
 
     /* Window focus */
     SETUP_KEY_BINDING(mod_mask,                         XK_h, &focus_next)

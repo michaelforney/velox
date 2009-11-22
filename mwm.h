@@ -31,6 +31,7 @@ void arrange();
 
 void spawn(const char ** cmd);
 void spawn_terminal();
+void spawn_dmenu();
 
 void focus_next();
 void focus_previous();
