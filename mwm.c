@@ -77,10 +77,10 @@ xcb_cursor_t cursors[3];
 
 /* MWM variables */
 bool running = true;
-uint64_t current_tags = 0;
+uint64_t tag_mask = 0;
 struct mwm_window_stack * visible_windows = NULL;
 struct mwm_window_stack * hidden_windows = NULL;
-struct mwm_layout * current_layout = NULL;
+struct mwm_tag * tag = NULL;
 uint16_t pending_unmaps = 0;
 
 uint32_t border_pixel;
@@ -187,8 +187,8 @@ void setup()
     setup_tags();
     setup_key_bindings();
 
-    current_layout = &layouts[TILE];
-    current_tags = tags[TERM].id;
+    tag = &tags[0];
+    tag_mask = tag->id;
 }
 
 void show_window(struct mwm_window * window)
@@ -259,14 +259,14 @@ void synthetic_unmap(struct mwm_window * window)
 
 void toggle_tag(struct mwm_tag * tag)
 {
-    if (current_tags & tag->id)
+    if (tag_mask & tag->id)
     {
         struct mwm_window_stack * current_element = NULL;
         struct mwm_window_stack * previous_element = NULL;
 
-        current_tags &= ~tag->id;
+        tag_mask &= ~tag->id;
 
-        while (visible_windows != NULL && !visible_windows->window->tags & current_tags)
+        while (visible_windows != NULL && !visible_windows->window->tags & tag_mask)
         {
             struct mwm_window_stack * new_visible_windows = NULL;
 
@@ -283,7 +283,7 @@ void toggle_tag(struct mwm_tag * tag)
         {
             for (previous_element = visible_windows, current_element = visible_windows->next; current_element != NULL; previous_element = current_element, current_element = current_element->next)
             {
-                if (!current_element->window->tags & current_tags)
+                if (!current_element->window->tags & tag_mask)
                 {
                     hide_window(current_element->window);
 
@@ -300,9 +300,9 @@ void toggle_tag(struct mwm_tag * tag)
         struct mwm_window_stack * current_element = NULL;
         struct mwm_window_stack * previous_element = NULL;
 
-        current_tags &= tag->id;
+        tag_mask &= tag->id;
 
-        while (hidden_windows != NULL && hidden_windows->window->tags & current_tags)
+        while (hidden_windows != NULL && hidden_windows->window->tags & tag_mask)
         {
             struct mwm_window_stack * new_hidden_windows = NULL;
 
@@ -319,7 +319,7 @@ void toggle_tag(struct mwm_tag * tag)
         {
             for (previous_element = hidden_windows, current_element = hidden_windows->next; current_element != NULL; previous_element = current_element, current_element = current_element->next)
             {
-                if (current_element->window->tags & current_tags)
+                if (current_element->window->tags & tag_mask)
                 {
                     show_window(current_element->window);
 
@@ -335,7 +335,7 @@ void toggle_tag(struct mwm_tag * tag)
 
 void set_tag(struct mwm_tag * tag)
 {
-    current_tags = tag->id;
+    tag_mask = tag->id;
 }
 
 void focus(xcb_window_t window_id)
@@ -553,12 +553,64 @@ void move_previous()
     }
 }
 
+void increase_master_factor()
+{
+    printf("increase_master_factor()\n");
+
+    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    {
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        state->master_factor = MIN(state->master_factor + 0.05, 1.0);
+
+        arrange();
+    }
+}
+
+void decrease_master_factor()
+{
+    printf("decrease_master_factor()\n");
+
+    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    {
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        state->master_factor = MAX(state->master_factor - 0.05, 0.0);
+
+        arrange();
+    }
+}
+
+void increase_master_count()
+{
+    printf("increase_master_count()\n");
+
+    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    {
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        state->master_count++;
+
+        arrange();
+    }
+}
+
+void decrease_master_count()
+{
+    printf("decrease()\n");
+
+    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    {
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        state->master_count = MAX(state->master_count - 1, 0);
+
+        arrange();
+    }
+}
+
 void arrange()
 {
     printf("arrange()\n");
 
-    assert(current_layout != NULL);
-    current_layout->arrange(visible_windows);
+    assert(tag->layouts[tag->layout_index] != NULL);
+    tag->layouts[tag->layout_index]->arrange(visible_windows, &tag->state);
 
     xcb_flush(c);
 }
@@ -639,7 +691,7 @@ void manage(xcb_window_t window_id)
 
     synthetic_configure(window);
 
-    if (current_tags & window->tags)
+    if (tag_mask & window->tags)
     {
         visible_windows = window_stack_insert(visible_windows, window);
 

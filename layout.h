@@ -24,12 +24,6 @@
 
 #include "window.h"
 
-struct mwm_layout
-{
-    const char * identifier;
-    void (* arrange)(struct mwm_window_stack * stack);
-};
-
 struct mwm_layout_state
 {
     uint16_t pad[32];
@@ -37,10 +31,16 @@ struct mwm_layout_state
 
 struct mwm_tile_layout_state
 {
-    uint16_t master_factor;
+    float master_factor;
     uint16_t master_count;
-    uint16_t columnt_count;
-    uint16_t pad[29];
+    uint16_t column_count;
+    uint16_t pad[28];
+};
+
+struct mwm_layout
+{
+    const char * identifier;
+    void (* arrange)(struct mwm_window_stack * stack, struct mwm_layout_state * state);
 };
 
 enum

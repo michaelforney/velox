@@ -58,10 +58,10 @@ void setup_key_bindings()
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_c, NULL)
 
     /* Layout modification */
-    SETUP_KEY_BINDING(mod_mask,                         XK_d, NULL) // Decrease master factor
-    SETUP_KEY_BINDING(mod_mask,                         XK_n, NULL) // Increase master factor
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_d, NULL) // Increase number of masters
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_n, NULL) // Decrease number of masters
+    SETUP_KEY_BINDING(mod_mask,                         XK_d, &decrease_master_factor)
+    SETUP_KEY_BINDING(mod_mask,                         XK_n, &increase_master_factor)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_d, &increase_master_count)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_n, &decrease_master_count)
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_d, NULL) // Increase number of columns
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_n, NULL) // Decrease number of columns
 

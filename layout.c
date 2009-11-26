@@ -26,8 +26,9 @@
 #include "window.h"
 #include "layout.h"
 
-void tile_arrange(struct mwm_window_stack * windows)
+void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * generic_state)
 {
+    struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
     struct mwm_window * window = NULL;
     struct mwm_window_stack * current_element = NULL;
     uint16_t mask;
@@ -44,51 +45,28 @@ void tile_arrange(struct mwm_window_stack * windows)
         return;
     }
 
-    /* Arrange the master */
-    window = windows->window;
-
-    if (windows->next == NULL)
-    {
-        window->x = 0;
-        window->y = 0;
-        window->width = screen_width - (2 * window->border_width);
-        window->height = screen_height - (2 * window->border_width);
-    }
-    else
-    {
-        window->x = 0;
-        window->y = 0;
-        window->width = screen_width / 2 - (2 * window->border_width);
-        window->height = screen_height - (2 * window->border_width);
-    }
-
-    mask = XCB_CONFIG_WINDOW_X |
-           XCB_CONFIG_WINDOW_Y |
-           XCB_CONFIG_WINDOW_WIDTH |
-           XCB_CONFIG_WINDOW_HEIGHT;
-
-    values[0] = window->x;
-    values[1] = window->y;
-    values[2] = window->width;
-    values[3] = window->height;
-
-    printf("arranging master: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
-
-    xcb_configure_window(c, window->window_id, mask, values);
-    synthetic_configure(window);
-
     /* Calculate number of windows */
     for (current_element = windows; current_element != NULL; current_element = current_element->next, window_count++);
 
-    /* Arange the rest of the windows */
-    for (current_element = windows->next; current_element != NULL; current_element = current_element->next, window_index++)
+    /* Arrange the windows */
+    for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next, window_index++)
     {
         window = current_element->window;
 
-        window->x = screen_width / 2;
-        window->y = screen_height * window_index / (window_count - 1);
-        window->width = screen_width / 2 - (2 * window->border_width);
-        window->height = screen_height / (window_count - 1) - (2 * window->border_width);
+        if (window_index < state->master_count) /* Arranging a master */
+        {
+            window->x = 0;
+            window->y = window_index * screen_height / MIN(state->master_count, window_count);
+            window->width = ((window_count <= state->master_count) ? screen_width : state->master_factor * screen_width) - (2 * window->border_width);
+            window->height = screen_height / MIN(state->master_count, window_count) - (2 * window->border_width);
+        }
+        else /* Arranging the rest of the windows */
+        {
+            window->x = (state->master_count == 0) ? 0 : state->master_factor * screen_width;
+            window->y = screen_height * (window_index - state->master_count) / (window_count - state->master_count);
+            window->width = (state->master_count == 0) ? screen_width : screen_width - (state->master_factor * screen_width) - (2 * window->border_width);
+            window->height = screen_height / (window_count - state->master_count) - (2 * window->border_width);
+        }
 
         mask = XCB_CONFIG_WINDOW_X |
                XCB_CONFIG_WINDOW_Y |
@@ -100,14 +78,14 @@ void tile_arrange(struct mwm_window_stack * windows)
         values[2] = window->width;
         values[3] = window->height;
 
-        printf("arranging slave: %i\n", window->window_id);
+        printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
 
         xcb_configure_window(c, window->window_id, mask, values);
         synthetic_configure(window);
     }
 }
 
-void grid_arrange(struct mwm_window_stack * windows)
+void grid_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * generic_state)
 {
     struct mwm_window * window = NULL;
     struct mwm_window_stack * current_element = NULL;

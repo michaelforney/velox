@@ -22,6 +22,9 @@
 
 #include <xcb/xcb.h>
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 extern xcb_connection_t * c;
 
 extern uint16_t screen_width;
@@ -38,6 +41,11 @@ void focus_previous();
 
 void move_next();
 void move_previous();
+
+void increase_master_factor();
+void decrease_master_factor();
+void increase_master_count();
+void decrease_master_count();
 
 #endif
 

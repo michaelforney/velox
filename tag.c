@@ -18,6 +18,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "tag.h"
 
@@ -30,6 +31,10 @@ void setup_tags()
     tags[TERM].layouts = (struct mwm_layout **) malloc(2 * sizeof(struct mwm_layout *));
     tags[TERM].layouts[0] = &layouts[TILE];
     tags[TERM].layouts[1] = &layouts[GRID];
+    tags[TERM].layout_index = 0;
+    memset(&tags[TERM].state, 0, sizeof(struct mwm_layout_state));
+    ((struct mwm_tile_layout_state *) &tags[TERM].state)->master_factor = 0.5;
+    ((struct mwm_tile_layout_state *) &tags[TERM].state)->master_count = 1;
 
     tags[WWW].id = 1 << WWW;
     tags[WWW].name = "www";

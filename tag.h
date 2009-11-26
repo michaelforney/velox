@@ -27,6 +27,8 @@ struct mwm_tag
     uint64_t id;
     const char * name;
     struct mwm_layout ** layouts;
+    uint16_t layout_index;
+    struct mwm_layout_state state;
 };
 
 enum
