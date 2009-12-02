@@ -374,7 +374,7 @@ void focus_next()
     xcb_get_input_focus_cookie_t focus_cookie;
     xcb_get_input_focus_reply_t * focus_reply;
 
-    printf("focus_next()");
+    printf("focus_next()\n");
 
     focus_cookie = xcb_get_input_focus(c);
     focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
