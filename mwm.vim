@@ -57,9 +57,10 @@ badd +20 bar.c
 badd +1 bar.h
 badd +1 tag.c
 badd +1 tag.h
-badd +0 mwm.h
-badd +0 keybindings.c
-badd +0 keybindings.h
+badd +1 mwm.h
+badd +1 keybindings.c
+badd +1 keybindings.h
+badd +0 keybinding.c
 silent! argdel *
 edit CMakeLists.txt
 set splitbelow splitright
@@ -1452,7 +1453,7 @@ exe s:l
 normal! zt
 1
 normal! 0
-tabedit keybindings.c
+tabedit keybinding.c
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
@@ -1553,13 +1554,13 @@ setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
-let s:l = 30 - ((29 * winheight(0) + 30) / 60)
+let s:l = 39 - ((38 * winheight(0) + 30) / 60)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-30
+39
 normal! 0
-tabedit keybindings.h
+tabedit keybinding.c
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
@@ -1591,8 +1592,8 @@ setlocal nodiff
 setlocal equalprg=
 setlocal errorformat=
 setlocal expandtab
-if &filetype != 'cpp'
-setlocal filetype=cpp
+if &filetype != 'c'
+setlocal filetype=c
 endif
 setlocal foldcolumn=0
 setlocal foldenable
@@ -1649,8 +1650,8 @@ setlocal statusline=
 setlocal suffixesadd=
 setlocal swapfile
 setlocal synmaxcol=3000
-if &syntax != 'cpp'
-setlocal syntax=cpp
+if &syntax != 'c'
+setlocal syntax=c
 endif
 setlocal tabstop=4
 setlocal tags=
@@ -1660,11 +1661,11 @@ setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
-let s:l = 37 - ((36 * winheight(0) + 30) / 60)
+let s:l = 1 - ((0 * winheight(0) + 30) / 60)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-37
+1
 normal! 0
 tabnext 1
 if exists('s:wipebuf')
