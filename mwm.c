@@ -971,18 +971,24 @@ void enter_notify(xcb_enter_notify_event_t * event)
 
     printf("window_id: %i\n", event->event);
 
-    window = window_stack_lookup(visible_windows, event->event);
-
-    if (window != NULL)
-    {
-        if (event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
-        {
-            focus(window->window_id);
-        }
-    }
-    else if (event->event == root)
+    if (event->event == root)
     {
         focus(root);
+    }
+    else
+    {
+        window = window_stack_lookup(visible_windows, event->event);
+
+        if (window != NULL)
+        {
+            printf("mode: %i\n", event->mode);
+            printf("detail: %i\n", event->detail);
+
+            if (event->mode == XCB_NOTIFY_MODE_NORMAL && event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
+            {
+                focus(window->window_id);
+            }
+        }
     }
 }
 
