@@ -25,6 +25,7 @@
 
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
+#include <xcb/xcb_aux.h>
 
 #include <X11/keysym.h>
 
@@ -82,6 +83,7 @@ struct mwm_window_stack * visible_windows = NULL;
 struct mwm_window_stack * hidden_windows = NULL;
 struct mwm_tag * tag = NULL;
 uint16_t pending_unmaps = 0;
+uint8_t clear_event_type = 0;
 
 uint32_t border_pixel;
 uint32_t border_focus_pixel;
@@ -612,7 +614,7 @@ void arrange()
     assert(tag->layouts[tag->layout_index] != NULL);
     tag->layouts[tag->layout_index]->arrange(visible_windows, &tag->state);
 
-    xcb_flush(c);
+    clear_event_type = XCB_ENTER_NOTIFY;
 }
 
 void manage(xcb_window_t window_id)
@@ -984,6 +986,11 @@ void enter_notify(xcb_enter_notify_event_t * event)
     }
 }
 
+void leave_notify(xcb_leave_notify_event_t * event)
+{
+    printf("leave_notify\n");
+}
+
 void expose(xcb_expose_event_t * event)
 {
     printf("expose\n");
@@ -1150,57 +1157,85 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
     }
 }
 
+void handle_event(xcb_generic_event_t * event)
+{
+    switch (event->response_type & ~0x80)
+    {
+        case XCB_BUTTON_PRESS:
+            button_press((xcb_button_press_event_t *) event);
+            break;
+        case XCB_CONFIGURE_REQUEST:
+            configure_request((xcb_configure_request_event_t *) event);
+            break;
+        case XCB_CONFIGURE_NOTIFY:
+            configure_notify((xcb_configure_notify_event_t *) event);
+            break;
+        case XCB_DESTROY_NOTIFY:
+            destroy_notify((xcb_destroy_notify_event_t *) event);
+            break;
+        case XCB_ENTER_NOTIFY:
+            enter_notify((xcb_enter_notify_event_t *) event);
+            break;
+        case XCB_LEAVE_NOTIFY:
+            leave_notify((xcb_leave_notify_event_t *) event);
+            break;
+        case XCB_EXPOSE:
+            expose((xcb_expose_event_t *) event);
+            break;
+        case XCB_FOCUS_IN:
+            focus_in((xcb_focus_in_event_t *) event);
+            break;
+        case XCB_KEY_PRESS:
+            key_press((xcb_key_press_event_t *) event);
+            break;
+        case XCB_MAPPING_NOTIFY:
+            mapping_notify((xcb_mapping_notify_event_t *) event);
+            break;
+        case XCB_MAP_REQUEST:
+            map_request((xcb_map_request_event_t *) event);
+            break;
+        case XCB_PROPERTY_NOTIFY:
+            property_notify((xcb_property_notify_event_t *) event);
+            break;
+        case XCB_UNMAP_NOTIFY:
+            unmap_notify((xcb_unmap_notify_event_t *) event);
+            break;
+
+        default:
+            printf("unhandled event type: %i\n", event->response_type);
+            break;
+    }
+
+    free(event);
+}
+
 void run()
 {
     xcb_generic_event_t * event;
     while (running && (event = xcb_wait_for_event(c)))
     {
-        switch (event->response_type & ~0x80)
+        handle_event(event);
+
+        if (clear_event_type)
         {
-            case XCB_BUTTON_PRESS:
-                button_press((xcb_button_press_event_t *) event);
-                break;
-            case XCB_CONFIGURE_REQUEST:
-                configure_request((xcb_configure_request_event_t *) event);
-                break;
-            case XCB_CONFIGURE_NOTIFY:
-                configure_notify((xcb_configure_notify_event_t *) event);
-                break;
-            case XCB_DESTROY_NOTIFY:
-                destroy_notify((xcb_destroy_notify_event_t *) event);
-                break;
-            case XCB_ENTER_NOTIFY:
-                enter_notify((xcb_enter_notify_event_t *) event);
-                break;
-            case XCB_EXPOSE:
-                expose((xcb_expose_event_t *) event);
-                break;
-            case XCB_FOCUS_IN:
-                focus_in((xcb_focus_in_event_t *) event);
-                break;
-            case XCB_KEY_PRESS:
-                key_press((xcb_key_press_event_t *) event);
-                break;
-            case XCB_MAPPING_NOTIFY:
-                mapping_notify((xcb_mapping_notify_event_t *) event);
-                break;
-            case XCB_MAP_REQUEST:
-                map_request((xcb_map_request_event_t *) event);
-                break;
-            case XCB_PROPERTY_NOTIFY:
-                property_notify((xcb_property_notify_event_t *) event);
-                break;
-            case XCB_UNMAP_NOTIFY:
-                unmap_notify((xcb_unmap_notify_event_t *) event);
-                break;
+            xcb_aux_sync(c);
 
-            default:
-                printf("unhandled event type: %i\n", event->response_type);
-                break;
+            while ((event = xcb_poll_for_event(c)))
+            {
+                if ((event->response_type & ~0x80) == clear_event_type)
+                {
+                    free(event);
+                    printf("dropping masked event\n");
+                }
+                else
+                {
+                    handle_event(event);
+                }
+            }
+            clear_event_type = 0;
         }
-
-        free(event);
     }
+
 }
 
 void cleanup()

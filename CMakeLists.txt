@@ -6,7 +6,7 @@ project(mwm)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(XCB REQUIRED xcb xcb-atom xcb-icccm)
+pkg_check_modules(XCB REQUIRED xcb xcb-atom xcb-icccm xcb-aux)
 
 add_executable(mwm
     mwm.c
