@@ -22,6 +22,8 @@
 
 #include <xcb/xcb.h>
 
+#include "tag.h"
+
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
@@ -46,6 +48,8 @@ void increase_master_factor();
 void decrease_master_factor();
 void increase_master_count();
 void decrease_master_count();
+
+void set_tag(struct mwm_tag * tag);
 
 #endif
 

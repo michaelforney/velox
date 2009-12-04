@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #include "mwm.h"
 #include "window.h"
@@ -47,6 +48,8 @@ void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
 
     /* Calculate number of windows */
     for (current_element = windows; current_element != NULL; current_element = current_element->next, window_count++);
+
+    printf("window_count: %i\n", window_count);
 
     /* Arrange the windows */
     for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next, window_index++)
@@ -152,9 +155,14 @@ void setup_layouts()
 
     layouts[TILE].identifier = "Tile";
     layouts[TILE].arrange = &tile_arrange;
+    memset(&layouts[TILE].default_state, 0, sizeof(struct mwm_layout_state));
+    ((struct mwm_tile_layout_state *) &layouts[TILE].default_state)->master_factor = 0.5;
+    ((struct mwm_tile_layout_state *) &layouts[TILE].default_state)->master_count = 1;
+    ((struct mwm_tile_layout_state *) &layouts[TILE].default_state)->column_count = 1;
 
     layouts[GRID].identifier = "Grid";
     layouts[GRID].arrange = &grid_arrange;
+    memset(&layouts[GRID].default_state, 0, sizeof(struct mwm_layout_state));
 }
 
 void cleanup_layouts()

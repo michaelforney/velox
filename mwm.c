@@ -81,7 +81,7 @@ bool running = true;
 uint64_t tag_mask = 0;
 struct mwm_window_stack * visible_windows = NULL;
 struct mwm_window_stack * hidden_windows = NULL;
-struct mwm_tag * tag = NULL;
+struct mwm_tag * main_tag = NULL;
 uint16_t pending_unmaps = 0;
 uint8_t clear_event_type = 0;
 
@@ -189,13 +189,15 @@ void setup()
     setup_tags();
     setup_key_bindings();
 
-    tag = &tags[0];
-    tag_mask = tag->id;
+    main_tag = &tags[TERM];
+    tag_mask = main_tag->id;
 }
 
 void show_window(struct mwm_window * window)
 {
     uint32_t property_values[2];
+
+    printf("show_window: %i\n", window->window_id);
 
     property_values[0] = XCB_WM_STATE_NORMAL;
     property_values[1] = 0;
@@ -207,6 +209,8 @@ void show_window(struct mwm_window * window)
 void hide_window(struct mwm_window * window)
 {
     uint32_t property_values[2];
+
+    printf("hide_window: %i\n", window->window_id);
 
     property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
     property_values[1] = 0;
@@ -259,8 +263,51 @@ void synthetic_unmap(struct mwm_window * window)
     xcb_send_event(c, false, root, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char *) &event);
 }
 
+void focus(xcb_window_t window_id)
+{
+    uint16_t mask = XCB_CW_BORDER_PIXEL;
+    uint32_t values[1];
+
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus_reply;
+
+    focus_cookie = xcb_get_input_focus(c);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+
+    if (focus_reply->focus == window_id)
+    {
+        return;
+    }
+
+    if (window_id != root)
+    {
+        values[0] = border_focus_pixel;
+        xcb_change_window_attributes(c, window_id, mask, values);
+    }
+
+    if (focus_reply->focus != root)
+    {
+        values[0] = border_pixel;
+        xcb_change_window_attributes(c, focus_reply->focus, mask, values);
+    }
+
+    free(focus_reply);
+
+    xcb_set_input_focus(c, XCB_INPUT_FOCUS_POINTER_ROOT, window_id, XCB_TIME_CURRENT_TIME);
+    xcb_flush(c);
+}
+
 void toggle_tag(struct mwm_tag * tag)
 {
+    /* WIP
+    if (tag_mask == 0)
+    {
+        main_tag = tag;
+    }
+    else if (tag == main_tag)
+    {
+    }
+
     if (tag_mask & tag->id)
     {
         struct mwm_window_stack * current_element = NULL;
@@ -332,43 +379,122 @@ void toggle_tag(struct mwm_tag * tag)
                 }
             }
         }
-    }
+    } */
 }
 
 void set_tag(struct mwm_tag * tag)
 {
-    tag_mask = tag->id;
-}
-
-void focus(xcb_window_t window_id)
-{
+    struct mwm_window_stack * current_element = NULL;
+    struct mwm_window_stack * previous_element = NULL;
     xcb_get_input_focus_cookie_t focus_cookie;
-    xcb_get_input_focus_reply_t * focus;
+    xcb_get_input_focus_reply_t * focus_reply;
+    bool hid_focus = false;
+
+    if (main_tag == tag && tag_mask == tag->id)
+    {
+        return; // Nothing to do...
+    }
 
     focus_cookie = xcb_get_input_focus(c);
-    focus = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
 
-    if (focus->focus == window_id)
+    printf("set_tag: %i\n", tag);
+
+    main_tag = tag;
+    tag_mask = tag->id;
+
+    focus(root);
+
+    /* Hide windows no longer visible */
+    while (visible_windows != NULL && !(visible_windows->window->tags & tag_mask))
     {
-        return;
+        struct mwm_window_stack * new_visible_windows = NULL;
+
+        hide_window(visible_windows->window);
+
+        if (visible_windows->window->window_id == focus_reply->focus)
+        {
+            hid_focus = true;
+        }
+
+        hidden_windows = window_stack_insert(hidden_windows, visible_windows->window);
+
+        new_visible_windows = visible_windows->next;
+        free(visible_windows);
+        visible_windows = new_visible_windows;
     }
 
-    if (window_id != root)
+    if (visible_windows != NULL)
     {
-        uint16_t mask = XCB_CW_BORDER_PIXEL;
-        uint32_t values[1];
+        for (previous_element = visible_windows, current_element = visible_windows->next; current_element != NULL; )
+        {
+            if (!current_element->window->tags & tag_mask)
+            {
+                hide_window(current_element->window);
 
-        values[0] = border_focus_pixel;
-        xcb_change_window_attributes(c, window_id, mask, values);
+                if (visible_windows->window->window_id == focus_reply->focus)
+                {
+                    hid_focus = true;
+                }
 
-        values[0] = border_pixel;
-        xcb_change_window_attributes(c, focus->focus, mask, values);
+                hidden_windows = window_stack_insert(hidden_windows, current_element->window);
+
+                previous_element->next = current_element->next;
+                free(current_element);
+
+                current_element = previous_element->next;
+            }
+            else
+            {
+                previous_element = previous_element->next;
+                current_element = current_element->next;
+            }
+        }
     }
 
-    free(focus);
+    /* Show previously hidden windows */
+    while (hidden_windows != NULL && hidden_windows->window->tags & tag_mask)
+    {
+        struct mwm_window_stack * new_hidden_windows = NULL;
 
-    xcb_set_input_focus(c, XCB_INPUT_FOCUS_POINTER_ROOT, window_id, XCB_TIME_CURRENT_TIME);
-    xcb_flush(c);
+        show_window(hidden_windows->window);
+
+        visible_windows = window_stack_insert(visible_windows, hidden_windows->window);
+
+        new_hidden_windows = hidden_windows->next;
+        free(hidden_windows);
+        hidden_windows = new_hidden_windows;
+    }
+
+    if (hidden_windows != NULL)
+    {
+        for (previous_element = hidden_windows, current_element = hidden_windows->next; current_element != NULL; )
+        {
+            if (current_element->window->tags & tag_mask)
+            {
+                show_window(current_element->window);
+
+                visible_windows = window_stack_insert(visible_windows, current_element->window);
+
+                previous_element->next = current_element->next;
+                free(current_element);
+
+                current_element = previous_element->next;
+            }
+            else
+            {
+                previous_element = previous_element->next;
+                current_element = current_element->next;
+            }
+        }
+    }
+
+    if (hid_focus || focus_reply->focus == root)
+    {
+        focus_next();
+    }
+
+    arrange();
 }
 
 void focus_next()
@@ -559,9 +685,9 @@ void increase_master_factor()
 {
     printf("increase_master_factor()\n");
 
-    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_factor = MIN(state->master_factor + 0.05, 1.0);
 
         arrange();
@@ -572,9 +698,9 @@ void decrease_master_factor()
 {
     printf("decrease_master_factor()\n");
 
-    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_factor = MAX(state->master_factor - 0.05, 0.0);
 
         arrange();
@@ -585,9 +711,9 @@ void increase_master_count()
 {
     printf("increase_master_count()\n");
 
-    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_count++;
 
         arrange();
@@ -598,9 +724,9 @@ void decrease_master_count()
 {
     printf("decrease()\n");
 
-    if (tag->layouts[tag->layout_index] == &layouts[TILE])
+    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_count = MAX(state->master_count - 1, 0);
 
         arrange();
@@ -610,9 +736,15 @@ void decrease_master_count()
 void arrange()
 {
     printf("arrange()\n");
+    printf("main_tag: %i, visible_windows: %i\n", main_tag, visible_windows);
 
-    assert(tag->layouts[tag->layout_index] != NULL);
-    tag->layouts[tag->layout_index]->arrange(visible_windows, &tag->state);
+    if (main_tag == NULL || visible_windows == NULL)
+    {
+        return;
+    }
+
+    assert(main_tag->layouts[main_tag->layout_index] != NULL);
+    main_tag->layouts[main_tag->layout_index]->arrange(visible_windows, &main_tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;
 }
@@ -658,7 +790,7 @@ void manage(xcb_window_t window_id)
     }
     else
     {
-        window->tags = ~0;
+        window->tags = main_tag->id;
     }
 
     free(transient_for_reply);
