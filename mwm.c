@@ -93,8 +93,51 @@ const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
 const uint16_t border_width = 2;
 
+void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
+{
+        xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
+        xcb_keysym_t * keysyms;
+        uint16_t key_binding_index;
+        uint16_t keysym_index;
+        uint16_t extra_modifier_index;
+        uint16_t extra_modifiers[] = { 0, XCB_MOD_MASK_LOCK }; // TODO: Numlock
+        uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
+        struct mwm_key_binding key_binding;
+
+        printf("grabbing keys\n");
+
+        keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
+
+        xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
+
+        free(keyboard_mapping);
+        keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
+        keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
+        for (key_binding_index = 0; key_binding_index < key_binding_count; key_binding_index++)
+        {
+            key_binding = key_bindings[key_binding_index];
+
+            for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
+            {
+                if (keysyms[keysym_index] == key_binding.keysym)
+                {
+                    key_binding.keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
+                    break;
+                }
+            }
+
+            for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
+            {
+                xcb_grab_key(c, true, root, key_binding.modifiers | extra_modifiers[extra_modifier_index], key_binding.keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
+            }
+        }
+
+        xcb_flush(c);
+}
+
 void setup()
 {
+    const xcb_setup_t * setup;
     xcb_screen_iterator_t screen_iterator;
     xcb_font_t cursor_font;
     xcb_intern_atom_cookie_t * wm_atom_cookies, * net_atom_cookies;
@@ -108,7 +151,9 @@ void setup()
 
     c = xcb_connect(NULL, NULL);
 
-    screen_iterator = xcb_setup_roots_iterator(xcb_get_setup(c));
+    setup = xcb_get_setup(c);
+
+    screen_iterator = xcb_setup_roots_iterator(setup);
 
     screen = screen_iterator.data;
     root = screen->root;
@@ -188,6 +233,8 @@ void setup()
     setup_layouts();
     setup_tags();
     setup_key_bindings();
+
+    grab_keys(setup->min_keycode, setup->max_keycode);
 
     main_tag = &tags[TERM];
     tag_mask = main_tag->id;
@@ -1178,44 +1225,7 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
 
     if (event->request == XCB_MAPPING_KEYBOARD)
     {
-        xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
-        xcb_keysym_t * keysyms;
-        uint16_t key_binding_index;
-        uint16_t keysym_index;
-        uint16_t extra_modifier_index;
-        uint16_t extra_modifiers[] = { 0, XCB_MOD_MASK_LOCK }; // TODO: Numlock
-        uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
-        struct mwm_key_binding key_binding;
-
-        printf("grabbing keys\n");
-
-        keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, event->first_keycode, event->count);
-
-        xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
-
-        free(keyboard_mapping);
-        keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
-        keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
-        for (key_binding_index = 0; key_binding_index < key_binding_count; key_binding_index++)
-        {
-            key_binding = key_bindings[key_binding_index];
-
-            for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
-            {
-                if (keysyms[keysym_index] == key_binding.keysym)
-                {
-                    key_binding.keycode = event->first_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
-                    break;
-                }
-            }
-
-            for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
-            {
-                xcb_grab_key(c, true, root, key_binding.modifiers | extra_modifiers[extra_modifier_index], key_binding.keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
-            }
-        }
-
-        xcb_flush(c);
+        grab_keys(event->first_keycode, event->first_keycode + event->count - 1);
     }
 }
 
