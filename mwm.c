@@ -544,6 +544,44 @@ void set_tag(struct mwm_tag * tag)
     arrange();
 }
 
+void next_layout()
+{
+    printf("next_layout()\n");
+
+    main_tag->layout_index++;
+    if (main_tag->layouts[main_tag->layout_index] == NULL)
+    {
+        main_tag->layout_index = 0;
+
+        assert(main_tag->layouts[main_tag->layout_index]);
+
+        main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
+    }
+
+    arrange();
+}
+
+void previous_layout()
+{
+    printf("next_layout()\n");
+
+    main_tag->layout_index--;
+    if (main_tag->layout_index < 0)
+    {
+        main_tag->layout_index = 0;
+        while (main_tag->layouts[main_tag->layout_index + 1] != NULL)
+        {
+            main_tag->layout_index++;
+        }
+
+        assert(main_tag->layouts[main_tag->layout_index]);
+
+        main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
+    }
+
+    arrange();
+}
+
 void focus_next()
 {
     xcb_get_input_focus_cookie_t focus_cookie;

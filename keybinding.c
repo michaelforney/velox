@@ -120,6 +120,10 @@ void setup_key_bindings()
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_d, NULL) // Increase number of columns
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_n, NULL) // Decrease number of columns
 
+    /* Layout control */
+    SETUP_KEY_BINDING(mod_mask,                         XK_space,   &next_layout)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_space,   &previous_layout)
+
     /* Tags */
     SETUP_TAG_KEY_BINDINGS(1)
     SETUP_TAG_KEY_BINDINGS(2)

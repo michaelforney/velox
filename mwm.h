@@ -49,6 +49,9 @@ void decrease_master_factor();
 void increase_master_count();
 void decrease_master_count();
 
+void next_layout();
+void previous_layout();
+
 void set_tag(struct mwm_tag * tag);
 
 #endif
