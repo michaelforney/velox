@@ -868,10 +868,11 @@ void manage(xcb_window_t window_id)
             transient = window_stack_lookup(hidden_windows, transient_id);
         }
 
-        if (transient != NULL)
-        {
-            window->tags = transient->tags;
-        }
+    }
+
+    if (transient != NULL)
+    {
+        window->tags = transient->tags;
     }
     else
     {
@@ -1388,7 +1389,7 @@ void handle_event(xcb_generic_event_t * event)
             break;
 
         default:
-            printf("unhandled event type: %i\n", event->response_type);
+            printf("unhandled event type: %i\n", event->response_type & ~0x80);
             break;
     }
 
