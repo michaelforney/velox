@@ -36,7 +36,7 @@ set softtabstop=4
 set suffixes=.bak,~,.o,.h,.info,.swp,.obj,.info,.aux,.log,.dvi,.bbl,.out,.o,.lo
 set tabstop=4
 set termencoding=utf-8
-set window=60
+set window=63
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
@@ -60,7 +60,8 @@ badd +1 tag.h
 badd +1 mwm.h
 badd +1 keybindings.c
 badd +1 keybindings.h
-badd +0 keybinding.c
+badd +1 keybinding.c
+badd +0 keybinding.h
 silent! argdel *
 edit CMakeLists.txt
 set splitbelow splitright
@@ -163,12 +164,12 @@ setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
-let s:l = 1 - ((0 * winheight(0) + 30) / 60)
+let s:l = 1 - ((0 * winheight(0) + 31) / 63)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 1
-normal! 04l
+normal! 0
 tabedit mwm.c
 set splitbelow splitright
 set nosplitbelow
@@ -270,7 +271,7 @@ setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
-let s:l = 80 - ((79 * winheight(0) + 30) / 60)
+let s:l = 80 - ((79 * winheight(0) + 31) / 63)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -377,11 +378,11 @@ setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
-let s:l = 30 - ((29 * winheight(0) + 30) / 60)
+let s:l = 1 - ((0 * winheight(0) + 30) / 60)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-30
+1
 normal! 0
 tabedit window.c
 set splitbelow splitright
@@ -1560,7 +1561,7 @@ exe s:l
 normal! zt
 39
 normal! 0
-tabedit keybinding.c
+tabedit keybinding.h
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
@@ -1592,8 +1593,8 @@ setlocal nodiff
 setlocal equalprg=
 setlocal errorformat=
 setlocal expandtab
-if &filetype != 'c'
-setlocal filetype=c
+if &filetype != 'cpp'
+setlocal filetype=cpp
 endif
 setlocal foldcolumn=0
 setlocal foldenable
@@ -1650,8 +1651,8 @@ setlocal statusline=
 setlocal suffixesadd=
 setlocal swapfile
 setlocal synmaxcol=3000
-if &syntax != 'c'
-setlocal syntax=c
+if &syntax != 'cpp'
+setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tags=
