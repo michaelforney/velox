@@ -1442,8 +1442,11 @@ void cleanup()
 
 int main(int argc, char ** argv)
 {
+    srand(time(NULL));
+
     setup();
     manage_existing_windows();
+    run_startup_hooks();
     run();
     cleanup();
 
