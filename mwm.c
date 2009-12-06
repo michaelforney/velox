@@ -815,7 +815,7 @@ void increase_master_factor()
     if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
-        state->master_factor = MIN(state->master_factor + 0.05, 1.0);
+        state->master_factor = MIN(state->master_factor + 0.025, 1.0);
 
         arrange();
     }
@@ -828,7 +828,7 @@ void decrease_master_factor()
     if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
-        state->master_factor = MAX(state->master_factor - 0.05, 0.0);
+        state->master_factor = MAX(state->master_factor - 0.025, 0.0);
 
         arrange();
     }
