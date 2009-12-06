@@ -47,14 +47,25 @@ void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
     }
 
     /* Calculate number of windows */
-    for (current_element = windows; current_element != NULL; current_element = current_element->next, window_count++);
+    for (current_element = windows; current_element != NULL; current_element = current_element->next)
+    {
+        if (!current_element->window->floating)
+        {
+            window_count++;
+        }
+    }
 
     printf("window_count: %i\n", window_count);
 
     /* Arrange the windows */
-    for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next, window_index++)
+    for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next)
     {
         window = current_element->window;
+
+        if (window->floating)
+        {
+            continue;
+        }
 
         if (window_index < state->master_count) /* Arranging a master */
         {
@@ -85,6 +96,8 @@ void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
 
         xcb_configure_window(c, window->window_id, mask, values);
         synthetic_configure(window);
+
+        window_index++;
     }
 }
 
@@ -109,7 +122,13 @@ void grid_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
     }
 
     /* Calculate number of windows */
-    for (current_element = windows; current_element != NULL; current_element = current_element->next, window_count++);
+    for (current_element = windows; current_element != NULL; current_element = current_element->next)
+    {
+        if (!current_element->window->floating)
+        {
+            window_count++;
+        }
+    }
 
     cols = (uint16_t) ceil(sqrt(window_count));
     rows = (window_count > (cols - 1) * cols) ? cols : cols - 1;
@@ -119,13 +138,18 @@ void grid_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
 
     for (current_element = windows; current_element != NULL; current_element = current_element->next)
     {
+        window = current_element->window;
+
+        if (window->floating)
+        {
+            continue;
+        }
+
         if (row >= rows)
         {
             row = 0;
             ++col;
         }
-
-        window = current_element->window;
 
         window->x = col * screen_width / cols;
         window->y = row * screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows);

@@ -972,6 +972,7 @@ void manage(xcb_window_t window_id)
             transient = window_stack_lookup(hidden_windows, transient_id);
         }
 
+        window->floating = true;
     }
 
     if (transient != NULL)
