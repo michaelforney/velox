@@ -28,6 +28,8 @@
 typedef void (* startup_hook_t)();
 typedef void (* manage_hook_t)(struct mwm_window *);
 
+static const char * wallpaper_path = "/home/michael/wallpaper";
+
 void set_wallpaper();
 
 startup_hook_t startup_hooks[] = {
@@ -62,7 +64,6 @@ void run_manage_hooks(struct mwm_window * window)
 /* Startup hooks */
 void set_wallpaper()
 {
-    const char * wallpaper_path = "/home/michael/wallpaper";
     char ** wallpapers;
     uint16_t wallpaper_capacity = 64;
     uint16_t wallpaper_count = 0;
@@ -80,6 +81,11 @@ void set_wallpaper()
     directory = opendir(wallpaper_path);
 
     printf("set_wallpaper()\n");
+
+    if (directory == NULL)
+    {
+        return;
+    }
 
     readdir(directory); // .
     readdir(directory); // ..
