@@ -14,7 +14,6 @@ add_executable(mwm
     layout.c
     hook.c
     tag.c
-    bar.c
     keybinding.c
 )
 

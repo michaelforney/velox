@@ -1313,18 +1313,6 @@ void leave_notify(xcb_leave_notify_event_t * event)
     printf("leave_notify\n");
 }
 
-void expose(xcb_expose_event_t * event)
-{
-    printf("expose\n");
-
-    printf("window_id: %i\n", event->window);
-
-    if (event->count == 0)
-    {
-        bar_draw();
-    }
-}
-
 void focus_in(xcb_focus_in_event_t * event)
 {
     printf("focus_in\n");
@@ -1463,9 +1451,6 @@ void handle_event(xcb_generic_event_t * event)
             break;
         case XCB_LEAVE_NOTIFY:
             leave_notify((xcb_leave_notify_event_t *) event);
-            break;
-        case XCB_EXPOSE:
-            expose((xcb_expose_event_t *) event);
             break;
         case XCB_FOCUS_IN:
             focus_in((xcb_focus_in_event_t *) event);
