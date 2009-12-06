@@ -610,11 +610,13 @@ void next_layout()
     if (main_tag->layouts[main_tag->layout_index] == NULL)
     {
         main_tag->layout_index = 0;
-
-        assert(main_tag->layouts[main_tag->layout_index]);
-
-        main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
     }
+
+    printf("next index: %i\n", main_tag->layout_index);
+
+    assert(main_tag->layouts[main_tag->layout_index]);
+
+    main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
 
     arrange();
 }
@@ -623,19 +625,23 @@ void previous_layout()
 {
     printf("next_layout()\n");
 
-    main_tag->layout_index--;
-    if (main_tag->layout_index < 0)
+    if (main_tag->layout_index == 0)
     {
-        main_tag->layout_index = 0;
         while (main_tag->layouts[main_tag->layout_index + 1] != NULL)
         {
             main_tag->layout_index++;
         }
-
-        assert(main_tag->layouts[main_tag->layout_index]);
-
-        main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
     }
+    else
+    {
+        main_tag->layout_index--;
+    }
+
+    printf("next index: %i\n", main_tag->layout_index);
+
+    assert(main_tag->layouts[main_tag->layout_index]);
+
+    main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
 
     arrange();
 }
