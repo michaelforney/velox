@@ -1018,10 +1018,10 @@ void manage(xcb_window_t window_id)
 
     update_name_class(window);
 
+    run_manage_hooks(window);
+
     mask = XCB_CONFIG_WINDOW_BORDER_WIDTH;
     values[0] = window->border_width;
-
-    run_manage_hooks(window);
 
     xcb_configure_window(c, window->window_id, mask, values);
 

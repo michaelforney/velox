@@ -30,13 +30,20 @@ typedef void (* manage_hook_t)(struct mwm_window *);
 
 static const char * wallpaper_path = "/home/michael/wallpaper";
 
+/* Startup hooks */
 void set_wallpaper();
+
+/* Manage hooks */
+void handle_floating(struct mwm_window * window);
+void handle_fullscreen(struct mwm_window * window);
 
 startup_hook_t startup_hooks[] = {
     &set_wallpaper
 };
 
 manage_hook_t manage_hooks[] = {
+    &handle_floating,
+    &handle_fullscreen
 };
 
 void run_startup_hooks()
@@ -122,5 +129,23 @@ void set_wallpaper()
 }
 
 /* Manage hooks */
-// TODO: Define some of these :)
+void handle_floating(struct mwm_window * window)
+{
+    if (strcmp(window->name, "MPlayer") == 0)
+    {
+        window->floating = true;
+    }
+}
+
+void handle_fullscreen(struct mwm_window * window)
+{
+    if (window->width == screen_width && window->height == screen_height)
+    {
+        printf("fullscreen window\n");
+
+        window->x = 0;
+        window->y = 0;
+        window->border_width = 0;
+    }
+}
 
