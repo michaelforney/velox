@@ -309,6 +309,8 @@ void focus(xcb_window_t window_id)
     focus_cookie = xcb_get_input_focus(c);
     focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
 
+    main_tag->focus = window_id;
+
     if (focus_reply->focus == window_id)
     {
         return;
@@ -438,8 +440,6 @@ void set_tag(struct mwm_tag * tag)
     main_tag = tag;
     tag_mask = tag->id;
 
-    focus(root);
-
     /* Hide windows no longer visible */
     while (visible_windows != NULL && !(visible_windows->window->tags & tag_mask))
     {
@@ -526,7 +526,23 @@ void set_tag(struct mwm_tag * tag)
 
     if (hid_focus || focus_reply->focus == root)
     {
-        focus_next();
+        printf("tag's focus: %i\n", main_tag->focus);
+
+        if (window_stack_lookup(visible_windows, main_tag->focus) != NULL)
+        {
+            focus(main_tag->focus);
+        }
+        else
+        {
+            if (visible_windows)
+            {
+                focus(visible_windows->window->window_id);
+            }
+            else
+            {
+                focus(root);
+            }
+        }
     }
 
     arrange();

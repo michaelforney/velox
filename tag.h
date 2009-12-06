@@ -29,6 +29,7 @@ struct mwm_tag
     struct mwm_layout ** layouts;
     uint16_t layout_index;
     struct mwm_layout_state state;
+    xcb_window_t focus;
 };
 
 enum
