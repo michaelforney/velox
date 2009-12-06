@@ -45,20 +45,9 @@ uint16_t screen_width = 0;
 uint16_t screen_height = 0;
 
 /* X atoms */
-enum
-{
-    WM_PROTOCOLS,
-    WM_DELETE_WINDOW,
-    WM_STATE
-};
-enum
-{
-    NET_SUPPORTED,
-    NET_WM_NAME
-};
-
-xcb_atom_t wm_atoms[3];
-xcb_atom_t net_atoms[2];
+const atom_length = 5;
+xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
+xcb_atom_t _NET_SUPPORTED, _NET_WM_NAME;
 
 /* X cursors */
 enum
@@ -140,7 +129,7 @@ void setup()
     const xcb_setup_t * setup;
     xcb_screen_iterator_t screen_iterator;
     xcb_font_t cursor_font;
-    xcb_intern_atom_cookie_t * wm_atom_cookies, * net_atom_cookies;
+    xcb_intern_atom_cookie_t * atom_cookies;
     xcb_intern_atom_reply_t * atom_reply;
     xcb_alloc_color_cookie_t border_color_cookie;
     xcb_alloc_color_cookie_t border_focus_color_cookie;
@@ -165,15 +154,12 @@ void setup()
     border_focus_color_cookie = xcb_alloc_color(c, screen->default_colormap, border_focus_color[0], border_focus_color[1], border_focus_color[2]);
 
     /* Setup atoms */
-    wm_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(sizeof(wm_atoms) / sizeof(xcb_atom_t) * sizeof(xcb_intern_atom_cookie_t));
-    net_atom_cookies = (xcb_intern_atom_cookie_t *) malloc(sizeof(net_atoms) / sizeof(xcb_atom_t) * sizeof(xcb_intern_atom_cookie_t));
-
-    wm_atom_cookies[WM_PROTOCOLS] = xcb_intern_atom(c, false, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
-    wm_atom_cookies[WM_DELETE_WINDOW] = xcb_intern_atom(c, false, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
-    wm_atom_cookies[WM_STATE] = xcb_intern_atom(c, false, strlen("WM_STATE"), "WM_STATE");
-
-    net_atom_cookies[NET_SUPPORTED] = xcb_intern_atom(c, false, strlen("_NET_SUPPORTED"), "_NET_SUPPORTED");
-    net_atom_cookies[NET_WM_NAME] = xcb_intern_atom(c, false, strlen("_NET_WM_NAME"), "_NET_WM_NAME");
+    atom_cookies = (xcb_intern_atom_cookie_t *) malloc(atom_length * sizeof(xcb_intern_atom_cookie_t));
+    atom_cookies[0] = xcb_intern_atom(c, false, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
+    atom_cookies[1] = xcb_intern_atom(c, false, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
+    atom_cookies[2] = xcb_intern_atom(c, false, strlen("WM_STATE"), "WM_STATE");
+    atom_cookies[3] = xcb_intern_atom(c, false, strlen("_NET_SUPPORTED"), "_NET_SUPPORTED");
+    atom_cookies[4] = xcb_intern_atom(c, false, strlen("_NET_WM_NAME"), "_NET_WM_NAME");
 
     /* Setup cursors */
     cursor_font = xcb_generate_id(c);
@@ -186,8 +172,6 @@ void setup()
     xcb_create_glyph_cursor(c, cursors[POINTER], cursor_font, cursor_font, POINTER_ID, POINTER_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
     xcb_create_glyph_cursor(c, cursors[RESIZE], cursor_font, cursor_font, RESIZE_ID, RESIZE_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
     xcb_create_glyph_cursor(c, cursors[MOVE], cursor_font, cursor_font, MOVE_ID, MOVE_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
-
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, net_atoms[NET_SUPPORTED], ATOM, 32, sizeof(net_atoms) / sizeof(xcb_atom_t), net_atoms);
 
     mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
     values[0] = XCB_EVENT_MASK_BUTTON_PRESS |
@@ -210,25 +194,29 @@ void setup()
     free(border_color_reply);
     free(border_focus_color_reply);
 
-    atom_reply = xcb_intern_atom_reply(c, wm_atom_cookies[WM_PROTOCOLS], NULL);
-    wm_atoms[WM_PROTOCOLS] = atom_reply->atom;
+    atom_reply = xcb_intern_atom_reply(c, atom_cookies[0], NULL);
+    WM_PROTOCOLS = atom_reply->atom;
     free(atom_reply);
-    atom_reply = xcb_intern_atom_reply(c, wm_atom_cookies[WM_DELETE_WINDOW], NULL);
-    wm_atoms[WM_DELETE_WINDOW] = atom_reply->atom;
+    atom_reply = xcb_intern_atom_reply(c, atom_cookies[1], NULL);
+    WM_DELETE_WINDOW = atom_reply->atom;
     free(atom_reply);
-    atom_reply = xcb_intern_atom_reply(c, wm_atom_cookies[WM_STATE], NULL);
-    wm_atoms[WM_STATE] = atom_reply->atom;
+    atom_reply = xcb_intern_atom_reply(c, atom_cookies[2], NULL);
+    WM_STATE = atom_reply->atom;
+    free(atom_reply);
+    atom_reply = xcb_intern_atom_reply(c, atom_cookies[3], NULL);
+    _NET_SUPPORTED = atom_reply->atom;
+    free(atom_reply);
+    atom_reply = xcb_intern_atom_reply(c, atom_cookies[4], NULL);
+    _NET_WM_NAME = atom_reply->atom;
     free(atom_reply);
 
-    atom_reply = xcb_intern_atom_reply(c, net_atom_cookies[NET_SUPPORTED], NULL);
-    net_atoms[NET_SUPPORTED] = atom_reply->atom;
-    free(atom_reply);
-    atom_reply = xcb_intern_atom_reply(c, net_atom_cookies[NET_WM_NAME], NULL);
-    net_atoms[NET_WM_NAME] = atom_reply->atom;
-    free(atom_reply);
+    free(atom_cookies);
 
-    free(wm_atom_cookies);
-    free(net_atom_cookies);
+    {
+        xcb_atom_t net_atoms[] = { _NET_SUPPORTED, _NET_WM_NAME };
+
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, _NET_SUPPORTED, ATOM, 32, sizeof(net_atoms) / sizeof(xcb_atom_t), net_atoms);
+    }
 
     setup_layouts();
     setup_tags();
@@ -248,7 +236,7 @@ void show_window(struct mwm_window * window)
 
     property_values[0] = XCB_WM_STATE_NORMAL;
     property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
 
     xcb_map_window(c, window->window_id);
 }
@@ -261,7 +249,7 @@ void hide_window(struct mwm_window * window)
 
     property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
     property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
 
     pending_unmaps++;
 
@@ -973,7 +961,7 @@ void manage(xcb_window_t window_id)
 
         property_values[0] = XCB_WM_STATE_NORMAL;
         property_values[1] = 0;
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
 
         focus(visible_windows->window->window_id);
 
@@ -1045,7 +1033,7 @@ void manage_existing_windows()
     {
         window_attributes_cookies[child] = xcb_get_window_attributes(c, children[child]);
         property_cookies[child] = xcb_get_property(c, false, children[child], WM_TRANSIENT_FOR, WINDOW, 0, 1);
-        state_cookies[child] = xcb_get_property(c, false, children[child], wm_atoms[WM_STATE], WM_HINTS, 0, 2);
+        state_cookies[child] = xcb_get_property(c, false, children[child], WM_STATE, WM_HINTS, 0, 2);
     }
     for (child = 0; child < child_count; child++)
     {
@@ -1388,7 +1376,7 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
 
         property_values[0] = XCB_WM_STATE_WITHDRAWN;
         property_values[1] = 0;
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, wm_atoms[WM_STATE], WM_HINTS, 32, 2, property_values);
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
 
         unmanage(window);
 

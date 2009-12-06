@@ -32,6 +32,8 @@ extern xcb_connection_t * c;
 extern uint16_t screen_width;
 extern uint16_t screen_height;
 
+extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
+
 void arrange();
 
 void spawn(const char ** cmd);
