@@ -17,11 +17,15 @@
  *
  */
 
+#include "mwm.h"
 #include "window.h"
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
+
+#include <xcb/xcb_atom.h>
 
 struct mwm_window * window_stack_lookup(struct mwm_window_stack * stack, xcb_window_t window_id)
 {
@@ -100,5 +104,31 @@ struct mwm_window_stack * window_stack_insert(struct mwm_window_stack * stack, s
     new_stack->next = stack;
 
     return new_stack;
+}
+
+bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol)
+{
+    xcb_get_property_cookie_t protocols_cookie;
+    xcb_get_property_reply_t * protocols_reply;
+    xcb_atom_t * protocols;
+    uint16_t protocols_length, index;
+
+    protocols_cookie = xcb_get_property(c, false, window, WM_PROTOCOLS, ATOM, 0, UINT32_MAX);
+    protocols_reply = xcb_get_property_reply(c, protocols_cookie, NULL);
+
+    protocols = (xcb_atom_t *) xcb_get_property_value(protocols_reply);
+    protocols_length = xcb_get_property_value_length(protocols_reply);
+
+    for (index = 0; index < protocols_length; index++)
+    {
+        if (protocols[index] == protocol)
+        {
+            printf("found protocol: %i\n", index);
+            printf("protocol: %i\n", protocol);
+            return true;
+        }
+    }
+
+    return false;
 }
 

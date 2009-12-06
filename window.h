@@ -47,5 +47,7 @@ struct mwm_window * window_stack_lookup(struct mwm_window_stack * stack, xcb_win
 struct mwm_window_stack * window_stack_delete(struct mwm_window_stack * stack, xcb_window_t window_id);
 struct mwm_window_stack * window_stack_insert(struct mwm_window_stack * stack, struct mwm_window * window);
 
+bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
+
 #endif
 

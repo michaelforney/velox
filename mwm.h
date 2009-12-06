@@ -46,6 +46,8 @@ void focus_previous();
 void move_next();
 void move_previous();
 
+void kill_focused_window();
+
 void increase_master_factor();
 void decrease_master_factor();
 void increase_master_count();

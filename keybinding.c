@@ -56,7 +56,7 @@ void setup_key_bindings()
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_t, &move_previous)
 
     /* Window operations */
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_c, NULL)
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_c, &kill_focused_window)
 
     /* Layout modification */
     SETUP_KEY_BINDING(mod_mask,                         XK_d, &decrease_master_factor)

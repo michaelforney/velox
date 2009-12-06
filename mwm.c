@@ -808,6 +808,46 @@ void move_previous()
     }
 }
 
+void kill_focused_window()
+{
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus_reply;
+
+    focus_cookie = xcb_get_input_focus(c);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
+
+    if (focus_reply->focus == root)
+    {
+        return;
+    }
+
+    printf("killing focused window\n");
+
+    if (window_has_protocol(focus_reply->focus, WM_DELETE_WINDOW))
+    {
+        xcb_client_message_event_t event;
+
+        printf("wm_delete\n");
+
+        event.response_type = XCB_CLIENT_MESSAGE;
+        event.format = 32;
+        event.window = focus_reply->focus;
+        event.type = WM_PROTOCOLS;
+        event.data.data32[0] = WM_DELETE_WINDOW;
+        event.data.data32[1] = XCB_CURRENT_TIME;
+
+        xcb_send_event(c, false, focus_reply->focus, XCB_EVENT_MASK_NO_EVENT, (char *) &event);
+    }
+    else
+    {
+        printf("xcb_kill_client\n");
+
+        xcb_kill_client(c, focus_reply->focus);
+    }
+
+    xcb_flush(c);
+}
+
 void increase_master_factor()
 {
     printf("increase_master_factor()\n");
