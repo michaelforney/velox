@@ -544,6 +544,60 @@ void set_tag(struct mwm_tag * tag)
     arrange();
 }
 
+void set_tag_1()
+{
+    printf("set_tag_1\n");
+    set_tag(&tags[TERM]);
+}
+
+void set_tag_2()
+{
+    printf("set_tag_2\n");
+    set_tag(&tags[WWW]);
+}
+
+void set_tag_3()
+{
+    printf("set_tag_3\n");
+    set_tag(&tags[IRC]);
+}
+
+void set_tag_4()
+{
+    printf("set_tag_4\n");
+    set_tag(&tags[IM]);
+}
+
+void set_tag_5()
+{
+    printf("set_tag_5\n");
+    set_tag(&tags[CODE]);
+}
+
+void set_tag_6()
+{
+    printf("set_tag_6\n");
+    set_tag(&tags[MAIL]);
+}
+
+void set_tag_7()
+{
+    printf("set_tag_7\n");
+    set_tag(&tags[GFX]);
+}
+
+void set_tag_8()
+{
+    printf("set_tag_8\n");
+    set_tag(&tags[MUSIC]);
+}
+
+void set_tag_9()
+{
+    printf("set_tag_9\n");
+    set_tag(&tags[MISC]);
+}
+
 void next_layout()
 {
     printf("next_layout()\n");

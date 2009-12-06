@@ -53,6 +53,15 @@ void next_layout();
 void previous_layout();
 
 void set_tag(struct mwm_tag * tag);
+void set_tag_1();
+void set_tag_2();
+void set_tag_3();
+void set_tag_4();
+void set_tag_5();
+void set_tag_6();
+void set_tag_7();
+void set_tag_8();
+void set_tag_9();
 
 #endif
 
