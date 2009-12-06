@@ -56,6 +56,8 @@ void decrease_master_count();
 void next_layout();
 void previous_layout();
 
+void quit();
+
 void set_tag(struct mwm_tag * tag);
 void set_tag_1();
 void set_tag_2();

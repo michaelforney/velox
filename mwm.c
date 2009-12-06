@@ -1508,6 +1508,11 @@ void run()
 
 }
 
+void quit()
+{
+    running = false;
+}
+
 void cleanup()
 {
     cleanup_key_bindings();

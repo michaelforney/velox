@@ -37,7 +37,7 @@
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
 struct mwm_key_binding * key_bindings;
-const uint16_t key_binding_count = 13 + (9 * 3);
+const uint16_t key_binding_count = 16 + (9 * 3);
 
 void setup_key_bindings()
 {
@@ -69,6 +69,9 @@ void setup_key_bindings()
     /* Layout control */
     SETUP_KEY_BINDING(mod_mask,                         XK_space,   &next_layout)
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_space,   &previous_layout)
+
+    /* Quit */
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_q,       &quit)
 
     /* Tags */
     SETUP_TAG_KEY_BINDINGS(1)
