@@ -45,7 +45,7 @@ uint16_t screen_width = 0;
 uint16_t screen_height = 0;
 
 /* X atoms */
-const atom_length = 5;
+const uint16_t atom_length = 5;
 xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 xcb_atom_t _NET_SUPPORTED, _NET_WM_NAME;
 
