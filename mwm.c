@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <limits.h>
 
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
@@ -938,6 +939,24 @@ void arrange()
     clear_event_type = XCB_ENTER_NOTIFY;
 }
 
+void update_name_class(struct mwm_window * window)
+{
+    xcb_get_property_cookie_t wm_name_cookie, wm_class_cookie;
+    xcb_get_property_reply_t * wm_name_reply, * wm_class_reply;
+
+    wm_name_cookie = xcb_get_property(c, false, window->window_id, WM_NAME, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
+    wm_class_cookie = xcb_get_property(c, false, window->window_id, WM_CLASS, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
+
+    wm_name_reply = xcb_get_property_reply(c, wm_name_cookie, NULL);
+    wm_class_reply = xcb_get_property_reply(c, wm_class_cookie, NULL);
+
+    printf("wm_name: %s\n", xcb_get_property_value(wm_name_reply));
+    printf("wm_class: %s\n", xcb_get_property_value(wm_class_reply));
+
+    window->name = strndup(xcb_get_property_value(wm_name_reply), xcb_get_property_value_length(wm_name_reply));
+    window->class = strndup(xcb_get_property_value(wm_class_reply), xcb_get_property_value_length(wm_class_reply));
+}
+
 void manage(xcb_window_t window_id)
 {
     printf("manage(%i)\n", window_id);
@@ -996,6 +1015,8 @@ void manage(xcb_window_t window_id)
     window->width = geometry->width;
     window->height = geometry->height;
     window->border_width = border_width;
+
+    update_name_class(window);
 
     mask = XCB_CONFIG_WINDOW_BORDER_WIDTH;
     values[0] = window->border_width;

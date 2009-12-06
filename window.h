@@ -28,6 +28,9 @@ struct mwm_window
 {
     xcb_window_t window_id;
 
+    char * name;
+    char * class;
+
     int16_t x, y;
     uint16_t width, height;
     uint16_t border_width;
