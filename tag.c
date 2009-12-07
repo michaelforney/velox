@@ -45,7 +45,6 @@ void setup_tags()
 
     tags[IRC].id = 1 << IRC;
     tags[IRC].name = "irc";
-    tags[IRC].layouts = (struct mwm_layout **) malloc(0);
     tags[IRC].layouts = (struct mwm_layout **) malloc(3 * sizeof(struct mwm_layout *));
     tags[IRC].layouts[0] = &layouts[TILE];
     tags[IRC].layouts[1] = &layouts[GRID];
