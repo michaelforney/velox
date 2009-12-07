@@ -991,6 +991,7 @@ void manage(xcb_window_t window_id)
     geometry_cookie = xcb_get_geometry(c, window_id);
 
     window = (struct mwm_window *) malloc(sizeof(struct mwm_window));
+    printf("allocated window: %i\n", window);
 
     window->window_id = window_id;
 
@@ -1007,6 +1008,10 @@ void manage(xcb_window_t window_id)
         }
 
         window->floating = true;
+    }
+    else
+    {
+        window->floating = false;
     }
 
     if (transient != NULL)
@@ -1056,6 +1061,8 @@ void manage(xcb_window_t window_id)
     {
         visible_windows = window_stack_insert(visible_windows, window);
 
+        arrange();
+
         xcb_map_window(c, window->window_id);
 
         property_values[0] = XCB_WM_STATE_NORMAL;
@@ -1064,7 +1071,6 @@ void manage(xcb_window_t window_id)
 
         focus(visible_windows->window->window_id);
 
-        arrange();
     }
     else
     {
