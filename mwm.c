@@ -426,6 +426,9 @@ void set_tag(struct mwm_tag * tag)
     struct mwm_window_stack * previous_element = NULL;
     xcb_get_input_focus_cookie_t focus_cookie;
     xcb_get_input_focus_reply_t * focus_reply;
+    uint16_t windows_hidden = 0;
+    uint16_t windows_shown = 0;
+    uint16_t window_index;
     bool hid_focus = false;
 
     if (main_tag == tag && tag_mask == tag->id)
@@ -446,8 +449,6 @@ void set_tag(struct mwm_tag * tag)
     {
         struct mwm_window_stack * new_visible_windows = NULL;
 
-        hide_window(visible_windows->window);
-
         if (visible_windows->window->window_id == focus_reply->focus)
         {
             hid_focus = true;
@@ -458,6 +459,8 @@ void set_tag(struct mwm_tag * tag)
         new_visible_windows = visible_windows->next;
         free(visible_windows);
         visible_windows = new_visible_windows;
+
+        windows_hidden++;
     }
 
     if (visible_windows != NULL)
@@ -466,8 +469,6 @@ void set_tag(struct mwm_tag * tag)
         {
             if (!current_element->window->tags & tag_mask)
             {
-                hide_window(current_element->window);
-
                 if (visible_windows->window->window_id == focus_reply->focus)
                 {
                     hid_focus = true;
@@ -479,6 +480,8 @@ void set_tag(struct mwm_tag * tag)
                 free(current_element);
 
                 current_element = previous_element->next;
+
+                windows_hidden++;
             }
             else
             {
@@ -493,13 +496,13 @@ void set_tag(struct mwm_tag * tag)
     {
         struct mwm_window_stack * new_hidden_windows = NULL;
 
-        show_window(hidden_windows->window);
-
         visible_windows = window_stack_insert(visible_windows, hidden_windows->window);
 
         new_hidden_windows = hidden_windows->next;
         free(hidden_windows);
         hidden_windows = new_hidden_windows;
+
+        windows_shown++;
     }
 
     if (hidden_windows != NULL)
@@ -508,14 +511,14 @@ void set_tag(struct mwm_tag * tag)
         {
             if (current_element->window->tags & tag_mask)
             {
-                show_window(current_element->window);
-
                 visible_windows = window_stack_insert(visible_windows, current_element->window);
 
                 previous_element->next = current_element->next;
                 free(current_element);
 
                 current_element = previous_element->next;
+
+                windows_shown++;
             }
             else
             {
@@ -523,6 +526,18 @@ void set_tag(struct mwm_tag * tag)
                 current_element = current_element->next;
             }
         }
+    }
+
+    /* Show previously hidden windows */
+    for (current_element = visible_windows, window_index = 0; window_index < windows_shown; current_element = current_element->next, window_index++)
+    {
+        show_window(current_element->window);
+    }
+
+    /* Hide previously shown windows */
+    for (current_element = hidden_windows, window_index = 0; window_index < windows_hidden; current_element = current_element->next, window_index++)
+    {
+        hide_window(current_element->window);
     }
 
     if (hid_focus || focus_reply->focus == root)
