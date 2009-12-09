@@ -160,6 +160,12 @@ void setup()
 
     c = xcb_connect(NULL, NULL);
 
+    if (xcb_connection_has_error(c))
+    {
+        fprintf(stderr, "mwm: could not open display\n");
+        exit(EXIT_FAILURE);
+    }
+
     setup = xcb_get_setup(c);
 
     screen_iterator = xcb_setup_roots_iterator(setup);
