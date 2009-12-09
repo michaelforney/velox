@@ -12,7 +12,6 @@ Things that still need to get done, in no particular order:
 * Avoid struts: Layout windows around struts (statusbars, etc)
 * Configuration: I plan on using simple shared libraries to do configuration.
 * Mouse buttons: Allow moving and resizing of floating windows with the mouse
-* Check for other WM's before starting
 * Support having multiple tags enabled at the same time
 * Support for having windows visible on multiple tags
 * Support for multiple screens

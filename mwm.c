@@ -125,6 +125,25 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
         xcb_flush(c);
 }
 
+void check_wm_running()
+{
+    uint16_t mask;
+    uint32_t values[1];
+    xcb_void_cookie_t change_attributes_cookie;
+    xcb_generic_error_t * error;
+
+    mask = XCB_CW_EVENT_MASK;
+    values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+    change_attributes_cookie = xcb_change_window_attributes_checked(c, root, mask, values);
+
+    error = xcb_request_check(c, change_attributes_cookie);
+    if (error)
+    {
+        fprintf(stderr, "mwm: another window manager is already running\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
 void setup()
 {
     const xcb_setup_t * setup;
@@ -149,6 +168,8 @@ void setup()
     root = screen->root;
     screen_width = screen->width_in_pixels;
     screen_height = screen->height_in_pixels;
+
+    check_wm_running();
 
     /* Allocate colors */
     border_color_cookie = xcb_alloc_color(c, screen->default_colormap, border_color[0], border_color[1], border_color[2]);
