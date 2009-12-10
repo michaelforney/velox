@@ -31,7 +31,7 @@
 
 #define SETUP_TAG_KEY_BINDINGS(N) \
     SETUP_KEY_BINDING(mod_mask, XK_ ## N, set_tag_ ## N) \
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT, XK_ ## N, NULL) \
+    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT, XK_ ## N, move_focus_to_tag_ ## N) \
     SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL, XK_ ## N, NULL)
 
 static const uint32_t mod_mask = XCB_MOD_MASK_4;

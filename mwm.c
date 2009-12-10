@@ -511,58 +511,88 @@ void set_tag(struct mwm_tag * tag)
     arrange();
 }
 
-void set_tag_1()
+void move_focus_to_tag(struct mwm_tag * tag)
 {
-    printf("set_tag_1\n");
-    set_tag(&tags[TERM]);
-}
+    xcb_get_input_focus_cookie_t focus_cookie;
+    xcb_get_input_focus_reply_t * focus_reply;
 
-void set_tag_2()
-{
-    printf("set_tag_2\n");
-    set_tag(&tags[WWW]);
-}
+    printf("move_focus_to_tag\n");
 
-void set_tag_3()
-{
-    printf("set_tag_3\n");
-    set_tag(&tags[IRC]);
-}
+    focus_cookie = xcb_get_input_focus(c);
+    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
 
-void set_tag_4()
-{
-    printf("set_tag_4\n");
-    set_tag(&tags[IM]);
-}
+    if (focus_reply->focus == root || !visible_windows)
+    {
+        return;
+    }
 
-void set_tag_5()
-{
-    printf("set_tag_5\n");
-    set_tag(&tags[CODE]);
-}
+    if (visible_windows->window->window_id == focus_reply->focus)
+    {
+        visible_windows->window->tags = tag->id;
 
-void set_tag_6()
-{
-    printf("set_tag_6\n");
-    set_tag(&tags[MAIL]);
-}
+        if (!(visible_windows->window->tags & tag_mask))
+        {
+            struct mwm_window_stack * new_stack = visible_windows->next;
 
-void set_tag_7()
-{
-    printf("set_tag_7\n");
-    set_tag(&tags[GFX]);
-}
+            if (visible_windows->next)
+            {
+                focus(visible_windows->next->window->window_id);
+            }
+            else
+            {
+                focus(root);
+            }
 
-void set_tag_8()
-{
-    printf("set_tag_8\n");
-    set_tag(&tags[MUSIC]);
-}
+            hide_window(visible_windows->window);
 
-void set_tag_9()
-{
-    printf("set_tag_9\n");
-    set_tag(&tags[MISC]);
+            hidden_windows = window_stack_insert(hidden_windows, visible_windows->window);
+
+            free(visible_windows);
+            visible_windows = new_stack;
+
+            arrange();
+        }
+    }
+    else
+    {
+        struct mwm_window_stack * current_element, * previous_element;
+
+        for (previous_element = visible_windows, current_element = visible_windows->next; current_element != NULL; previous_element = current_element, current_element = current_element->next)
+        {
+            if (current_element->window->window_id == focus_reply->focus)
+            {
+                current_element->window->tags = tag->id;
+
+                if (!(current_element->window->tags & tag_mask))
+                {
+                    if (current_element->next)
+                    {
+                        focus(current_element->next->window->window_id);
+                    }
+                    else if (visible_windows != current_element)
+                    {
+                        focus(visible_windows->window->window_id);
+                    }
+                    else
+                    {
+                        focus(root);
+                    }
+
+                    hide_window(current_element->window);
+
+                    hidden_windows = window_stack_insert(hidden_windows, current_element->window);
+                    previous_element->next = current_element->next;
+                    free(current_element);
+
+                    arrange();
+                }
+
+                break;
+            }
+        }
+    }
+
+    xcb_flush(c);
 }
 
 void next_layout()

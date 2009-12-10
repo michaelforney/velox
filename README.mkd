@@ -17,5 +17,4 @@ Things that still need to get done, in no particular order:
 * Support for multiple screens
 * Make the grid layout more like xmonad's
 * Support a varying number of columns in the tile layout
-* Allow moving windows across tags
 
