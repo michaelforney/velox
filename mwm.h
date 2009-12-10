@@ -52,6 +52,8 @@ void increase_master_factor();
 void decrease_master_factor();
 void increase_master_count();
 void decrease_master_count();
+void increase_column_count();
+void decrease_column_count();
 
 void next_layout();
 void previous_layout();

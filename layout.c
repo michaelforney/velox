@@ -36,6 +36,11 @@ void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
     uint32_t values[4];
     uint16_t window_count = 0;
     uint16_t window_index = 0;
+    uint16_t rows_per_column;
+    uint16_t column_width;
+    uint16_t column_index = 0;
+    uint16_t row_index = 0;
+    uint16_t row_count;
 
     printf("tile_arrange\n");
 
@@ -57,6 +62,17 @@ void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
 
     printf("window_count: %i\n", window_count);
 
+    column_width = ((state->master_count == 0) ? screen_width : (screen_width - (state->master_factor * screen_width))) / MIN(window_count - state->master_count, state->column_count);
+
+    if ((window_count - state->master_count) % state->column_count == 0)
+    {
+        row_count = (window_count - state->master_count) / state->column_count;
+    }
+    else
+    {
+        row_count = ((window_count - state->master_count) / state->column_count) + ((column_index < ((window_count - state->master_count) % state->column_count)) ? 1 : 0);
+    }
+
     /* Arrange the windows */
     for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next)
     {
@@ -76,10 +92,26 @@ void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
         }
         else /* Arranging the rest of the windows */
         {
-            window->x = (state->master_count == 0) ? 0 : state->master_factor * screen_width;
-            window->y = screen_height * (window_index - state->master_count) / (window_count - state->master_count);
-            window->width = (state->master_count == 0) ? screen_width : screen_width - (state->master_factor * screen_width) - (2 * window->border_width);
-            window->height = screen_height / (window_count - state->master_count) - (2 * window->border_width);
+            if (row_index == row_count)
+            {
+                row_index = 0;
+                column_index++;
+                if ((window_count - state->master_count) % state->column_count == 0)
+                {
+                    row_count = (window_count - state->master_count) / state->column_count;
+                }
+                else
+                {
+                    row_count = ((window_count - state->master_count) / state->column_count) + ((column_index < ((window_count - state->master_count) % state->column_count)) ? 1 : 0);
+                }
+            }
+
+            window->x = ((state->master_count == 0) ? 0 : state->master_factor * screen_width) + column_index * column_width;
+            window->y = screen_height * row_index / row_count;
+            window->width = column_width - (2 * window->border_width);
+            window->height = screen_height / row_count - (2 * window->border_width);
+
+            row_index++;
         }
 
         mask = XCB_CONFIG_WINDOW_X |

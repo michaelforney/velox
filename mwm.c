@@ -904,12 +904,38 @@ void increase_master_count()
 
 void decrease_master_count()
 {
-    printf("decrease()\n");
+    printf("decrease_master_count()\n");
 
     if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_count = MAX(state->master_count - 1, 0);
+
+        arrange();
+    }
+}
+
+void increase_column_count()
+{
+    printf("increase_column_count()\n");
+
+    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    {
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        state->column_count++;
+
+        arrange();
+    }
+}
+
+void decrease_column_count()
+{
+    printf("decrease_column_count()\n");
+
+    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    {
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        state->column_count = MAX(state->column_count - 1, 1);
 
         arrange();
     }
