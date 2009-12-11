@@ -24,69 +24,79 @@
 #include "tag.h"
 #include "mwm.h"
 
-#define SETUP_KEY_BINDING(MODIFIERS, KEYSYM, FUNCTION) \
-    key_bindings[index].modifiers = MODIFIERS; \
-    key_bindings[index].keysym = KEYSYM; \
-    key_bindings[index++].function = FUNCTION;
-
-#define SETUP_TAG_KEY_BINDINGS(N) \
-    SETUP_KEY_BINDING(mod_mask, XK_ ## N, set_tag_ ## N) \
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT, XK_ ## N, move_focus_to_tag_ ## N) \
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL, XK_ ## N, NULL)
+#define ADD_TAG_KEY_BINDINGS(N) \
+    add_key_binding(mod_mask, XK_ ## N, set_tag_ ## N); \
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT, XK_ ## N, move_focus_to_tag_ ## N); \
+    add_key_binding(mod_mask | XCB_MOD_MASK_CONTROL, XK_ ## N, NULL);
 
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
-struct mwm_key_binding * key_bindings;
-const uint16_t key_binding_count = 16 + (9 * 3);
+struct mwm_key_binding_list * key_bindings = NULL;
 
 void setup_key_bindings()
 {
-    uint16_t index = 0;
-
-    key_bindings = (struct mwm_key_binding *) malloc(key_binding_count * sizeof(struct mwm_key_binding));
-
     /* Commands */
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_Return,  &spawn_terminal)
-    SETUP_KEY_BINDING(mod_mask,                         XK_r,       &spawn_dmenu)
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,      XK_Return,  &spawn_terminal);
+    add_key_binding(mod_mask,                           XK_r,       &spawn_dmenu);
 
     /* Window focus */
-    SETUP_KEY_BINDING(mod_mask,                         XK_h, &focus_next)
-    SETUP_KEY_BINDING(mod_mask,                         XK_t, &focus_previous)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_h, &move_next)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_t, &move_previous)
+    add_key_binding(mod_mask,                       XK_h, &focus_next);
+    add_key_binding(mod_mask,                       XK_t, &focus_previous);
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,  XK_h, &move_next);
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,  XK_t, &move_previous);
 
     /* Window operations */
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_c, &kill_focused_window)
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,      XK_c, &kill_focused_window);
 
     /* Layout modification */
-    SETUP_KEY_BINDING(mod_mask,                         XK_d, &decrease_master_factor)
-    SETUP_KEY_BINDING(mod_mask,                         XK_n, &increase_master_factor)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_d, &increase_master_count)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_n, &decrease_master_count)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_d, &increase_column_count)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_CONTROL,  XK_n, &decrease_column_count)
+    add_key_binding(mod_mask,                           XK_d, &decrease_master_factor);
+    add_key_binding(mod_mask,                           XK_n, &increase_master_factor);
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,      XK_d, &increase_master_count);
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,      XK_n, &decrease_master_count);
+    add_key_binding(mod_mask | XCB_MOD_MASK_CONTROL,    XK_d, &increase_column_count);
+    add_key_binding(mod_mask | XCB_MOD_MASK_CONTROL,    XK_n, &decrease_column_count);
 
     /* Layout control */
-    SETUP_KEY_BINDING(mod_mask,                         XK_space,   &next_layout)
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_space,   &previous_layout)
+    add_key_binding(mod_mask,                       XK_space,   &next_layout);
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,  XK_space,   &previous_layout);
 
     /* Quit */
-    SETUP_KEY_BINDING(mod_mask | XCB_MOD_MASK_SHIFT,    XK_q,       &quit)
+    add_key_binding(mod_mask | XCB_MOD_MASK_SHIFT,  XK_q,   &quit);
 
     /* Tags */
-    SETUP_TAG_KEY_BINDINGS(1)
-    SETUP_TAG_KEY_BINDINGS(2)
-    SETUP_TAG_KEY_BINDINGS(3)
-    SETUP_TAG_KEY_BINDINGS(4)
-    SETUP_TAG_KEY_BINDINGS(5)
-    SETUP_TAG_KEY_BINDINGS(6)
-    SETUP_TAG_KEY_BINDINGS(7)
-    SETUP_TAG_KEY_BINDINGS(8)
-    SETUP_TAG_KEY_BINDINGS(9)
+    ADD_TAG_KEY_BINDINGS(1)
+    ADD_TAG_KEY_BINDINGS(2)
+    ADD_TAG_KEY_BINDINGS(3)
+    ADD_TAG_KEY_BINDINGS(4)
+    ADD_TAG_KEY_BINDINGS(5)
+    ADD_TAG_KEY_BINDINGS(6)
+    ADD_TAG_KEY_BINDINGS(7)
+    ADD_TAG_KEY_BINDINGS(8)
+    ADD_TAG_KEY_BINDINGS(9)
 }
 
 void cleanup_key_bindings()
 {
-    free(key_bindings);
+    struct mwm_key_binding_list * next_bindings;
+    while (key_bindings)
+    {
+        next_bindings = key_bindings->next;
+        free(key_bindings);
+        key_bindings = next_bindings;
+    }
+}
+
+void add_key_binding(uint16_t modifiers, xcb_keysym_t keysym, void (* function)())
+{
+    struct mwm_key_binding_list * bindings;
+
+    bindings = (struct mwm_key_binding_list *) malloc(sizeof(struct mwm_key_binding_list));
+    bindings->binding.modifiers = modifiers;
+    bindings->binding.keysym = keysym;
+    bindings->binding.keycode = 0;
+    bindings->binding.function = function;
+    bindings->next = key_bindings;
+
+    key_bindings = bindings;
 }
 

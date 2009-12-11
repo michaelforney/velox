@@ -87,12 +87,11 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
         xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
         xcb_keysym_t * keysyms;
-        uint16_t key_binding_index;
+        struct mwm_key_binding_list * current_element;
         uint16_t keysym_index;
         uint16_t extra_modifier_index;
         uint16_t extra_modifiers[] = { 0, XCB_MOD_MASK_LOCK }; // TODO: Numlock
         uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
-        struct mwm_key_binding key_binding;
 
         printf("grabbing keys\n");
 
@@ -103,22 +102,23 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
         free(keyboard_mapping);
         keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
         keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
-        for (key_binding_index = 0; key_binding_index < key_binding_count; key_binding_index++)
+        for (current_element = key_bindings; current_element != NULL; current_element = current_element->next)
         {
-            key_binding = key_bindings[key_binding_index];
-
             for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
             {
-                if (keysyms[keysym_index] == key_binding.keysym)
+                if (keysyms[keysym_index] == current_element->binding.keysym)
                 {
-                    key_binding.keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
+                    current_element->binding.keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
                     break;
                 }
             }
 
             for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
             {
-                xcb_grab_key(c, true, root, key_binding.modifiers | extra_modifiers[extra_modifier_index], key_binding.keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
+                xcb_grab_key(c, true, root,
+                    current_element->binding.modifiers | extra_modifiers[extra_modifier_index],
+                    current_element->binding.keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
+                );
             }
         }
 
@@ -1377,20 +1377,20 @@ void focus_in(xcb_focus_in_event_t * event)
 void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
-    uint16_t index;
+    struct mwm_key_binding_list * current_element;
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
     printf("keysym: %i\n", keysym);
     printf("modifiers: %i\n", event->state);
 
-    for (index = 0; index < key_binding_count; index++)
+    for (current_element = key_bindings; current_element != NULL; current_element = current_element->next)
     {
-        if (keysym == key_bindings[index].keysym && event->state == key_bindings[index].modifiers)
+        if (keysym == current_element->binding.keysym && event->state == current_element->binding.modifiers)
         {
-            if (key_bindings[index].function != NULL)
+            if (current_element->binding.function != NULL)
             {
-                key_bindings[index].function();
+                current_element->binding.function();
             }
         }
     }
