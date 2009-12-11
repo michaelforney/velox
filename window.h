@@ -39,16 +39,15 @@ struct mwm_window
     uint64_t tags;
 };
 
-struct mwm_window_stack
+struct mwm_window_list
 {
     struct mwm_window * window;
-    struct mwm_window_stack * next;
+    struct mwm_window_list * next;
 };
 
-struct mwm_window_stack * window_stack_move_to_front(struct mwm_window_stack * stack, xcb_window_t window_id);
-struct mwm_window * window_stack_lookup(struct mwm_window_stack * stack, xcb_window_t window_id);
-struct mwm_window_stack * window_stack_delete(struct mwm_window_stack * stack, xcb_window_t window_id);
-struct mwm_window_stack * window_stack_insert(struct mwm_window_stack * stack, struct mwm_window * window);
+struct mwm_window * window_list_lookup(struct mwm_window_list * list, xcb_window_t window_id);
+struct mwm_window_list * window_list_delete(struct mwm_window_list * list, xcb_window_t window_id);
+struct mwm_window_list * window_list_insert(struct mwm_window_list * list, struct mwm_window * window);
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
 

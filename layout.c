@@ -27,11 +27,11 @@
 #include "window.h"
 #include "layout.h"
 
-void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * generic_state)
+void tile_arrange(struct mwm_window_list * windows, struct mwm_layout_state * generic_state)
 {
     struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
     struct mwm_window * window = NULL;
-    struct mwm_window_stack * current_element = NULL;
+    struct mwm_window_list * current_element = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
@@ -133,10 +133,10 @@ void tile_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * g
     }
 }
 
-void grid_arrange(struct mwm_window_stack * windows, struct mwm_layout_state * generic_state)
+void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * generic_state)
 {
     struct mwm_window * window = NULL;
-    struct mwm_window_stack * current_element = NULL;
+    struct mwm_window_list * current_element = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;

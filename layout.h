@@ -40,7 +40,7 @@ struct mwm_tile_layout_state
 struct mwm_layout
 {
     const char * identifier;
-    void (* arrange)(struct mwm_window_stack * stack, struct mwm_layout_state * state);
+    void (* arrange)(struct mwm_window_list * list, struct mwm_layout_state * state);
     struct mwm_layout_state default_state;
 };
 

@@ -28,36 +28,36 @@
 
 #include <xcb/xcb_atom.h>
 
-struct mwm_window * window_stack_lookup(struct mwm_window_stack * stack, xcb_window_t window_id)
+struct mwm_window * window_list_lookup(struct mwm_window_list * list, xcb_window_t window_id)
 {
-    for (; stack != NULL && stack->window->window_id != window_id; stack = stack->next);
+    for (; list != NULL && list->window->window_id != window_id; list = list->next);
 
-    if (stack == NULL)
+    if (list == NULL)
     {
         return NULL;
     }
 
-    return stack->window;
+    return list->window;
 }
 
-struct mwm_window_stack * window_stack_delete(struct mwm_window_stack * stack, xcb_window_t window_id)
+struct mwm_window_list * window_list_delete(struct mwm_window_list * list, xcb_window_t window_id)
 {
-    struct mwm_window_stack * previous_element = NULL;
-    struct mwm_window_stack * current_element = NULL;
+    struct mwm_window_list * previous_element = NULL;
+    struct mwm_window_list * current_element = NULL;
 
-    if (stack == NULL)
+    if (list == NULL)
     {
         return NULL;
     }
-    else if (stack->window->window_id == window_id)
+    else if (list->window->window_id == window_id)
     {
-        struct mwm_window_stack * new_stack = stack->next;
+        struct mwm_window_list * new_list = list->next;
 
-        free(stack);
-        return new_stack;
+        free(list);
+        return new_list;
     }
 
-    for (previous_element = stack, current_element = stack->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
+    for (previous_element = list, current_element = list->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
 
     if (current_element != NULL)
     {
@@ -65,46 +65,46 @@ struct mwm_window_stack * window_stack_delete(struct mwm_window_stack * stack, x
         free(current_element);
     }
 
-    return stack;
+    return list;
 }
 
-struct mwm_window_stack * window_stack_move_to_front(struct mwm_window_stack * stack, xcb_window_t window_id)
+struct mwm_window_list * window_list_move_to_front(struct mwm_window_list * list, xcb_window_t window_id)
 {
-    struct mwm_window_stack * previous_element = NULL;
-    struct mwm_window_stack * current_element = NULL;
+    struct mwm_window_list * previous_element = NULL;
+    struct mwm_window_list * current_element = NULL;
 
-    if (stack == NULL)
+    if (list == NULL)
     {
         return NULL;
     }
-    else if (stack->window->window_id == window_id)
+    else if (list->window->window_id == window_id)
     {
-        return stack;
+        return list;
     }
 
-    for (previous_element = stack, current_element = stack->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
+    for (previous_element = list, current_element = list->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
 
     if (current_element != NULL)
     {
         previous_element->next = current_element->next;
-        current_element->next = stack;
+        current_element->next = list;
 
         return current_element;
     }
 
-    return stack;
+    return list;
 }
 
-struct mwm_window_stack * window_stack_insert(struct mwm_window_stack * stack, struct mwm_window * window)
+struct mwm_window_list * window_list_insert(struct mwm_window_list * list, struct mwm_window * window)
 {
-    struct mwm_window_stack * new_stack;
+    struct mwm_window_list * new_list;
 
-    new_stack = (struct mwm_window_stack *) malloc(sizeof(struct mwm_window_stack));
+    new_list = (struct mwm_window_list *) malloc(sizeof(struct mwm_window_list));
 
-    new_stack->window = window;
-    new_stack->next = stack;
+    new_list->window = window;
+    new_list->next = list;
 
-    return new_stack;
+    return new_list;
 }
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol)
