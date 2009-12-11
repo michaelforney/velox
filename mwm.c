@@ -1052,7 +1052,6 @@ void manage(xcb_window_t window_id)
     mask = XCB_CW_BORDER_PIXEL | XCB_CW_EVENT_MASK;
     values[0] = border_pixel;
     values[1] = XCB_EVENT_MASK_ENTER_WINDOW |
-                XCB_EVENT_MASK_FOCUS_CHANGE |
                 XCB_EVENT_MASK_PROPERTY_CHANGE |
                 XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 
@@ -1365,15 +1364,6 @@ void leave_notify(xcb_leave_notify_event_t * event)
     printf("leave_notify\n");
 }
 
-void focus_in(xcb_focus_in_event_t * event)
-{
-    printf("focus_in\n");
-
-    printf("window_id: %i\n", event->event);
-
-    // TODO: Prevent focus stealing?
-}
-
 void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
@@ -1408,23 +1398,17 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
 
 void map_request(xcb_map_request_event_t * event)
 {
-    printf("map_request\n");
-
     struct mwm_window * maybe_window;
     xcb_get_window_attributes_cookie_t window_attributes_cookie;
     xcb_get_window_attributes_reply_t * window_attributes;
 
+    printf("map_request: id:%i\n", event->window);
+
     window_attributes_cookie = xcb_get_window_attributes(c, event->window);
 
-    printf("window_id: %i\n", event->window);
-
-    maybe_window = window_list_lookup(hidden_windows, event->window); // Do I need to look in visible_windows?
-
-    printf("maybe_window: %i\n", maybe_window);
+    maybe_window = window_list_lookup(hidden_windows, event->window);
 
     window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
-
-    printf("window_attributes: %i\n", window_attributes);
 
     if (!maybe_window && window_attributes && !window_attributes->override_redirect)
     {
@@ -1435,32 +1419,22 @@ void map_request(xcb_map_request_event_t * event)
 void property_notify(xcb_property_notify_event_t * event)
 {
     printf("property_notify\n");
-
-    xcb_get_atom_name_cookie_t atom_name_cookie;
-    xcb_get_atom_name_reply_t * atom_name;
-
-    atom_name_cookie = xcb_get_atom_name(c, event->atom);
-    atom_name = xcb_get_atom_name_reply(c, atom_name_cookie, NULL);
-
-    if (atom_name)
-    {
-        //printf("atom: %s\n", xcb_get_atom_name_name(atom_name));
-    }
 }
 
 void unmap_notify(xcb_unmap_notify_event_t * event)
 {
-    printf("unmap_notify: %i\n", event->window);
-
     struct mwm_window * window;
+
+    printf("unmap_notify: %i\n", event->window);
 
     if (pending_unmaps > 0)
     {
+        /* If we are expecting an unmap due to hiding a window, ignore it */
         pending_unmaps--;
         return;
     }
 
-    window = window_list_lookup(visible_windows, event->window); // Do I need to check in hidden_windows?
+    window = window_list_lookup(visible_windows, event->window);
 
     if (window != NULL)
     {
@@ -1503,9 +1477,6 @@ void handle_event(xcb_generic_event_t * event)
             break;
         case XCB_LEAVE_NOTIFY:
             leave_notify((xcb_leave_notify_event_t *) event);
-            break;
-        case XCB_FOCUS_IN:
-            focus_in((xcb_focus_in_event_t *) event);
             break;
         case XCB_KEY_PRESS:
             key_press((xcb_key_press_event_t *) event);
