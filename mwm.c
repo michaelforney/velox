@@ -264,7 +264,7 @@ void show_window(struct mwm_window * window)
 
     property_values[0] = XCB_WM_STATE_NORMAL;
     property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
     xcb_map_window(c, window->window_id);
 }
@@ -277,7 +277,7 @@ void hide_window(struct mwm_window * window)
 
     property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
     property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
     pending_unmaps++;
 
@@ -1069,7 +1069,7 @@ void manage(xcb_window_t window_id)
 
         property_values[0] = XCB_WM_STATE_NORMAL;
         property_values[1] = 0;
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
         focus(visible_windows->window->window_id);
 
@@ -1140,7 +1140,7 @@ void manage_existing_windows()
     {
         window_attributes_cookies[child] = xcb_get_window_attributes(c, children[child]);
         property_cookies[child] = xcb_get_property(c, false, children[child], WM_TRANSIENT_FOR, WINDOW, 0, 1);
-        state_cookies[child] = xcb_get_property(c, false, children[child], WM_STATE, WM_HINTS, 0, 2);
+        state_cookies[child] = xcb_get_property(c, false, children[child], WM_STATE, WM_STATE, 0, 2);
     }
     for (child = 0; child < child_count; child++)
     {
@@ -1446,7 +1446,7 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
 
         property_values[0] = XCB_WM_STATE_WITHDRAWN;
         property_values[1] = 0;
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_HINTS, 32, 2, property_values);
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
         unmanage(window);
 
