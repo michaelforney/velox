@@ -135,18 +135,23 @@ void tile_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
 
 void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * generic_state)
 {
+    struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
     struct mwm_window * window = NULL;
     struct mwm_window_list * current_element = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
-    uint16_t rows = 0;
-    uint16_t cols = 0;
-    uint16_t row = 0;
-    uint16_t col = 0;
-    bool perfect = false;
+    uint16_t window_index = 0;
+    uint16_t rows_per_column;
+    uint16_t column_count;
+    uint16_t column_width;
+    uint16_t column_index = 0;
+    uint16_t row_index = 0;
+    uint16_t row_count;
 
     printf("grid_arrange\n");
+
+    printf("screen_width: %i, screen_height: %i\n", screen_width, screen_height);
 
     if (windows == NULL)
     {
@@ -162,13 +167,22 @@ void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
         }
     }
 
-    cols = (uint16_t) ceil(sqrt(window_count));
-    rows = (window_count > (cols - 1) * cols) ? cols : cols - 1;
-    perfect = window_count == (rows * cols);
-    printf("rows: %i, cols: %i\n", rows, cols);
     printf("window_count: %i\n", window_count);
 
-    for (current_element = windows; current_element != NULL; current_element = current_element->next)
+    column_count = (uint16_t) floor(sqrt(window_count + 2));
+    column_width = screen_width / MIN(window_count, column_count);
+
+    if ((window_count) % column_count == 0)
+    {
+        row_count = window_count / column_count;
+    }
+    else
+    {
+        row_count = (window_count / column_count) + ((column_index < (window_count % column_count)) ? 1 : 0);
+    }
+
+    /* Arrange the windows */
+    for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next)
     {
         window = current_element->window;
 
@@ -177,16 +191,26 @@ void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
             continue;
         }
 
-        if (row >= rows)
+        if (row_index == row_count)
         {
-            row = 0;
-            ++col;
+            row_index = 0;
+            column_index++;
+            if (window_count % column_count == 0)
+            {
+                row_count = window_count / column_count;
+            }
+            else
+            {
+                row_count = (window_count / column_count) + ((column_index < (window_count % column_count)) ? 1 : 0);
+            }
         }
 
-        window->x = col * screen_width / cols;
-        window->y = row * screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows);
-        window->width = screen_width / cols - (2 * window->border_width);
-        window->height = screen_height / ((col == cols - 1 && !perfect) ? window_count + rows * (1 - cols) : rows) - (2 * window->border_width);
+        window->x = column_index * column_width;
+        window->y = screen_height * row_index / row_count;
+        window->width = column_width - (2 * window->border_width);
+        window->height = screen_height / row_count - (2 * window->border_width);
+
+        row_index++;
 
         mask = XCB_CONFIG_WINDOW_X |
                XCB_CONFIG_WINDOW_Y |
@@ -198,10 +222,12 @@ void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
         values[2] = window->width;
         values[3] = window->height;
 
+        printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
+
         xcb_configure_window(c, window->window_id, mask, values);
         synthetic_configure(window);
 
-        ++row;
+        window_index++;
     }
 }
 
