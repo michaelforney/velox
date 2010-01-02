@@ -82,6 +82,10 @@ uint32_t border_focus_pixel;
 const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
 const uint16_t border_width = 2;
+const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
+
+/* MWM macros */
+#define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
 
 void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
@@ -90,7 +94,12 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
         struct mwm_key_binding_list * current_element;
         uint16_t keysym_index;
         uint16_t extra_modifier_index;
-        uint16_t extra_modifiers[] = { 0, XCB_MOD_MASK_LOCK }; // TODO: Numlock
+        uint16_t extra_modifiers[] = {
+            0,
+            mod_mask_numlock,
+            XCB_MOD_MASK_LOCK,
+            mod_mask_numlock | XCB_MOD_MASK_LOCK
+        };
         uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
 
         printf("grabbing keys\n");
@@ -1376,7 +1385,7 @@ void key_press(xcb_key_press_event_t * event)
 
     for (current_element = key_bindings; current_element != NULL; current_element = current_element->next)
     {
-        if (keysym == current_element->binding.keysym && event->state == current_element->binding.modifiers)
+        if (keysym == current_element->binding.keysym && CLEAN_MASK(event->state) == current_element->binding.modifiers)
         {
             if (current_element->binding.function != NULL)
             {
