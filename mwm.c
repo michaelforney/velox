@@ -1416,6 +1416,10 @@ void map_request(xcb_map_request_event_t * event)
     window_attributes_cookie = xcb_get_window_attributes(c, event->window);
 
     maybe_window = window_list_lookup(hidden_windows, event->window);
+    if (maybe_window == NULL)
+    {
+        maybe_window = window_list_lookup(visible_windows, event->window);
+    }
 
     window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
 
