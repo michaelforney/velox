@@ -92,7 +92,8 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
         xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
         xcb_keysym_t * keysyms;
-        struct mwm_key_binding_list * current_element;
+        struct mwm_list * iterator;
+        struct mwm_key_binding * binding;
         uint16_t keysym_index;
         uint16_t extra_modifier_index;
         uint16_t extra_modifiers[] = {
@@ -112,13 +113,15 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
         free(keyboard_mapping);
         keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
         keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
-        for (current_element = key_bindings; current_element != NULL; current_element = current_element->next)
+        for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
         {
+            binding = (struct mwm_key_binding *) iterator->data;
+
             for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
             {
-                if (keysyms[keysym_index] == current_element->binding.keysym)
+                if (keysyms[keysym_index] == binding->keysym)
                 {
-                    current_element->binding.keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
+                    binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
                     break;
                 }
             }
@@ -126,8 +129,8 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
             for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
             {
                 xcb_grab_key(c, true, root,
-                    current_element->binding.modifiers | extra_modifiers[extra_modifier_index],
-                    current_element->binding.keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
+                    binding->modifiers | extra_modifiers[extra_modifier_index],
+                    binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
                 );
             }
         }
@@ -1377,20 +1380,23 @@ void leave_notify(xcb_leave_notify_event_t * event)
 void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
-    struct mwm_key_binding_list * current_element;
+    struct mwm_list * iterator;
+    struct mwm_key_binding * binding;
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
     printf("keysym: %i\n", keysym);
     printf("modifiers: %i\n", event->state);
 
-    for (current_element = key_bindings; current_element != NULL; current_element = current_element->next)
+    for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
     {
-        if (keysym == current_element->binding.keysym && CLEAN_MASK(event->state) == current_element->binding.modifiers)
+        binding = (struct mwm_key_binding *) iterator->data;
+
+        if (keysym == binding->keysym && CLEAN_MASK(event->state) == binding->modifiers)
         {
-            if (current_element->binding.function != NULL)
+            if (binding->function != NULL)
             {
-                current_element->binding.function();
+                binding->function();
             }
         }
     }

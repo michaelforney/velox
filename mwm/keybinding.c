@@ -31,7 +31,7 @@
 
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
-struct mwm_key_binding_list * key_bindings = NULL;
+struct mwm_list * key_bindings = NULL;
 
 void setup_key_bindings()
 {
@@ -77,26 +77,19 @@ void setup_key_bindings()
 
 void cleanup_key_bindings()
 {
-    struct mwm_key_binding_list * next_bindings;
-    while (key_bindings)
-    {
-        next_bindings = key_bindings->next;
-        free(key_bindings);
-        key_bindings = next_bindings;
-    }
+    key_bindings = mwm_list_delete(key_bindings, true);
 }
 
 void add_key_binding(uint16_t modifiers, xcb_keysym_t keysym, void (* function)())
 {
-    struct mwm_key_binding_list * bindings;
+    struct mwm_key_binding * binding;
 
-    bindings = (struct mwm_key_binding_list *) malloc(sizeof(struct mwm_key_binding_list));
-    bindings->binding.modifiers = modifiers;
-    bindings->binding.keysym = keysym;
-    bindings->binding.keycode = 0;
-    bindings->binding.function = function;
-    bindings->next = key_bindings;
+    binding = (struct mwm_key_binding *) malloc(sizeof(struct mwm_key_binding));
+    binding->modifiers = modifiers;
+    binding->keysym = keysym;
+    binding->keycode = 0;
+    binding->function = function;
 
-    key_bindings = bindings;
+    key_bindings = mwm_list_insert(key_bindings, binding);
 }
 

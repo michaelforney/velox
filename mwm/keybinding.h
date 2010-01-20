@@ -24,6 +24,8 @@
 
 #include <X11/keysym.h>
 
+#include "list.h"
+
 struct mwm_key_binding
 {
     uint16_t modifiers;
@@ -32,14 +34,7 @@ struct mwm_key_binding
     void (* function)();
 };
 
-struct mwm_key_binding_list
-{
-    struct mwm_key_binding binding;
-    struct mwm_key_binding_list * next;
-};
-
-extern struct mwm_key_binding_list * key_bindings;
-extern const uint16_t key_binding_count;
+extern struct mwm_list * key_bindings;
 
 void setup_key_bindings();
 void cleanup_key_bindings();
