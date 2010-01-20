@@ -23,6 +23,7 @@
 #include <string.h>
 #include <assert.h>
 #include <limits.h>
+#include <unistd.h>
 
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
@@ -1184,7 +1185,7 @@ void manage_existing_windows()
     }
 }
 
-void spawn(const char ** command)
+void spawn(char * const * command)
 {
     if (fork() == 0)
     {

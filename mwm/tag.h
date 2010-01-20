@@ -49,6 +49,7 @@ enum
 struct mwm_tag * tags;
 
 void setup_tags();
+void cleanup_tags();
 
 void set_tag_1();
 void set_tag_2();

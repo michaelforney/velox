@@ -21,6 +21,7 @@
 #include <stdio.h>
 
 #include "tag.h"
+#include "mwm.h"
 
 void setup_tags()
 {

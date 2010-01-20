@@ -34,9 +34,14 @@ extern uint16_t screen_height;
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 
+extern struct mwm_window_list * visible_windows;
+extern struct mwm_window_list * hidden_windows;
+
+void synthetic_configure();
+
 void arrange();
 
-void spawn(const char ** cmd);
+void spawn(char * const * cmd);
 void spawn_terminal();
 void spawn_dmenu();
 
@@ -61,6 +66,7 @@ void previous_layout();
 void quit();
 
 void set_tag(struct mwm_tag * tag);
+void move_focus_to_tag(struct mwm_tag * tag);
 
 #endif
 
