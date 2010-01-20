@@ -1,4 +1,4 @@
-/* mwm: tag.h
+/* mwm: mwm/tag.h
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef TAG_H
-#define TAG_H
+#ifndef MWM_TAG_H
+#define MWM_TAG_H
 
 #include "layout.h"
 

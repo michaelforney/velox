@@ -1,4 +1,4 @@
-/* mwm: tag.c
+/* mwm: mwm/tag.c
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *

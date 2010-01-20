@@ -1,4 +1,4 @@
-/* mwm: keybinding.h
+/* mwm: mwm/hook.h
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -17,34 +17,25 @@
  *
  */
 
-#ifndef KEYBINDING_H
-#define KEYBINDING_H
+#ifndef MWM_HOOK_H
+#define MWM_HOOK_H
 
-#include <xcb/xcb.h>
+#include "window.h"
 
-#include <X11/keysym.h>
-
-struct mwm_key_binding
+struct mwm_startup_hook
 {
-    uint16_t modifiers;
-    xcb_keysym_t keysym;
-    xcb_keycode_t keycode;
-    void (* function)();
+    uint64_t id;
+    void (* hook)();
 };
 
-struct mwm_key_binding_list
+struct mwm_manage_hook
 {
-    struct mwm_key_binding binding;
-    struct mwm_key_binding_list * next;
+    uint64_t id;
+    void (* hook)(struct mwm_window * window);
 };
 
-extern struct mwm_key_binding_list * key_bindings;
-extern const uint16_t key_binding_count;
-
-void setup_key_bindings();
-void cleanup_key_bindings();
-
-void add_key_binding(uint16_t modifiers, xcb_keysym_t keysym, void (* function)());
+void run_startup_hooks();
+void run_manage_hooks(struct mwm_window * window);
 
 #endif
 

@@ -1,4 +1,4 @@
-/* mwm: keybinding.c
+/* mwm: mwm/keybinding.c
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *

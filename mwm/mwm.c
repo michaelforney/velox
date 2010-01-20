@@ -1,4 +1,4 @@
-/* mwm: mwm.c
+/* mwm: mwm/mwm.c
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *

@@ -1,4 +1,4 @@
-/* mwm: layout.c
+/* mwm: mwm/layout.c
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *

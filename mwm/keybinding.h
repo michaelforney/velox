@@ -1,4 +1,4 @@
-/* mwm: layout.h
+/* mwm: mwm/keybinding.h
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -17,44 +17,34 @@
  *
  */
 
-#ifndef LAYOUT_H
-#define LAYOUT_H
+#ifndef MWM_KEYBINDING_H
+#define MWM_KEYBINDING_H
 
-#include <stdint.h>
+#include <xcb/xcb.h>
 
-#include "window.h"
+#include <X11/keysym.h>
 
-struct mwm_layout_state
+struct mwm_key_binding
 {
-    uint16_t pad[32];
+    uint16_t modifiers;
+    xcb_keysym_t keysym;
+    xcb_keycode_t keycode;
+    void (* function)();
 };
 
-struct mwm_tile_layout_state
+struct mwm_key_binding_list
 {
-    float master_factor;
-    uint16_t master_count;
-    uint16_t column_count;
-    uint16_t pad[28];
+    struct mwm_key_binding binding;
+    struct mwm_key_binding_list * next;
 };
 
-struct mwm_layout
-{
-    const char * identifier;
-    void (* arrange)(struct mwm_window_list * list, struct mwm_layout_state * state);
-    struct mwm_layout_state default_state;
-};
+extern struct mwm_key_binding_list * key_bindings;
+extern const uint16_t key_binding_count;
 
-enum
-{
-    TILE,
-    GRID,
-    LAYOUT_COUNT
-};
+void setup_key_bindings();
+void cleanup_key_bindings();
 
-struct mwm_layout * layouts;
-
-void setup_layouts();
-void cleanup_layouts();
+void add_key_binding(uint16_t modifiers, xcb_keysym_t keysym, void (* function)());
 
 #endif
 

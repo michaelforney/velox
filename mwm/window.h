@@ -1,4 +1,4 @@
-/* mwm: window.h
+/* mwm: mwm/window.h
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#ifndef MWM_WINDOW_H
+#define MWM_WINDOW_H
 
 #include <stdbool.h>
 

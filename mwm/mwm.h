@@ -1,4 +1,4 @@
-/* mwm: mwm.h
+/* mwm: mwm/mwm.h
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef MWM_H
-#define MWM_H
+#ifndef MWM_MWM_H
+#define MWM_MWM_H
 
 #include <xcb/xcb.h>
 
