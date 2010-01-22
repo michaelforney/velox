@@ -3,6 +3,7 @@
 add_library(libmwm SHARED
     tag.c
     list.c
+    loop.c
 )
 
 set_target_properties(libmwm PROPERTIES OUTPUT_NAME mwm)
