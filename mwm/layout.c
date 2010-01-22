@@ -27,11 +27,11 @@
 #include "window.h"
 #include "layout.h"
 
-void tile_arrange(struct mwm_window_list * windows, struct mwm_layout_state * generic_state)
+void tile_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_state)
 {
     struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
     struct mwm_window * window = NULL;
-    struct mwm_window_list * current_element = NULL;
+    struct mwm_list * iterator = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
@@ -52,9 +52,9 @@ void tile_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
     }
 
     /* Calculate number of windows */
-    for (current_element = windows; current_element != NULL; current_element = current_element->next)
+    for (iterator = windows; iterator != NULL; iterator = iterator->next)
     {
-        if (!current_element->window->floating)
+        if (!((struct mwm_window *) iterator->data)->floating)
         {
             window_count++;
         }
@@ -74,9 +74,9 @@ void tile_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
     }
 
     /* Arrange the windows */
-    for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next)
+    for (iterator = windows, window_index = 0; iterator != NULL; iterator = iterator->next)
     {
-        window = current_element->window;
+        window = (struct mwm_window *) iterator->data;
 
         if (window->floating)
         {
@@ -133,11 +133,11 @@ void tile_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
     }
 }
 
-void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * generic_state)
+void grid_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_state)
 {
     struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
     struct mwm_window * window = NULL;
-    struct mwm_window_list * current_element = NULL;
+    struct mwm_list * iterator = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
@@ -159,9 +159,9 @@ void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
     }
 
     /* Calculate number of windows */
-    for (current_element = windows; current_element != NULL; current_element = current_element->next)
+    for (iterator = windows; iterator != NULL; iterator = iterator->next)
     {
-        if (!current_element->window->floating)
+        if (!((struct mwm_window *) iterator->data)->floating)
         {
             window_count++;
         }
@@ -182,9 +182,9 @@ void grid_arrange(struct mwm_window_list * windows, struct mwm_layout_state * ge
     }
 
     /* Arrange the windows */
-    for (current_element = windows, window_index = 0; current_element != NULL; current_element = current_element->next)
+    for (iterator = windows, window_index = 0; iterator != NULL; iterator = iterator->next)
     {
-        window = current_element->window;
+        window = (struct mwm_window *) iterator->data;
 
         if (window->floating)
         {

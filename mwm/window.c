@@ -28,83 +28,47 @@
 
 #include <xcb/xcb_atom.h>
 
-struct mwm_window * window_list_lookup(struct mwm_window_list * list, xcb_window_t window_id)
+struct mwm_window * window_list_lookup(struct mwm_list * list, xcb_window_t window_id)
 {
-    for (; list != NULL && list->window->window_id != window_id; list = list->next);
+    struct mwm_list * iterator;
+    struct mwm_window * window;
 
-    if (list == NULL)
+    for (iterator = list; iterator != NULL; iterator = iterator->next)
     {
-        return NULL;
+        window = (struct mwm_window *) iterator->data;
+
+        if (window->window_id == window_id)
+        {
+            return window;
+        }
     }
 
-    return list->window;
+    return NULL;
 }
 
-struct mwm_window_list * window_list_delete(struct mwm_window_list * list, xcb_window_t window_id)
+struct mwm_list * window_list_delete(struct mwm_list * list, xcb_window_t window_id)
 {
-    struct mwm_window_list * previous_element = NULL;
-    struct mwm_window_list * current_element = NULL;
+    struct mwm_list * iterator;
+    struct mwm_window * window;
 
-    if (list == NULL)
-    {
-        return NULL;
-    }
-    else if (list->window->window_id == window_id)
-    {
-        struct mwm_window_list * new_list = list->next;
+    window = (struct mwm_window *) list->data;
 
-        free(list);
-        return new_list;
+    if (window->window_id == window_id)
+    {
+        return mwm_list_remove_first(list);
     }
 
-    for (previous_element = list, current_element = list->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
-
-    if (current_element != NULL)
+    for (iterator = list; iterator != NULL; iterator = iterator->next)
     {
-        previous_element->next = current_element->next;
-        free(current_element);
+        window = (struct mwm_window *) iterator->data;
+
+        if (window->window_id == window_id)
+        {
+            mwm_list_remove_first(iterator);
+        }
     }
 
     return list;
-}
-
-struct mwm_window_list * window_list_move_to_front(struct mwm_window_list * list, xcb_window_t window_id)
-{
-    struct mwm_window_list * previous_element = NULL;
-    struct mwm_window_list * current_element = NULL;
-
-    if (list == NULL)
-    {
-        return NULL;
-    }
-    else if (list->window->window_id == window_id)
-    {
-        return list;
-    }
-
-    for (previous_element = list, current_element = list->next; current_element->window->window_id != window_id && current_element != NULL; previous_element = current_element, current_element = current_element->next);
-
-    if (current_element != NULL)
-    {
-        previous_element->next = current_element->next;
-        current_element->next = list;
-
-        return current_element;
-    }
-
-    return list;
-}
-
-struct mwm_window_list * window_list_insert(struct mwm_window_list * list, struct mwm_window * window)
-{
-    struct mwm_window_list * new_list;
-
-    new_list = (struct mwm_window_list *) malloc(sizeof(struct mwm_window_list));
-
-    new_list->window = window;
-    new_list->next = list;
-
-    return new_list;
 }
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol)

@@ -34,8 +34,8 @@ extern uint16_t screen_height;
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 
-extern struct mwm_window_list * visible_windows;
-extern struct mwm_window_list * hidden_windows;
+extern struct mwm_list * visible_windows;
+extern struct mwm_list * hidden_windows;
 
 void synthetic_configure();
 

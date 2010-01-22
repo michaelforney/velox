@@ -24,6 +24,8 @@
 
 #include <xcb/xcb.h>
 
+#include <list.h>
+
 struct mwm_window
 {
     xcb_window_t window_id;
@@ -39,15 +41,8 @@ struct mwm_window
     uint64_t tags;
 };
 
-struct mwm_window_list
-{
-    struct mwm_window * window;
-    struct mwm_window_list * next;
-};
-
-struct mwm_window * window_list_lookup(struct mwm_window_list * list, xcb_window_t window_id);
-struct mwm_window_list * window_list_delete(struct mwm_window_list * list, xcb_window_t window_id);
-struct mwm_window_list * window_list_insert(struct mwm_window_list * list, struct mwm_window * window);
+struct mwm_window * window_list_lookup(struct mwm_list * list, xcb_window_t window_id);
+struct mwm_list * window_list_delete(struct mwm_list * list, xcb_window_t window_id);
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
 

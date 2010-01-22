@@ -39,6 +39,7 @@ struct mwm_list * mwm_list_remove_last(struct mwm_list * list);
 
 struct mwm_list * mwm_list_reverse(struct mwm_list * list);
 struct mwm_list * mwm_list_delete(struct mwm_list * list, bool free_data);
+void mwm_list_swap(struct mwm_list * first, struct mwm_list * second);
 
 #endif
 

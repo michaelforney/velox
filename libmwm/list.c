@@ -18,6 +18,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
 #include "list.h"
@@ -34,6 +35,7 @@
 struct mwm_list * mwm_list_insert(struct mwm_list * list, void * data)
 {
     struct mwm_list * new_list = (struct mwm_list *) malloc(sizeof(struct mwm_list));
+    memset(new_list, 0, sizeof(struct mwm_list));
 
     new_list->data = data;
     new_list->next = list;
@@ -103,15 +105,19 @@ struct mwm_list * mwm_list_remove_first(struct mwm_list * list)
 
     assert(list != NULL);
 
+    if (list->next != NULL)
+    {
+        list->next->previous = list->previous;
+    }
+
+    if (list->previous != NULL)
+    {
+        list->previous->next = list->next;
+    }
+
     new_list = list->next;
-    new_list->previous = list->previous;
 
     free(list);
-
-    if (new_list->previous != NULL)
-    {
-        new_list->previous->next = new_list;
-    }
 
     return new_list;
 }
@@ -185,5 +191,26 @@ struct mwm_list * mwm_list_delete(struct mwm_list * list, bool free_data)
     }
 
     return NULL;
+}
+
+/**
+ * Swap two elements of a list
+ *
+ * This is an O(1) operation
+ *
+ * @param first The first element to swap
+ * @param second The second element to swap
+ */
+void mwm_list_swap(struct mwm_list * first, struct mwm_list * second)
+{
+    void * data;
+
+    assert(first);
+    assert(second);
+
+    data = first->data;
+
+    first->data = second->data;
+    second->data = data;
 }
 
