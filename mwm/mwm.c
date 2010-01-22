@@ -614,17 +614,8 @@ void next_layout()
 {
     printf("next_layout()\n");
 
-    main_tag->layout_index++;
-    if (main_tag->layouts[main_tag->layout_index] == NULL)
-    {
-        main_tag->layout_index = 0;
-    }
-
-    printf("next index: %i\n", main_tag->layout_index);
-
-    assert(main_tag->layouts[main_tag->layout_index]);
-
-    main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
+    main_tag->layout = main_tag->layout->next;
+    main_tag->state = ((struct mwm_layout *) main_tag->layout->data)->default_state;
 
     arrange();
 }
@@ -633,23 +624,8 @@ void previous_layout()
 {
     printf("next_layout()\n");
 
-    if (main_tag->layout_index == 0)
-    {
-        while (main_tag->layouts[main_tag->layout_index + 1] != NULL)
-        {
-            main_tag->layout_index++;
-        }
-    }
-    else
-    {
-        main_tag->layout_index--;
-    }
-
-    printf("next index: %i\n", main_tag->layout_index);
-
-    assert(main_tag->layouts[main_tag->layout_index]);
-
-    main_tag->state = main_tag->layouts[main_tag->layout_index]->default_state;
+    main_tag->layout = main_tag->layout->previous;
+    main_tag->state = ((struct mwm_layout *) main_tag->layout->data)->default_state;
 
     arrange();
 }
@@ -881,7 +857,7 @@ void increase_master_factor()
 {
     printf("increase_master_factor()\n");
 
-    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_factor = MIN(state->master_factor + 0.025, 1.0);
@@ -894,7 +870,7 @@ void decrease_master_factor()
 {
     printf("decrease_master_factor()\n");
 
-    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_factor = MAX(state->master_factor - 0.025, 0.0);
@@ -907,7 +883,7 @@ void increase_master_count()
 {
     printf("increase_master_count()\n");
 
-    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_count++;
@@ -920,7 +896,7 @@ void decrease_master_count()
 {
     printf("decrease_master_count()\n");
 
-    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->master_count = MAX(state->master_count - 1, 0);
@@ -933,7 +909,7 @@ void increase_column_count()
 {
     printf("increase_column_count()\n");
 
-    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->column_count++;
@@ -946,7 +922,7 @@ void decrease_column_count()
 {
     printf("decrease_column_count()\n");
 
-    if (main_tag->layouts[main_tag->layout_index] == &layouts[TILE])
+    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
     {
         struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
         state->column_count = MAX(state->column_count - 1, 1);
@@ -965,8 +941,8 @@ void arrange()
         return;
     }
 
-    assert(main_tag->layouts[main_tag->layout_index] != NULL);
-    main_tag->layouts[main_tag->layout_index]->arrange(visible_windows, &main_tag->state);
+    assert(main_tag->layout->data != NULL);
+    ((struct mwm_layout *) main_tag->layout->data)->arrange(visible_windows, &main_tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;
 }

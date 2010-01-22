@@ -22,10 +22,13 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <assert.h>
 
 #include "mwm.h"
 #include "window.h"
 #include "layout.h"
+
+struct mwm_hashtable * layouts;
 
 void tile_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_state)
 {
@@ -233,22 +236,34 @@ void grid_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_s
 
 void setup_layouts()
 {
-    layouts = (struct mwm_layout *) malloc(LAYOUT_COUNT * sizeof(struct mwm_layout));
+    struct mwm_layout * tile, * grid;
+    struct mwm_tile_layout_state * tile_state;
 
-    layouts[TILE].identifier = "Tile";
-    layouts[TILE].arrange = &tile_arrange;
-    memset(&layouts[TILE].default_state, 0, sizeof(struct mwm_layout_state));
-    ((struct mwm_tile_layout_state *) &layouts[TILE].default_state)->master_factor = 0.5;
-    ((struct mwm_tile_layout_state *) &layouts[TILE].default_state)->master_count = 1;
-    ((struct mwm_tile_layout_state *) &layouts[TILE].default_state)->column_count = 1;
+    layouts = mwm_hashtable_create(1024, &sdbm_hash);
 
-    layouts[GRID].identifier = "Grid";
-    layouts[GRID].arrange = &grid_arrange;
-    memset(&layouts[GRID].default_state, 0, sizeof(struct mwm_layout_state));
+    tile = (struct mwm_layout *) malloc(sizeof(struct mwm_layout));
+    grid = (struct mwm_layout *) malloc(sizeof(struct mwm_layout));
+
+    tile->identifier = "tile";
+    tile->arrange = &tile_arrange;
+    memset(&tile->default_state, 0, sizeof(struct mwm_layout_state));
+    tile_state = (struct mwm_tile_layout_state *) &tile->default_state;
+    tile_state->master_factor = 0.5;
+    tile_state->master_count = 1;
+    tile_state->column_count = 1;
+
+    grid->identifier = "grid";
+    grid->arrange = &grid_arrange;
+    memset(&grid->default_state, 0, sizeof(struct mwm_layout_state));
+
+    assert(!mwm_hashtable_exists(layouts, tile->identifier));
+    mwm_hashtable_insert(layouts, tile->identifier, tile);
+    assert(!mwm_hashtable_exists(layouts, grid->identifier));
+    mwm_hashtable_insert(layouts, grid->identifier, grid);
 }
 
 void cleanup_layouts()
 {
-    free(layouts);
+    mwm_hashtable_clear(layouts, true);
 }
 

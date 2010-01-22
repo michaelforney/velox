@@ -45,6 +45,8 @@ struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data)
         /* Make a single element, infinite loop */
         new_loop->next = new_loop;
         new_loop->previous = new_loop;
+
+        return new_loop;
     }
     else
     {
@@ -55,9 +57,9 @@ struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data)
         /* Bind the surrounding elements of the loop to the new element */
         new_loop->previous->next = new_loop;
         new_loop->next->previous = new_loop;
-    }
 
-    return new_loop;
+        return loop;
+    }
 }
 
 /**
@@ -87,5 +89,20 @@ struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop)
     free(loop);
 
     return new_loop;
+}
+
+struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data)
+{
+    while (loop != NULL)
+    {
+        if (free_data)
+        {
+            free(loop->data);
+        }
+
+        loop = mwm_loop_remove(loop);
+    }
+
+    return NULL;
 }
 

@@ -22,6 +22,8 @@
 #ifndef LIBMWM_LOOP_H
 #define LIBMWM_LOOP_H
 
+#include <stdbool.h>
+
 struct mwm_loop
 {
     void * data;
@@ -31,6 +33,7 @@ struct mwm_loop
 
 struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data);
 struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop);
+struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data);
 
 #endif
 

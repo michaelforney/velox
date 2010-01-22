@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include "list.h"
+#include "hashtable.h"
 
 struct mwm_layout_state
 {
@@ -44,14 +45,7 @@ struct mwm_layout
     struct mwm_layout_state default_state;
 };
 
-enum
-{
-    TILE,
-    GRID,
-    LAYOUT_COUNT
-};
-
-struct mwm_layout * layouts;
+extern struct mwm_hashtable * layouts;
 
 void setup_layouts();
 void cleanup_layouts();

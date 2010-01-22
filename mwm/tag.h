@@ -23,13 +23,13 @@
 #include <xcb/xcb.h>
 
 #include "layout.h"
+#include "loop.h"
 
 struct mwm_tag
 {
     uint64_t id;
     const char * name;
-    struct mwm_layout ** layouts;
-    uint16_t layout_index;
+    struct mwm_loop * layout;
     struct mwm_layout_state state;
     xcb_window_t focus;
 };
