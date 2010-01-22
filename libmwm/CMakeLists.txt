@@ -8,3 +8,5 @@ add_library(libmwm SHARED
 
 set_target_properties(libmwm PROPERTIES OUTPUT_NAME mwm)
 
+install(TARGETS libmwm DESTINATION lib${LIB_SUFFIX})
+
