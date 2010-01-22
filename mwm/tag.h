@@ -20,6 +20,8 @@
 #ifndef MWM_TAG_H
 #define MWM_TAG_H
 
+#include <xcb/xcb.h>
+
 #include "layout.h"
 
 struct mwm_tag

@@ -29,8 +29,8 @@ struct mwm_loop
     struct mwm_loop * previous;
 };
 
-struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data)
-struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop)
+struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data);
+struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop);
 
 #endif
 

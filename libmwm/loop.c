@@ -19,6 +19,9 @@
  *
  */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "loop.h"
 
 /**
