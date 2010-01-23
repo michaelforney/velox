@@ -304,7 +304,7 @@ void hide_window(xcb_window_t window_id)
 
     printf("hide_window: %i\n", window_id);
 
-    property_values[0] = XCB_WM_STATE_ICONIC; // FIXME: Maybe this should be iconic?
+    property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
     property_values[1] = 0;
     xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
@@ -393,9 +393,6 @@ void set_tag(struct mwm_tag * new_tag)
 {
     struct mwm_loop * iterator;
     struct mwm_window * window;
-    xcb_get_input_focus_cookie_t focus_cookie;
-    xcb_get_input_focus_reply_t * focus_reply;
-    bool hid_focus = false;
 
     printf("set_tag: %i\n", tag);
 
@@ -405,6 +402,17 @@ void set_tag(struct mwm_tag * new_tag)
     }
     else
     {
+        if (new_tag->windows)
+        {
+            /* Show the windows now visible */
+            iterator = new_tag->windows;
+            do
+            {
+                show_window(((struct mwm_window *) iterator->data)->window_id);
+                iterator = iterator->next;
+            } while (iterator != new_tag->windows);
+        }
+
         if (tag->windows)
         {
             /* Hide windows no longer visible */
@@ -420,16 +428,8 @@ void set_tag(struct mwm_tag * new_tag)
 
         if (tag->windows)
         {
-            /* Show the windows now visible */
-            iterator = tag->windows;
-            do
-            {
-                show_window(((struct mwm_window *) iterator->data)->window_id);
-                iterator = iterator->next;
-            } while (iterator != tag->windows);
-
-            assert(tag->focus != NULL);
-            focus(((struct mwm_window *) tag->focus->data)->window_id);
+            assert(new_tag->focus != NULL);
+            focus(((struct mwm_window *) new_tag->focus->data)->window_id);
         }
         else
         {
