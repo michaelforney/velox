@@ -26,66 +26,58 @@
 void setup_tags()
 {
     tags = (struct mwm_tag *) malloc(TAG_COUNT * sizeof(struct mwm_tag));
+    memset(tags, 0, TAG_COUNT * sizeof(struct mwm_tag));
 
     tags[TERM].id = 1 << TERM;
     tags[TERM].name = "term";
-    tags[TERM].layout = NULL;
     tags[TERM].layout = mwm_loop_insert(tags[TERM].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[TERM].layout = mwm_loop_insert(tags[TERM].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[TERM].state = ((struct mwm_layout *) tags[TERM].layout->data)->default_state;
 
     tags[WWW].id = 1 << WWW;
     tags[WWW].name = "www";
-    tags[WWW].layout = NULL;
     tags[WWW].layout = mwm_loop_insert(tags[WWW].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[WWW].layout = mwm_loop_insert(tags[WWW].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[WWW].state = ((struct mwm_layout *) tags[WWW].layout->data)->default_state;
 
     tags[IRC].id = 1 << IRC;
     tags[IRC].name = "irc";
-    tags[IRC].layout = NULL;
     tags[IRC].layout = mwm_loop_insert(tags[IRC].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[IRC].layout = mwm_loop_insert(tags[IRC].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[IRC].state = ((struct mwm_layout *) tags[IRC].layout->data)->default_state;
 
     tags[IM].id = 1 << IM;
     tags[IM].name = "im";
-    tags[IM].layout = NULL;
     tags[IM].layout = mwm_loop_insert(tags[IM].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[IM].layout = mwm_loop_insert(tags[IM].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[IM].state = ((struct mwm_layout *) tags[IM].layout->data)->default_state;
 
     tags[CODE].id = 1 << CODE;
     tags[CODE].name = "code";
-    tags[CODE].layout = NULL;
     tags[CODE].layout = mwm_loop_insert(tags[CODE].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[CODE].layout = mwm_loop_insert(tags[CODE].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[CODE].state = ((struct mwm_layout *) tags[CODE].layout->data)->default_state;
 
     tags[MAIL].id = 1 << MAIL;
     tags[MAIL].name = "mail";
-    tags[MAIL].layout = NULL;
     tags[MAIL].layout = mwm_loop_insert(tags[MAIL].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[MAIL].layout = mwm_loop_insert(tags[MAIL].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[MAIL].state = ((struct mwm_layout *) tags[MAIL].layout->data)->default_state;
 
     tags[GFX].id = 1 << GFX;
     tags[GFX].name = "gfx";
-    tags[GFX].layout = NULL;
     tags[GFX].layout = mwm_loop_insert(tags[GFX].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[GFX].layout = mwm_loop_insert(tags[GFX].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[GFX].state = ((struct mwm_layout *) tags[GFX].layout->data)->default_state;
 
     tags[MUSIC].id = 1 << MUSIC;
     tags[MUSIC].name = "music";
-    tags[MUSIC].layout = NULL;
     tags[MUSIC].layout = mwm_loop_insert(tags[MUSIC].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[MUSIC].layout = mwm_loop_insert(tags[MUSIC].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[MUSIC].state = ((struct mwm_layout *) tags[MUSIC].layout->data)->default_state;
 
     tags[MISC].id = 1 << MISC;
     tags[MISC].name = "misc";
-    tags[MISC].layout = NULL;
     tags[MISC].layout = mwm_loop_insert(tags[MISC].layout, mwm_hashtable_lookup(layouts, "tile"));
     tags[MISC].layout = mwm_loop_insert(tags[MISC].layout, mwm_hashtable_lookup(layouts, "grid"));
     tags[MISC].state = ((struct mwm_layout *) tags[MISC].layout->data)->default_state;
