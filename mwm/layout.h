@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-#include "list.h"
+#include "loop.h"
 #include "hashtable.h"
 
 struct mwm_layout_state
@@ -41,7 +41,7 @@ struct mwm_tile_layout_state
 struct mwm_layout
 {
     const char * identifier;
-    void (* arrange)(struct mwm_list * list, struct mwm_layout_state * state);
+    void (* arrange)(struct mwm_loop * list, struct mwm_layout_state * state);
     struct mwm_layout_state default_state;
 };
 

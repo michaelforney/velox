@@ -1,3 +1,5 @@
+// vim: fdm=syntax fo=croql noet sw=4 sts=4 ts=8
+
 /* mwm: libmwm/list.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
@@ -207,6 +209,11 @@ void mwm_list_swap(struct mwm_list * first, struct mwm_list * second)
 
     assert(first);
     assert(second);
+
+    if (first == second)
+    {
+        return;
+    }
 
     data = first->data;
 

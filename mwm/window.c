@@ -71,6 +71,62 @@ struct mwm_list * window_list_delete(struct mwm_list * list, xcb_window_t window
     return list;
 }
 
+struct mwm_window * window_loop_lookup(struct mwm_loop * loop, xcb_window_t window_id)
+{
+    struct mwm_loop * iterator;
+
+    if (loop == NULL)
+    {
+        return NULL;
+    }
+    else
+    {
+        struct mwm_window * window;
+
+        iterator = loop;
+        do
+        {
+            window = (struct mwm_window *) iterator->data;
+
+            if (window->window_id == window_id)
+            {
+                return window;
+            }
+
+            iterator = iterator->next;
+        } while (iterator != loop);
+    }
+
+    return NULL;
+}
+
+struct mwm_loop * window_loop_locate(struct mwm_loop * loop, xcb_window_t window_id)
+{
+    struct mwm_loop * iterator;
+
+    if (loop == NULL)
+    {
+        return NULL;
+    }
+    else
+    {
+        struct mwm_window * window;
+
+        iterator = loop;
+        do
+        {
+            if (((struct mwm_window *) iterator->data)->window_id == window_id)
+            {
+                return iterator;
+            }
+
+            iterator = iterator->next;
+        } while (iterator != loop);
+    }
+
+    return NULL;
+}
+
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol)
 {
     xcb_get_property_cookie_t protocols_cookie;

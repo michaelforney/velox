@@ -30,8 +30,9 @@ struct mwm_tag
     uint64_t id;
     const char * name;
     struct mwm_loop * layout;
+    struct mwm_loop * windows;
+    struct mwm_loop * focus;
     struct mwm_layout_state state;
-    xcb_window_t focus;
 };
 
 enum

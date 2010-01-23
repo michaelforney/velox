@@ -30,11 +30,11 @@
 
 struct mwm_hashtable * layouts;
 
-void tile_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_state)
+void tile_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_state)
 {
     struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
     struct mwm_window * window = NULL;
-    struct mwm_list * iterator = NULL;
+    struct mwm_loop * iterator = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
@@ -55,13 +55,16 @@ void tile_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_s
     }
 
     /* Calculate number of windows */
-    for (iterator = windows; iterator != NULL; iterator = iterator->next)
+    iterator = windows;
+    do
     {
         if (!((struct mwm_window *) iterator->data)->floating)
         {
             window_count++;
         }
-    }
+
+        iterator = iterator->next;
+    } while (iterator != windows);
 
     printf("window_count: %i\n", window_count);
 
@@ -77,70 +80,71 @@ void tile_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_s
     }
 
     /* Arrange the windows */
-    for (iterator = windows, window_index = 0; iterator != NULL; iterator = iterator->next)
+    iterator = windows;
+    window_index = 0;
+    do
     {
         window = (struct mwm_window *) iterator->data;
 
-        if (window->floating)
+        if (!window->floating)
         {
-            continue;
-        }
-
-        if (window_index < state->master_count) /* Arranging a master */
-        {
-            window->x = 0;
-            window->y = window_index * screen_height / MIN(state->master_count, window_count);
-            window->width = ((window_count <= state->master_count) ? screen_width : state->master_factor * screen_width) - (2 * window->border_width);
-            window->height = screen_height / MIN(state->master_count, window_count) - (2 * window->border_width);
-        }
-        else /* Arranging the rest of the windows */
-        {
-            if (row_index == row_count)
+            if (window_index < state->master_count) /* Arranging a master */
             {
-                row_index = 0;
-                column_index++;
-                if ((window_count - state->master_count) % state->column_count == 0)
+                window->x = 0;
+                window->y = window_index * screen_height / MIN(state->master_count, window_count);
+                window->width = ((window_count <= state->master_count) ? screen_width : state->master_factor * screen_width) - (2 * window->border_width);
+                window->height = screen_height / MIN(state->master_count, window_count) - (2 * window->border_width);
+            }
+            else /* Arranging the rest of the windows */
+            {
+                if (row_index == row_count)
                 {
-                    row_count = (window_count - state->master_count) / state->column_count;
+                    row_index = 0;
+                    column_index++;
+                    if ((window_count - state->master_count) % state->column_count == 0)
+                    {
+                        row_count = (window_count - state->master_count) / state->column_count;
+                    }
+                    else
+                    {
+                        row_count = ((window_count - state->master_count) / state->column_count) + ((column_index < ((window_count - state->master_count) % state->column_count)) ? 1 : 0);
+                    }
                 }
-                else
-                {
-                    row_count = ((window_count - state->master_count) / state->column_count) + ((column_index < ((window_count - state->master_count) % state->column_count)) ? 1 : 0);
-                }
+
+                window->x = ((state->master_count == 0) ? 0 : state->master_factor * screen_width) + column_index * column_width;
+                window->y = screen_height * row_index / row_count;
+                window->width = column_width - (2 * window->border_width);
+                window->height = screen_height / row_count - (2 * window->border_width);
+
+                row_index++;
             }
 
-            window->x = ((state->master_count == 0) ? 0 : state->master_factor * screen_width) + column_index * column_width;
-            window->y = screen_height * row_index / row_count;
-            window->width = column_width - (2 * window->border_width);
-            window->height = screen_height / row_count - (2 * window->border_width);
+            mask = XCB_CONFIG_WINDOW_X |
+                   XCB_CONFIG_WINDOW_Y |
+                   XCB_CONFIG_WINDOW_WIDTH |
+                   XCB_CONFIG_WINDOW_HEIGHT;
 
-            row_index++;
+            values[0] = window->x;
+            values[1] = window->y;
+            values[2] = window->width;
+            values[3] = window->height;
+
+            printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
+
+            xcb_configure_window(c, window->window_id, mask, values);
+            synthetic_configure(window);
         }
 
-        mask = XCB_CONFIG_WINDOW_X |
-               XCB_CONFIG_WINDOW_Y |
-               XCB_CONFIG_WINDOW_WIDTH |
-               XCB_CONFIG_WINDOW_HEIGHT;
-
-        values[0] = window->x;
-        values[1] = window->y;
-        values[2] = window->width;
-        values[3] = window->height;
-
-        printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
-
-        xcb_configure_window(c, window->window_id, mask, values);
-        synthetic_configure(window);
-
         window_index++;
-    }
+
+        iterator = iterator->next;
+    } while (iterator != windows);
 }
 
-void grid_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_state)
+void grid_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_state)
 {
-    struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
     struct mwm_window * window = NULL;
-    struct mwm_list * iterator = NULL;
+    struct mwm_loop * iterator = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
@@ -162,13 +166,16 @@ void grid_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_s
     }
 
     /* Calculate number of windows */
-    for (iterator = windows; iterator != NULL; iterator = iterator->next)
+    iterator = windows;
+    do
     {
         if (!((struct mwm_window *) iterator->data)->floating)
         {
             window_count++;
         }
-    }
+
+        iterator = iterator->next;
+    } while (iterator != windows);
 
     printf("window_count: %i\n", window_count);
 
@@ -185,53 +192,54 @@ void grid_arrange(struct mwm_list * windows, struct mwm_layout_state * generic_s
     }
 
     /* Arrange the windows */
-    for (iterator = windows, window_index = 0; iterator != NULL; iterator = iterator->next)
+    iterator = windows;
+    window_index = 0;
+    do
     {
         window = (struct mwm_window *) iterator->data;
 
-        if (window->floating)
+        if (!window->floating)
         {
-            continue;
-        }
-
-        if (row_index == row_count)
-        {
-            row_index = 0;
-            column_index++;
-            if (window_count % column_count == 0)
+            if (row_index == row_count)
             {
-                row_count = window_count / column_count;
+                row_index = 0;
+                column_index++;
+                if (window_count % column_count == 0)
+                {
+                    row_count = window_count / column_count;
+                }
+                else
+                {
+                    row_count = (window_count / column_count) + ((column_index < (window_count % column_count)) ? 1 : 0);
+                }
             }
-            else
-            {
-                row_count = (window_count / column_count) + ((column_index < (window_count % column_count)) ? 1 : 0);
-            }
+
+            window->x = column_index * column_width;
+            window->y = screen_height * row_index / row_count;
+            window->width = column_width - (2 * window->border_width);
+            window->height = screen_height / row_count - (2 * window->border_width);
+
+            row_index++;
+
+            mask = XCB_CONFIG_WINDOW_X |
+                   XCB_CONFIG_WINDOW_Y |
+                   XCB_CONFIG_WINDOW_WIDTH |
+                   XCB_CONFIG_WINDOW_HEIGHT;
+
+            values[0] = window->x;
+            values[1] = window->y;
+            values[2] = window->width;
+            values[3] = window->height;
+
+            printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
+
+            xcb_configure_window(c, window->window_id, mask, values);
+            synthetic_configure(window);
         }
-
-        window->x = column_index * column_width;
-        window->y = screen_height * row_index / row_count;
-        window->width = column_width - (2 * window->border_width);
-        window->height = screen_height / row_count - (2 * window->border_width);
-
-        row_index++;
-
-        mask = XCB_CONFIG_WINDOW_X |
-               XCB_CONFIG_WINDOW_Y |
-               XCB_CONFIG_WINDOW_WIDTH |
-               XCB_CONFIG_WINDOW_HEIGHT;
-
-        values[0] = window->x;
-        values[1] = window->y;
-        values[2] = window->width;
-        values[3] = window->height;
-
-        printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
-
-        xcb_configure_window(c, window->window_id, mask, values);
-        synthetic_configure(window);
 
         window_index++;
-    }
+        iterator = iterator->next;
+    } while (iterator != windows);
 }
 
 void setup_layouts()

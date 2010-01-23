@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "loop.h"
 
@@ -75,7 +76,7 @@ struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop)
     struct mwm_loop * new_loop;
 
     /* If there is only one element in the loop */
-    if (loop == loop->next && loop == loop->previous)
+    if (mwm_loop_is_singleton(loop))
     {
         free(loop);
         return NULL;
@@ -91,6 +92,15 @@ struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop)
     return new_loop;
 }
 
+/**
+ * Delete an entire loop, and optionally free the data
+ *
+ * This is an O(n) operation
+ *
+ * @param loop The loop to delete
+ * @param free_data Whether or not to free the data enclosed in the loop
+ * @return A new pointer to the loop, in this case NULL
+ */
 struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data)
 {
     while (loop != NULL)
@@ -104,5 +114,74 @@ struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data)
     }
 
     return NULL;
+}
+
+/**
+ * Copies an entire loop
+ *
+ * This is an O(n) operation
+ *
+ * @param loop The loop to copy
+ * @return A copy of the loop
+ */
+struct mwm_loop * mwm_loop_copy(struct mwm_loop * loop)
+{
+    if (loop == NULL)
+    {
+        return NULL;
+    }
+    else
+    {
+        struct mwm_loop * iterator;
+        struct mwm_loop * new_loop, * element;
+
+        iterator = loop;
+
+        do
+        {
+            element = (struct mwm_loop *) malloc(sizeof(struct mwm_loop));
+            new_loop = mwm_loop_insert(new_loop, element);
+            iterator = iterator->next;
+        } while (iterator != loop);
+
+        return new_loop;
+    }
+}
+
+/**
+ * Swap two elements of a loop
+ *
+ * This is an O(1) operation
+ *
+ * @param first The first element to swap
+ * @param second The second element to swap
+ */
+void mwm_loop_swap(struct mwm_loop * first, struct mwm_loop * second)
+{
+    void * data;
+
+    assert(first);
+    assert(second);
+
+    if (first == second)
+    {
+        return;
+    }
+
+    data = first->data;
+
+    first->data = second->data;
+    second->data = data;
+}
+
+/**
+ * Determines whether or not a loop contains a single element
+ *
+ * @param loop The loop to check
+ * @return True if the loop contains a single element, false otherwise
+ */
+bool mwm_loop_is_singleton(struct mwm_loop * loop)
+{
+    return (loop == loop->previous) && (loop == loop->next);
 }
 

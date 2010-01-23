@@ -34,6 +34,9 @@ struct mwm_loop
 struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data);
 struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop);
 struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data);
+struct mwm_loop * mwm_loop_copy(struct mwm_loop * loop);
+void mwm_loop_swap(struct mwm_loop * first, struct mwm_loop * second);
+bool mwm_loop_is_singleton(struct mwm_loop * loop);
 
 #endif
 

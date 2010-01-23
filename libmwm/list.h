@@ -1,3 +1,5 @@
+// vim: fdm=syntax fo=croql sw=4 sts=4 ts=8
+
 /* mwm: libmwm/list.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>

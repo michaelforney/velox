@@ -70,9 +70,7 @@ xcb_cursor_t cursors[3];
 /* MWM variables */
 bool running = true;
 uint64_t tag_mask = 0;
-struct mwm_list * visible_windows = NULL;
-struct mwm_list * hidden_windows = NULL;
-struct mwm_tag * main_tag = NULL;
+struct mwm_tag * tag = NULL;
 uint16_t pending_unmaps = 0;
 uint8_t clear_event_type = 0;
 
@@ -87,6 +85,25 @@ const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 
 /* MWM macros */
 #define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
+
+struct mwm_window * tags_lookup_window(xcb_window_t window_id)
+{
+    struct mwm_window * window;
+    uint16_t index;
+
+    for (index = 0; index < TAG_COUNT; ++index)
+    {
+        window = window_loop_lookup(tags[index].windows, window_id);
+
+        if (window != NULL)
+        {
+            assert(window->tag == &tags[index]);
+            return window;
+        }
+    }
+
+    return NULL;
+}
 
 void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
@@ -265,36 +282,35 @@ void setup()
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
-    main_tag = &tags[TERM];
-    tag_mask = main_tag->id;
+    tag = &tags[TERM];
 }
 
-void show_window(struct mwm_window * window)
+void show_window(xcb_window_t window_id)
 {
     uint32_t property_values[2];
 
-    printf("show_window: %i\n", window->window_id);
+    printf("show_window: %i\n", window_id);
 
     property_values[0] = XCB_WM_STATE_NORMAL;
     property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
-    xcb_map_window(c, window->window_id);
+    xcb_map_window(c, window_id);
 }
 
-void hide_window(struct mwm_window * window)
+void hide_window(xcb_window_t window_id)
 {
     uint32_t property_values[2];
 
-    printf("hide_window: %i\n", window->window_id);
+    printf("hide_window: %i\n", window_id);
 
-    property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
+    property_values[0] = XCB_WM_STATE_ICONIC; // FIXME: Maybe this should be iconic?
     property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
     pending_unmaps++;
 
-    xcb_unmap_window(c, window->window_id);
+    xcb_unmap_window(c, window_id);
 }
 
 /**
@@ -350,8 +366,6 @@ void focus(xcb_window_t window_id)
     focus_cookie = xcb_get_input_focus(c);
     focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
 
-    main_tag->focus = window_id;
-
     if (focus_reply->focus == window_id)
     {
         return;
@@ -375,236 +389,104 @@ void focus(xcb_window_t window_id)
     xcb_flush(c);
 }
 
-void toggle_tag(struct mwm_tag * tag)
+void set_tag(struct mwm_tag * new_tag)
 {
-    // TODO: Implement
-}
-
-void set_tag(struct mwm_tag * tag)
-{
-    struct mwm_list * iterator;
+    struct mwm_loop * iterator;
     struct mwm_window * window;
     xcb_get_input_focus_cookie_t focus_cookie;
     xcb_get_input_focus_reply_t * focus_reply;
-    uint16_t windows_hidden = 0;
-    uint16_t windows_shown = 0;
-    uint16_t window_index;
     bool hid_focus = false;
-
-    if (main_tag == tag && tag_mask == tag->id)
-    {
-        return; // Nothing to do...
-    }
-
-    focus_cookie = xcb_get_input_focus(c);
-    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
 
     printf("set_tag: %i\n", tag);
 
-    main_tag = tag;
-    tag_mask = tag->id;
-
-    /* Hide windows no longer visible */
-    while (visible_windows != NULL)
+    if (tag == new_tag)
     {
-        window = (struct mwm_window *) visible_windows->data;
-
-        if (window->tags & tag_mask)
-        {
-            break;
-        }
-
-        if (window->window_id == focus_reply->focus)
-        {
-            hid_focus = true;
-        }
-
-        hidden_windows = mwm_list_insert(hidden_windows, window);
-        visible_windows = mwm_list_remove_first(visible_windows);
-
-        windows_hidden++;
-    }
-
-    if (visible_windows != NULL)
-    {
-        for (iterator = visible_windows; iterator != NULL; )
-        {
-            window = (struct mwm_window *) iterator->data;
-
-            if (!(window->tags & tag_mask))
-            {
-                if (window->window_id == focus_reply->focus)
-                {
-                    hid_focus = true;
-                }
-
-                hidden_windows = mwm_list_insert(hidden_windows, window);
-                iterator = mwm_list_remove_first(iterator);
-
-                windows_hidden++;
-            }
-            else
-            {
-                iterator = iterator->next;
-            }
-        }
-    }
-
-    /* Show previously hidden windows */
-    while (hidden_windows != NULL)
-    {
-        window = (struct mwm_window *) hidden_windows->data;
-
-        if (!(window->tags & tag_mask))
-        {
-            break;
-        }
-
-        visible_windows = mwm_list_insert(visible_windows, window);
-        hidden_windows = mwm_list_remove_first(hidden_windows);
-
-        windows_shown++;
-    }
-
-    if (hidden_windows != NULL)
-    {
-        for (iterator = hidden_windows; iterator != NULL; )
-        {
-            window = (struct mwm_window *) iterator->data;
-
-            if (window->tags & tag_mask)
-            {
-                visible_windows = mwm_list_insert(visible_windows, window);
-                iterator = mwm_list_remove_first(iterator);
-
-                windows_shown++;
-            }
-            else
-            {
-                iterator = iterator->next;
-            }
-        }
-    }
-
-    /* Show previously hidden windows */
-    for (iterator = visible_windows, window_index = 0; window_index < windows_shown; iterator = iterator->next, window_index++)
-    {
-        window = (struct mwm_window *) iterator->data;
-
-        show_window(window);
-    }
-
-    /* Hide previously shown windows */
-    for (iterator = hidden_windows, window_index = 0; window_index < windows_hidden; iterator = iterator->next, window_index++)
-    {
-        window = (struct mwm_window *) iterator->data;
-
-        hide_window(window);
-    }
-
-    if (hid_focus || focus_reply->focus == root)
-    {
-        printf("tag's focus: %i\n", main_tag->focus);
-
-        if (window_list_lookup(visible_windows, main_tag->focus) != NULL)
-        {
-            focus(main_tag->focus);
-        }
-        else
-        {
-            if (visible_windows)
-            {
-                focus(((struct mwm_window *) visible_windows->data)->window_id);
-            }
-            else
-            {
-                focus(root);
-            }
-        }
-    }
-
-    arrange();
-}
-
-void move_focus_to_tag(struct mwm_tag * tag)
-{
-    xcb_get_input_focus_cookie_t focus_cookie;
-    xcb_get_input_focus_reply_t * focus_reply;
-    struct mwm_window * window;
-
-    printf("move_focus_to_tag\n");
-
-    focus_cookie = xcb_get_input_focus(c);
-    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
-
-    if (focus_reply->focus == root || !visible_windows)
-    {
-        return;
-    }
-
-    window = (struct mwm_window *) visible_windows->data;
-
-    if (window->window_id == focus_reply->focus)
-    {
-        window->tags = tag->id;
-
-        if (!(window->tags & tag_mask))
-        {
-            if (visible_windows->next)
-            {
-                focus(((struct mwm_window *) visible_windows->next->data)->window_id);
-            }
-            else
-            {
-                focus(root);
-            }
-
-            hide_window(window);
-
-            hidden_windows = mwm_list_insert(hidden_windows, window);
-            visible_windows = mwm_list_remove_first(visible_windows);
-
-            arrange();
-        }
+        return; // Nothing to do...
     }
     else
     {
-        struct mwm_list * iterator;
-
-        for (iterator = visible_windows; iterator != NULL; iterator = iterator->next)
+        if (tag->windows)
         {
-            window = (struct mwm_window *) iterator->data;
-
-            if (window->window_id == focus_reply->focus)
+            /* Hide windows no longer visible */
+            iterator = tag->windows;
+            do
             {
-                window->tags = tag->id;
-
-                if (!(window->tags & tag_mask))
-                {
-                    if (iterator->next)
-                    {
-                        focus(((struct mwm_window *) iterator->next->data)->window_id);
-                    }
-                    else if (visible_windows != iterator)
-                    {
-                        focus(((struct mwm_window *) visible_windows->data)->window_id);
-                    }
-                    else
-                    {
-                        focus(root);
-                    }
-
-                    hide_window(window);
-
-                    hidden_windows = mwm_list_insert(hidden_windows, window);
-                    iterator = mwm_list_remove_first(iterator);
-
-                    arrange();
-                }
-
-                break;
-            }
+                hide_window(((struct mwm_window *) iterator->data)->window_id);
+                iterator = iterator->next;
+            } while (iterator != tag->windows);
         }
+
+        tag = new_tag;
+
+        if (tag->windows)
+        {
+            /* Show the windows now visible */
+            iterator = tag->windows;
+            do
+            {
+                show_window(((struct mwm_window *) iterator->data)->window_id);
+                iterator = iterator->next;
+            } while (iterator != tag->windows);
+
+            assert(tag->focus != NULL);
+            focus(((struct mwm_window *) tag->focus->data)->window_id);
+        }
+        else
+        {
+            focus(root);
+        }
+
+        arrange();
+    }
+}
+
+void move_focus_to_tag(struct mwm_tag * new_tag)
+{
+    printf("move_focus_to_tag\n");
+
+    if (tag->windows == NULL)
+    {
+        return;
+    }
+    else
+    {
+        struct mwm_loop * next_focus;
+        struct mwm_window * window;
+
+        window = (struct mwm_window *) tag->focus->data;
+
+        window->tag = new_tag;
+
+        new_tag->windows = mwm_loop_insert(new_tag->windows, tag->focus->data);
+
+        if (mwm_loop_is_singleton(new_tag->windows))
+        {
+            new_tag->focus = new_tag->windows;
+        }
+
+        /* If we removed the first element */
+        if (tag->focus == tag->windows)
+        {
+            tag->focus = mwm_loop_remove(tag->focus);
+            tag->windows = tag->focus;
+        }
+        else
+        {
+            tag->focus = mwm_loop_remove(tag->focus);
+        }
+
+        if (tag->focus)
+        {
+            focus(((struct mwm_window *) tag->focus->data)->window_id);
+        }
+        else
+        {
+            focus(root);
+        }
+
+        hide_window(window->window_id);
+
+        arrange();
     }
 
     xcb_flush(c);
@@ -614,8 +496,8 @@ void next_layout()
 {
     printf("next_layout()\n");
 
-    main_tag->layout = main_tag->layout->next;
-    main_tag->state = ((struct mwm_layout *) main_tag->layout->data)->default_state;
+    tag->layout = tag->layout->next;
+    tag->state = ((struct mwm_layout *) tag->layout->data)->default_state;
 
     arrange();
 }
@@ -624,193 +506,68 @@ void previous_layout()
 {
     printf("next_layout()\n");
 
-    main_tag->layout = main_tag->layout->previous;
-    main_tag->state = ((struct mwm_layout *) main_tag->layout->data)->default_state;
+    tag->layout = tag->layout->previous;
+    tag->state = ((struct mwm_layout *) tag->layout->data)->default_state;
 
     arrange();
 }
 
 void focus_next()
 {
-    xcb_get_input_focus_cookie_t focus_cookie;
-    xcb_get_input_focus_reply_t * focus_reply;
-
     printf("focus_next()\n");
 
-    focus_cookie = xcb_get_input_focus(c);
-    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
-
-    if (focus_reply->focus == root)
+    if (tag->focus == NULL)
     {
-        if (visible_windows)
-        {
-            focus(((struct mwm_window *) visible_windows->data)->window_id);
-        }
+        return;
     }
-    else
-    {
-        struct mwm_list * iterator;
-        struct mwm_window * window;
 
-        for (iterator = visible_windows; iterator != NULL; iterator = iterator->next)
-        {
-            window = (struct mwm_window *) iterator->data;
+    tag->focus = tag->focus->next;
 
-            if (window->window_id == focus_reply->focus)
-            {
-                xcb_window_t next_window_id;
-
-                if (iterator->next != NULL)
-                {
-                    next_window_id = ((struct mwm_window *) iterator->next->data)->window_id;
-                }
-                else
-                {
-                    next_window_id = ((struct mwm_window *) visible_windows->data)->window_id;
-                }
-
-                focus(next_window_id);
-
-                break;
-            }
-        }
-    }
+    focus(((struct mwm_window *) tag->focus->data)->window_id);
 }
 
 void focus_previous()
 {
-    xcb_get_input_focus_cookie_t focus_cookie;
-    xcb_get_input_focus_reply_t * focus_reply;
-
     printf("focus_previous()\n");
 
-    focus_cookie = xcb_get_input_focus(c);
-    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
-
-    if (focus_reply->focus == root)
+    if (tag->focus == NULL)
     {
-        if (visible_windows)
-        {
-            focus(((struct mwm_window *) visible_windows->data)->window_id);
-        }
+        return;
     }
-    else
-    {
-        struct mwm_list * iterator;
-        struct mwm_window * window;
 
-        assert(visible_windows);
+    tag->focus = tag->focus->previous;
 
-        window = (struct mwm_window *) visible_windows->data;
-
-        if (window->window_id == focus_reply->focus)
-        {
-            for (iterator = visible_windows; iterator->next != NULL; iterator = iterator->next);
-            focus(((struct mwm_window *) iterator->data)->window_id);
-        }
-        else
-        {
-            for (iterator = visible_windows; iterator != NULL; iterator = iterator->next)
-            {
-                window = (struct mwm_window *) iterator->data;
-
-                if (window->window_id == focus_reply->focus)
-                {
-                    xcb_window_t next_window_id;
-
-                    focus(((struct mwm_window *) iterator->previous->data)->window_id);
-
-                    break;
-                }
-            }
-        }
-    }
+    focus(((struct mwm_window *) tag->focus->data)->window_id);
 }
 
 void move_next()
 {
-    xcb_get_input_focus_cookie_t focus_cookie;
-    xcb_get_input_focus_reply_t * focus_reply;
-
     printf("move_next()\n");
 
-    focus_cookie = xcb_get_input_focus(c);
-    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
-
-    if (visible_windows && visible_windows->next && focus_reply->focus != root)
+    if (tag->focus == NULL)
     {
-        struct mwm_list * iterator;
-        struct mwm_window * window;
-
-        window = (struct mwm_window *) visible_windows->data;
-
-        if (window->window_id == focus_reply->focus)
-        {
-            mwm_list_swap(visible_windows, visible_windows->next);
-        }
-        else
-        {
-            for (iterator = visible_windows; iterator != NULL; iterator = iterator->next)
-            {
-                if (((struct mwm_window *) iterator->data)->window_id == focus_reply->focus)
-                {
-                    struct mwm_list * next;
-
-                    if (iterator->next != NULL)
-                    {
-                        next = iterator->next;
-                    }
-                    else
-                    {
-                        next = visible_windows;
-                    }
-
-                    mwm_list_swap(iterator, next);
-
-                    break;
-                }
-            }
-        }
-        arrange();
+        return;
     }
+
+    mwm_loop_swap(tag->focus, tag->focus->next);
+    tag->focus = tag->focus->next;
+
+    arrange();
 }
 
 void move_previous()
 {
-    xcb_get_input_focus_cookie_t focus_cookie;
-    xcb_get_input_focus_reply_t * focus_reply;
-
     printf("move_previous()\n");
 
-    focus_cookie = xcb_get_input_focus(c);
-    focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
-
-    if (visible_windows && visible_windows->next && focus_reply->focus != root) /* There must be two visible windows for this to make any sense */
+    if (tag->focus == NULL)
     {
-        struct mwm_list * iterator;
-        struct mwm_window * window;
-
-        if (((struct mwm_window *) visible_windows->data)->window_id == focus_reply->focus)
-        {
-            /* Navigate to the last element */
-            for (iterator = visible_windows; iterator->next != NULL; iterator = iterator->next);
-
-            mwm_list_swap(visible_windows, iterator);
-        }
-        else
-        {
-            for (iterator = visible_windows; iterator != NULL; iterator = iterator->next)
-            {
-                if (((struct mwm_window *) iterator->data)->window_id == focus_reply->focus)
-                {
-                    mwm_list_swap(iterator, iterator->previous);
-
-                    break;
-                }
-            }
-        }
-        arrange();
+        return;
     }
+
+    mwm_loop_swap(tag->focus, tag->focus->previous);
+    tag->focus = tag->focus->previous;
+
+    arrange();
 }
 
 void kill_focused_window()
@@ -857,9 +614,9 @@ void increase_master_factor()
 {
     printf("increase_master_factor()\n");
 
-    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
         state->master_factor = MIN(state->master_factor + 0.025, 1.0);
 
         arrange();
@@ -870,9 +627,9 @@ void decrease_master_factor()
 {
     printf("decrease_master_factor()\n");
 
-    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
         state->master_factor = MAX(state->master_factor - 0.025, 0.0);
 
         arrange();
@@ -883,9 +640,9 @@ void increase_master_count()
 {
     printf("increase_master_count()\n");
 
-    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
         state->master_count++;
 
         arrange();
@@ -896,9 +653,9 @@ void decrease_master_count()
 {
     printf("decrease_master_count()\n");
 
-    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
         state->master_count = MAX(state->master_count - 1, 0);
 
         arrange();
@@ -909,9 +666,9 @@ void increase_column_count()
 {
     printf("increase_column_count()\n");
 
-    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
         state->column_count++;
 
         arrange();
@@ -922,9 +679,9 @@ void decrease_column_count()
 {
     printf("decrease_column_count()\n");
 
-    if (strcmp(((struct mwm_layout *) main_tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&main_tag->state);
+        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
         state->column_count = MAX(state->column_count - 1, 1);
 
         arrange();
@@ -934,15 +691,15 @@ void decrease_column_count()
 void arrange()
 {
     printf("arrange()\n");
-    printf("main_tag: %i, visible_windows: %i\n", main_tag, visible_windows);
+    printf("tag: %i\n", tag);
 
-    if (main_tag == NULL || visible_windows == NULL)
+    if (tag->windows == NULL)
     {
         return;
     }
 
-    assert(main_tag->layout->data != NULL);
-    ((struct mwm_layout *) main_tag->layout->data)->arrange(visible_windows, &main_tag->state);
+    assert(tag->layout->data != NULL);
+    ((struct mwm_layout *) tag->layout->data)->arrange(tag->windows, &tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;
 }
@@ -994,11 +751,7 @@ void manage(xcb_window_t window_id)
     if (transient_for_reply->type == WINDOW && transient_id)
     {
         printf("transient_id: %i\n", transient_id);
-        transient = window_list_lookup(visible_windows, transient_id);
-        if (transient == NULL)
-        {
-            transient = window_list_lookup(hidden_windows, transient_id);
-        }
+        transient = tags_lookup_window(transient_id);
 
         window->floating = true;
     }
@@ -1009,11 +762,11 @@ void manage(xcb_window_t window_id)
 
     if (transient != NULL)
     {
-        window->tags = transient->tags;
+        window->tag = transient->tag;
     }
     else
     {
-        window->tags = main_tag->id;
+        window->tag = tag;
     }
 
     free(transient_for_reply);
@@ -1049,9 +802,10 @@ void manage(xcb_window_t window_id)
 
     synthetic_configure(window);
 
-    if (tag_mask & window->tags)
+    if (tag == window->tag)
     {
-        visible_windows = mwm_list_insert(visible_windows, window);
+        tag->windows = mwm_loop_insert(tag->windows, window)->previous;
+        tag->focus = tag->windows;
 
         arrange();
 
@@ -1061,40 +815,69 @@ void manage(xcb_window_t window_id)
         property_values[1] = 0;
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
-        focus(((struct mwm_window *) visible_windows->data)->window_id);
+        focus(window->window_id);
 
     }
     else
     {
-        hide_window(window);
-        hidden_windows = mwm_list_insert(visible_windows, window);
+        window->tag->windows = mwm_loop_insert(window->tag->windows, window)->previous;
+        window->tag->focus = window->tag->windows;
+
+        hide_window(window->window_id);
     }
 }
 
 void unmanage(struct mwm_window * window)
 {
-    // FIXME: This should be done a better way
-    if (window_list_lookup(visible_windows, window->window_id) != NULL)
-    {
-        visible_windows = window_list_delete(visible_windows, window->window_id);
+    struct mwm_loop * iterator;
 
-        arrange();
-    }
-    else
+    iterator = window->tag->windows;
+    if (iterator == NULL) return;
+    do
     {
-        hidden_windows = window_list_delete(hidden_windows, window->window_id);
-    }
+        if (iterator->data == window)
+        {
+            if (iterator == window->tag->focus)
+            {
+                if (mwm_loop_is_singleton(window->tag->windows))
+                {
+                    window->tag->focus = NULL;
+                }
+                else
+                {
+                    window->tag->focus = window->tag->focus->next;
+                }
+            }
 
-    free(window);
+            if (iterator == window->tag->windows)
+            {
+                iterator = mwm_loop_remove(iterator);
+                window->tag->windows = iterator;
+            }
+            else
+            {
+                iterator = mwm_loop_remove(iterator);
+            }
 
-    if (visible_windows)
-    {
-        focus(((struct mwm_window *) visible_windows->data)->window_id);
-    }
-    else
-    {
-        focus(root);
-    }
+            if (tag == window->tag)
+            {
+                if (tag->focus)
+                {
+                    focus(((struct mwm_window *) tag->focus->data)->window_id);
+                }
+                else
+                {
+                    focus(root);
+                }
+
+                arrange();
+            }
+
+            return;
+        }
+
+        iterator = iterator->next;
+    } while (iterator != window->tag->windows);
 }
 
 void manage_existing_windows()
@@ -1212,11 +995,12 @@ void button_press(xcb_button_press_event_t * event)
 
 void configure_request(xcb_configure_request_event_t * event)
 {
+    // TODO: Rewrite
     printf("configure_request\n");
 
     struct mwm_window * window = NULL;
 
-    window = window_list_lookup(visible_windows, event->window);
+    window = tags_lookup_window(event->window);
 
     if (window)
     {
@@ -1233,12 +1017,6 @@ void configure_request(xcb_configure_request_event_t * event)
             printf("configure_request: case 1\n");
             synthetic_configure(window);
         }
-    }
-    /* Case 1 of the ICCCM 4.1.5 */
-    else if (window_list_lookup(hidden_windows, event->window) != NULL) // Will this ever happen?
-    {
-        printf("configure_request: case 1\n");
-        synthetic_configure(window);
     }
     /* Case 2 of the ICCCM 4.1.5 */
     else
@@ -1308,11 +1086,7 @@ void destroy_notify(xcb_destroy_notify_event_t * event)
 
     printf("window_id: %i\n", event->window);
 
-    window = window_list_lookup(visible_windows, event->window);
-    if (window == NULL)
-    {
-        window = window_list_lookup(hidden_windows, event->window);
-    }
+    window = tags_lookup_window(event->window);
 
     if (window != NULL)
     {
@@ -1322,6 +1096,7 @@ void destroy_notify(xcb_destroy_notify_event_t * event)
 
 void enter_notify(xcb_enter_notify_event_t * event)
 {
+    struct mwm_loop * element;
     struct mwm_window * window;
 
     printf("enter_notify\n");
@@ -1334,7 +1109,8 @@ void enter_notify(xcb_enter_notify_event_t * event)
     }
     else
     {
-        window = window_list_lookup(visible_windows, event->event);
+        element = window_loop_locate(tag->windows, event->event);
+        window = (struct mwm_window *) element->data;
 
         if (window != NULL)
         {
@@ -1344,6 +1120,7 @@ void enter_notify(xcb_enter_notify_event_t * event)
             if (event->mode == XCB_NOTIFY_MODE_NORMAL && event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
             {
                 focus(window->window_id);
+                window->tag->focus = element;
             }
         }
     }
@@ -1399,11 +1176,7 @@ void map_request(xcb_map_request_event_t * event)
 
     window_attributes_cookie = xcb_get_window_attributes(c, event->window);
 
-    maybe_window = window_list_lookup(hidden_windows, event->window);
-    if (maybe_window == NULL)
-    {
-        maybe_window = window_list_lookup(visible_windows, event->window);
-    }
+    maybe_window = tags_lookup_window(event->window);
 
     window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
 
@@ -1431,7 +1204,7 @@ void unmap_notify(xcb_unmap_notify_event_t * event)
         return;
     }
 
-    window = window_list_lookup(visible_windows, event->window);
+    window = window_loop_lookup(tag->windows, event->window);
 
     if (window != NULL)
     {

@@ -25,6 +25,7 @@
 #include <xcb/xcb.h>
 
 #include <list.h>
+#include <tag.h>
 
 struct mwm_window
 {
@@ -33,16 +34,20 @@ struct mwm_window
     char * name;
     char * class;
 
+    struct mwm_tag * tag;
+
     int16_t x, y;
     uint16_t width, height;
     uint16_t border_width;
 
     bool floating;
-    uint64_t tags;
 };
 
 struct mwm_window * window_list_lookup(struct mwm_list * list, xcb_window_t window_id);
 struct mwm_list * window_list_delete(struct mwm_list * list, xcb_window_t window_id);
+
+struct mwm_window * window_loop_lookup(struct mwm_loop * loop, xcb_window_t window_id);
+struct mwm_loop * window_loop_locate(struct mwm_loop * loop, xcb_window_t window_id);
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
 
