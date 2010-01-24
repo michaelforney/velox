@@ -1109,9 +1109,6 @@ void destroy_notify(xcb_destroy_notify_event_t * event)
 
 void enter_notify(xcb_enter_notify_event_t * event)
 {
-    struct mwm_loop * element;
-    struct mwm_window * window;
-
     printf("enter_notify\n");
 
     printf("window_id: %i\n", event->event);
@@ -1122,11 +1119,15 @@ void enter_notify(xcb_enter_notify_event_t * event)
     }
     else
     {
-        element = window_loop_locate(tag->windows, event->event);
-        window = (struct mwm_window *) element->data;
+        struct mwm_loop * element;
 
-        if (window != NULL)
+        element = window_loop_locate(tag->windows, event->event);
+
+        if (element != NULL)
         {
+            struct mwm_window * window;
+
+            window = (struct mwm_window *) element->data;
             printf("mode: %i\n", event->mode);
             printf("detail: %i\n", event->detail);
 
