@@ -133,9 +133,9 @@ void tile_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_s
 
             xcb_configure_window(c, window->window_id, mask, values);
             synthetic_configure(window);
-        }
 
-        window_index++;
+            window_index++;
+        }
 
         iterator = iterator->next;
     } while (iterator != windows);
@@ -235,9 +235,10 @@ void grid_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_s
 
             xcb_configure_window(c, window->window_id, mask, values);
             synthetic_configure(window);
+
+            window_index++;
         }
 
-        window_index++;
         iterator = iterator->next;
     } while (iterator != windows);
 }
