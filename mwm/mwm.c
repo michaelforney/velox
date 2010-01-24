@@ -211,8 +211,10 @@ void setup()
     check_wm_running();
 
     /* Allocate colors */
-    border_color_cookie = xcb_alloc_color(c, screen->default_colormap, border_color[0], border_color[1], border_color[2]);
-    border_focus_color_cookie = xcb_alloc_color(c, screen->default_colormap, border_focus_color[0], border_focus_color[1], border_focus_color[2]);
+    border_color_cookie = xcb_alloc_color(c, screen->default_colormap,
+        border_color[0], border_color[1], border_color[2]);
+    border_focus_color_cookie = xcb_alloc_color(c, screen->default_colormap,
+        border_focus_color[0], border_focus_color[1], border_focus_color[2]);
 
     /* Setup atoms */
     atom_cookies = (xcb_intern_atom_cookie_t *) malloc(atom_length * sizeof(xcb_intern_atom_cookie_t));
@@ -837,8 +839,6 @@ void manage(xcb_window_t window_id)
     {
         window->tag->windows = mwm_loop_insert(window->tag->windows, window)->previous;
         window->tag->focus = window->tag->windows;
-
-        hide_window(window->window_id);
     }
 }
 
@@ -1081,9 +1081,7 @@ void configure_request(xcb_configure_request_event_t * event)
 
 void configure_notify(xcb_configure_notify_event_t * event)
 {
-    printf("configure_notify\n");
-
-    printf("window_id: %i\n", event->window);
+    printf("configure_notify: %i\n", event->window);
 
     if (event->window == root)
     {
