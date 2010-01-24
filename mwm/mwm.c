@@ -1201,7 +1201,18 @@ void map_request(xcb_map_request_event_t * event)
 
 void property_notify(xcb_property_notify_event_t * event)
 {
-    printf("property_notify\n");
+    xcb_get_atom_name_cookie_t atom_name_cookie;
+    xcb_get_atom_name_reply_t * atom_name;
+
+    printf("property_notify: %i\n", event->window);
+
+    atom_name_cookie = xcb_get_atom_name(c, event->atom);
+    atom_name = xcb_get_atom_name_reply(c, atom_name_cookie, NULL);
+
+    if (atom_name)
+    {
+        printf("atom: %s\n", strndup(xcb_get_atom_name_name(atom_name), xcb_get_atom_name_name_length(atom_name)));
+    }
 }
 
 void unmap_notify(xcb_unmap_notify_event_t * event)
