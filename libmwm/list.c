@@ -156,15 +156,17 @@ struct mwm_list * mwm_list_reverse(struct mwm_list * list)
     struct mwm_list * iterator;
     struct mwm_list * next;
 
-    for (iterator = list, next = iterator; next != NULL; iterator = next)
+    for (iterator = list; iterator != NULL; iterator = iterator->previous)
     {
         next = iterator->next;
 
         iterator->next = iterator->previous;
         iterator->previous = next;
+
+        next = iterator;
     }
 
-    return iterator;
+    return next;
 }
 
 /**

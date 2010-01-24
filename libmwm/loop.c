@@ -133,14 +133,13 @@ struct mwm_loop * mwm_loop_copy(struct mwm_loop * loop)
     else
     {
         struct mwm_loop * iterator;
-        struct mwm_loop * new_loop, * element;
+        struct mwm_loop * new_loop = NULL;
 
         iterator = loop;
 
         do
         {
-            element = (struct mwm_loop *) malloc(sizeof(struct mwm_loop));
-            new_loop = mwm_loop_insert(new_loop, element);
+            new_loop = mwm_loop_insert(new_loop, iterator->data);
             iterator = iterator->next;
         } while (iterator != loop);
 
