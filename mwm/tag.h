@@ -35,21 +35,7 @@ struct mwm_tag
     struct mwm_layout_state state;
 };
 
-enum
-{
-    TERM,
-    WWW,
-    IRC,
-    IM,
-    CODE,
-    MAIL,
-    GFX,
-    MUSIC,
-    MISC,
-    TAG_COUNT
-};
-
-struct mwm_tag * tags;
+extern struct mwm_list * tags;
 
 void setup_tags();
 void cleanup_tags();

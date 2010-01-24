@@ -88,16 +88,19 @@ const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 
 struct mwm_window * tags_lookup_window(xcb_window_t window_id)
 {
+    struct mwm_list * iterator;
+    struct mwm_tag * tag;
     struct mwm_window * window;
     uint16_t index;
 
-    for (index = 0; index < TAG_COUNT; ++index)
+    for (iterator = tags; iterator != NULL; iterator = iterator->next)
     {
-        window = window_loop_lookup(tags[index].windows, window_id);
+        tag = (struct mwm_tag *) iterator->data;
+        window = window_loop_lookup(tag->windows, window_id);
 
         if (window != NULL)
         {
-            assert(window->tag == &tags[index]);
+            assert(window->tag == tag);
             return window;
         }
     }
@@ -282,7 +285,7 @@ void setup()
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
-    tag = &tags[TERM];
+    tag = (struct mwm_tag *) tags->data;
 }
 
 void show_window(xcb_window_t window_id)
@@ -389,12 +392,15 @@ void focus(xcb_window_t window_id)
     xcb_flush(c);
 }
 
-void set_tag(struct mwm_tag * new_tag)
+void set_tag(uint8_t index)
 {
-    struct mwm_loop * iterator;
-    struct mwm_window * window;
+    struct mwm_list * tag_iterator;
+    struct mwm_tag * new_tag;
 
-    printf("set_tag: %i\n", tag);
+    for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
+    new_tag = (struct mwm_tag *) tag_iterator->data;
+
+    printf("set_tag: %i\n", new_tag);
 
     if (tag == new_tag)
     {
@@ -402,6 +408,9 @@ void set_tag(struct mwm_tag * new_tag)
     }
     else
     {
+        struct mwm_loop * iterator;
+        struct mwm_window * window;
+
         if (new_tag->windows)
         {
             /* Show the windows now visible */
@@ -440,9 +449,15 @@ void set_tag(struct mwm_tag * new_tag)
     }
 }
 
-void move_focus_to_tag(struct mwm_tag * new_tag)
+void move_focus_to_tag(uint8_t index)
 {
-    printf("move_focus_to_tag\n");
+    struct mwm_list * tag_iterator;
+    struct mwm_tag * new_tag;
+
+    for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
+    new_tag = (struct mwm_tag *) tag_iterator->data;
+
+    printf("move_focus_to_tag: %i\n", new_tag);
 
     if (tag->windows == NULL)
     {

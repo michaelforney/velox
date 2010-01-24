@@ -62,8 +62,8 @@ void previous_layout();
 
 void quit();
 
-void set_tag(struct mwm_tag * tag);
-void move_focus_to_tag(struct mwm_tag * tag);
+void set_tag(uint8_t index);
+void move_focus_to_tag(uint8_t index);
 
 #endif
 
