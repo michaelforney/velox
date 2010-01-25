@@ -25,6 +25,8 @@
 #include <string.h>
 #include <dirent.h>
 
+#include "hook.h"
+
 const char name[] = "wallpaper";
 
 void set_wallpaper();
@@ -32,6 +34,8 @@ void set_wallpaper();
 void initialize()
 {
     printf(">>> wallpaper plugin\n");
+
+    add_startup_hook(&set_wallpaper);
 }
 
 void cleanup()
