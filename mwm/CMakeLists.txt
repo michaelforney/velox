@@ -11,7 +11,14 @@ add_executable(mwm
 
 include_directories(${mwm_SOURCE_DIR}/libmwm)
 
-target_link_libraries(mwm libmwm ${XCB_LIBRARIES} m)
+target_link_libraries(mwm
+    libmwm
+    ${XCB_LIBRARIES}
+    ${XCB-Atom_LIBRARIES}
+    ${XCB-ICCCM_LIBRARIES}
+    ${XCB-Aux_LIBRARIES}
+    m
+)
 
 install(TARGETS mwm DESTINATION bin)
 
