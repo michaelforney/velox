@@ -1,6 +1,6 @@
 /* mwm: mwm/hook.h
  *
- * Copyright (c) 2009 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,17 +22,13 @@
 
 #include "window.h"
 
-struct mwm_startup_hook
-{
-    uint64_t id;
-    void (* hook)();
-};
+typedef void (* mwm_startup_hook_t)();
+typedef void (* mwm_manage_hook_t)(struct mwm_window *);
 
-struct mwm_manage_hook
-{
-    uint64_t id;
-    void (* hook)(struct mwm_window * window);
-};
+void setup_hooks();
+
+void add_startup_hook(mwm_startup_hook_t hook);
+void add_manage_hook(mwm_manage_hook_t hook);
 
 void run_startup_hooks();
 void run_manage_hooks(struct mwm_window * window);

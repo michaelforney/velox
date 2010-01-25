@@ -287,6 +287,7 @@ void setup()
     setup_tags();
     setup_configured_keys();
     setup_key_bindings();
+    setup_hooks();
 
     initialize_plugins();
 

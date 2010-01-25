@@ -24,40 +24,46 @@
 #include "mwm.h"
 #include "hook.h"
 
-typedef void (* startup_hook_t)();
-typedef void (* manage_hook_t)(struct mwm_window *);
-
 /* Manage hooks */
 void handle_floating(struct mwm_window * window);
 void handle_fullscreen(struct mwm_window * window);
 
-startup_hook_t startup_hooks[] = {
-};
+struct mwm_list * startup_hooks;
+struct mwm_list * manage_hooks;
 
-manage_hook_t manage_hooks[] = {
-    &handle_floating,
-    &handle_fullscreen
-};
+void setup_hooks()
+{
+    add_manage_hook(&handle_floating);
+    add_manage_hook(&handle_fullscreen);
+}
+
+void add_startup_hook(mwm_startup_hook_t hook)
+{
+    startup_hooks = mwm_list_insert(startup_hooks, hook);
+}
+
+void add_manage_hook(mwm_manage_hook_t hook)
+{
+    manage_hooks = mwm_list_insert(manage_hooks, hook);
+}
 
 void run_startup_hooks()
 {
-    uint16_t startup_hooks_count = sizeof(startup_hooks) / sizeof(startup_hook_t);
-    uint16_t startup_hook_index;
+    struct mwm_list * iterator;
 
-    for (startup_hook_index = 0; startup_hook_index < startup_hooks_count; startup_hook_index++)
+    for (iterator = startup_hooks; iterator != NULL; iterator = iterator->next)
     {
-        startup_hooks[startup_hook_index]();
+        ((mwm_startup_hook_t) iterator->data)();
     }
 }
 
 void run_manage_hooks(struct mwm_window * window)
 {
-    uint16_t manage_hooks_count = sizeof(manage_hooks) / sizeof(manage_hook_t);
-    uint16_t manage_hook_index;
+    struct mwm_list * iterator;
 
-    for (manage_hook_index = 0; manage_hook_index < manage_hooks_count; manage_hook_index++)
+    for (iterator = manage_hooks; iterator != NULL; iterator = iterator->next)
     {
-        manage_hooks[manage_hook_index](window);
+        ((mwm_manage_hook_t) iterator->data)(window);
     }
 }
 
