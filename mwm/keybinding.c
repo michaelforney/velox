@@ -59,7 +59,6 @@ void setup_configured_keys()
 {
     FILE * file;
     char identifier[256];
-    uint16_t mod;
     struct mwm_key * key;
     struct mwm_list * keys;
 
@@ -93,99 +92,86 @@ void setup_configured_keys()
             root_value = yaml_document_get_node(&document, root_pair->value);
 
             assert(root_key->type == YAML_SCALAR_NODE);
+            assert(root_value->type == YAML_MAPPING_NODE);
 
-            if (strcmp(root_key->data.scalar.value, "mod") == 0)
+            yaml_node_pair_t * set_pair;
+            yaml_node_t * set_key, * set_value;
+
+            /* For each set of key mappings */
+            for (set_pair = root_value->data.mapping.pairs.start;
+                set_pair < root_value->data.mapping.pairs.top;
+                ++set_pair)
             {
-                assert(root_value->type == YAML_SCALAR_NODE);
-                mod = modifier_value(root_value->data.scalar.value);
-            }
-            else
-            {
-                yaml_node_pair_t * set_pair;
-                yaml_node_t * set_key, * set_value;
+                yaml_node_item_t * mapping_item;
+                yaml_node_t * mapping_node;
 
-                assert(root_value->type == YAML_MAPPING_NODE);
+                set_key = yaml_document_get_node(&document, set_pair->key);
+                set_value = yaml_document_get_node(&document, set_pair->value);
 
-                /* For each set of key mappings */
-                for (set_pair = root_value->data.mapping.pairs.start;
-                    set_pair < root_value->data.mapping.pairs.top;
-                    ++set_pair)
+                assert(set_key->type == YAML_SCALAR_NODE);
+                assert(set_value->type == YAML_SEQUENCE_NODE);
+
+                keys = NULL;
+                snprintf(identifier, sizeof(identifier), "%s:%s",
+                    root_key->data.scalar.value,
+                    set_key->data.scalar.value
+                );
+
+                /* For each key mapping */
+                for (mapping_item = set_value->data.sequence.items.start;
+                    mapping_item < set_value->data.sequence.items.top;
+                    ++mapping_item)
                 {
-                    yaml_node_item_t * mapping_item;
-                    yaml_node_t * mapping_node;
+                    yaml_node_pair_t * key_pair;
+                    yaml_node_t * key_key, * key_value;
 
-                    set_key = yaml_document_get_node(&document, set_pair->key);
-                    set_value = yaml_document_get_node(&document, set_pair->value);
+                    mapping_node = yaml_document_get_node(&document, *mapping_item);
 
-                    assert(set_key->type == YAML_SCALAR_NODE);
-                    assert(set_value->type == YAML_SEQUENCE_NODE);
+                    assert(mapping_node->type == YAML_MAPPING_NODE);
 
-                    keys = NULL;
-                    snprintf(identifier, sizeof(identifier), "%s:%s", root_key->data.scalar.value, set_key->data.scalar.value);
+                    key = (struct mwm_key *) malloc(sizeof(struct mwm_key));
 
-                    /* For each key mapping */
-                    for (mapping_item = set_value->data.sequence.items.start;
-                        mapping_item < set_value->data.sequence.items.top;
-                        ++mapping_item)
+                    /* Identify key */
+                    for (key_pair = mapping_node->data.mapping.pairs.start;
+                        key_pair < mapping_node->data.mapping.pairs.top;
+                        ++key_pair)
                     {
-                        yaml_node_pair_t * key_pair;
-                        yaml_node_t * key_key, * key_value;
+                        key_key = yaml_document_get_node(&document, key_pair->key);
+                        key_value = yaml_document_get_node(&document, key_pair->value);
 
-                        mapping_node = yaml_document_get_node(&document, *mapping_item);
+                        assert(key_key->type == YAML_SCALAR_NODE);
 
-                        assert(mapping_node->type == YAML_MAPPING_NODE);
-
-                        key = (struct mwm_key *) malloc(sizeof(struct mwm_key));
-
-                        /* Identify key */
-                        for (key_pair = mapping_node->data.mapping.pairs.start;
-                            key_pair < mapping_node->data.mapping.pairs.top;
-                            ++key_pair)
+                        if (strcmp((const char const *) key_key->data.scalar.value, "mod") == 0)
                         {
-                            key_key = yaml_document_get_node(&document, key_pair->key);
-                            key_value = yaml_document_get_node(&document, key_pair->value);
+                            yaml_node_item_t * mod_item;
+                            yaml_node_t * mod_node;
 
-                            assert(key_key->type == YAML_SCALAR_NODE);
+                            key->modifiers = 0;
 
-                            if (strcmp(key_key->data.scalar.value, "mod") == 0)
+                            assert(key_value->type == YAML_SEQUENCE_NODE);
+
+                            for (mod_item = key_value->data.sequence.items.start;
+                                mod_item < key_value->data.sequence.items.top;
+                                ++mod_item)
                             {
-                                yaml_node_item_t * mod_item;
-                                yaml_node_t * mod_node;
-
-                                key->modifiers = 0;
-
-                                assert(key_value->type == YAML_SEQUENCE_NODE);
-
-                                for (mod_item = key_value->data.sequence.items.start;
-                                    mod_item < key_value->data.sequence.items.top;
-                                    ++mod_item)
-                                {
-                                    mod_node = yaml_document_get_node(&document, *mod_item);
-                                    assert(mod_node->type == YAML_SCALAR_NODE);
-                                    if (strcmp(mod_node->data.scalar.value, "mod") == 0)
-                                    {
-                                        key->modifiers |= mod;
-                                    }
-                                    else
-                                    {
-                                        key->modifiers |= modifier_value(mod_node->data.scalar.value);
-                                    }
-                                }
-                            }
-                            else if (strcmp(key_key->data.scalar.value, "key") == 0)
-                            {
-                                assert(key_value->type == YAML_SCALAR_NODE);
-                                key->keysym = XStringToKeysym(key_value->data.scalar.value);
+                                mod_node = yaml_document_get_node(&document, *mod_item);
+                                assert(mod_node->type == YAML_SCALAR_NODE);
+                                key->modifiers |= modifier_value((const char const *) mod_node->data.scalar.value);
                             }
                         }
-
-                        printf("%s: modifiers: %i, keysym: %x\n", identifier, key->modifiers, key->keysym);
-                        keys = mwm_list_insert(keys, key);
+                        else if (strcmp((const char const *) key_key->data.scalar.value, "key") == 0)
+                        {
+                            assert(key_value->type == YAML_SCALAR_NODE);
+                            key->keysym = XStringToKeysym((const char const *) key_value->data.scalar.value);
+                        }
                     }
 
-                    assert(!mwm_hashtable_exists(configured_keys, identifier));
-                    mwm_hashtable_insert(configured_keys, identifier, keys);
+                    printf("%s: modifiers: %i, keysym: %x\n", identifier, key->modifiers, key->keysym);
+                    keys = mwm_list_insert(keys, key);
                 }
+
+                assert(!mwm_hashtable_exists(configured_keys, identifier));
+                mwm_hashtable_insert(configured_keys, identifier, keys);
             }
         }
 
