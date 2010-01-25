@@ -15,4 +15,7 @@ find_package(XCB-Aux REQUIRED)
 
 add_subdirectory(libmwm)
 add_subdirectory(mwm)
+add_subdirectory(plugins)
+
+install(FILES mwm.yaml DESTINATION /etc/mwm)
 

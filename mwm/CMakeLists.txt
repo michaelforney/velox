@@ -7,6 +7,8 @@ add_executable(mwm
     hook.c
     tag.c
     keybinding.c
+    config_file.c
+    plugin.c
 )
 
 include_directories(${mwm_SOURCE_DIR}/libmwm)
@@ -17,6 +19,8 @@ target_link_libraries(mwm
     ${XCB-Atom_LIBRARIES}
     ${XCB-ICCCM_LIBRARIES}
     ${XCB-Aux_LIBRARIES}
+    ${LibYAML_LIBRARIES}
+    dl
     m
 )
 

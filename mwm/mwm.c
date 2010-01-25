@@ -1,6 +1,6 @@
 /* mwm: mwm/mwm.c
  *
- * Copyright (c) 2009 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,8 @@
 #include "tag.h"
 #include "hook.h"
 #include "keybinding.h"
+#include "config_file.h"
+#include "plugin.h"
 
 /* X variables */
 xcb_connection_t * c;
@@ -284,6 +286,8 @@ void setup()
     setup_layouts();
     setup_tags();
     setup_key_bindings();
+
+    initialize_plugins();
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
@@ -1333,6 +1337,7 @@ void quit()
 
 void cleanup()
 {
+    cleanup_plugins();
     cleanup_key_bindings();
     cleanup_tags();
     cleanup_layouts();
@@ -1351,6 +1356,7 @@ int main(int argc, char ** argv)
 {
     srand(time(NULL));
 
+    parse_config();
     setup();
     manage_existing_windows();
     run_startup_hooks();
