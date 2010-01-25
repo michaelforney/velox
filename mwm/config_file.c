@@ -25,28 +25,31 @@
 #include "config_file.h"
 #include "plugin.h"
 
+FILE * open_config_file(const char * name)
+{
+    FILE * file;
+    char path[1024];
+
+    snprintf(path, sizeof(path), "%s/.mwm/%s", getenv("HOME"), name);
+    if ((file = fopen(path, "r")) != NULL) return file;
+
+    snprintf(path, sizeof(path), "/etc/mwm/%s", name);
+    if ((file = fopen(path, "r")) != NULL) return file;
+
+    return NULL;
+}
+
 void parse_config()
 {
     FILE * file;
     char path[1024];
 
     yaml_parser_t parser;
-    yaml_event_t event;
     yaml_document_t document;
 
-    snprintf(path, sizeof(path), "%s/.mwm/mwm.yaml", getenv("HOME"));
+    file = open_config_file("mwm.yaml");
 
-    file = fopen(path, "r");
-
-    if (!file)
-    {
-        file = fopen("/etc/mwm/mwm.yaml", "r");
-    }
-    if (!file)
-    {
-        printf("Could not open config file\n");
-        return;
-    }
+    if (file == NULL) return;
 
     yaml_parser_initialize(&parser);
     yaml_parser_set_input_file(&parser, file);
@@ -67,7 +70,7 @@ void parse_config()
 
             assert(key->type == YAML_SCALAR_NODE);
 
-            if (strncmp(key->data.scalar.value, "plugins", 7) == 0)
+            if (strcmp(key->data.scalar.value, "plugins") == 0)
             {
                 yaml_node_item_t * plugin_item;
                 yaml_node_t * node;
@@ -84,10 +87,15 @@ void parse_config()
                 }
             }
         }
+
+        yaml_document_delete(&document);
+        yaml_parser_delete(&parser);
     }
     else
     {
         printf("Error parsing document\n");
     }
+
+    fclose(file);
 }
 

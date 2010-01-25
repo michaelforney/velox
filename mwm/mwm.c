@@ -141,7 +141,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 
             for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
             {
-                if (keysyms[keysym_index] == binding->keysym)
+                if (keysyms[keysym_index] == binding->key->keysym)
                 {
                     binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
                     break;
@@ -151,7 +151,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
             for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
             {
                 xcb_grab_key(c, true, root,
-                    binding->modifiers | extra_modifiers[extra_modifier_index],
+                    binding->key->modifiers | extra_modifiers[extra_modifier_index],
                     binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
                 );
             }
@@ -285,6 +285,7 @@ void setup()
 
     setup_layouts();
     setup_tags();
+    setup_configured_keys();
     setup_key_bindings();
 
     initialize_plugins();
@@ -1164,7 +1165,7 @@ void key_press(xcb_key_press_event_t * event)
     {
         binding = (struct mwm_key_binding *) iterator->data;
 
-        if (keysym == binding->keysym && CLEAN_MASK(event->state) == binding->modifiers)
+        if (keysym == binding->key->keysym && CLEAN_MASK(event->state) == binding->key->modifiers)
         {
             if (binding->function != NULL)
             {

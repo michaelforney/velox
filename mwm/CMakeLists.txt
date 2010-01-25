@@ -20,6 +20,7 @@ target_link_libraries(mwm
     ${XCB-ICCCM_LIBRARIES}
     ${XCB-Aux_LIBRARIES}
     ${LibYAML_LIBRARIES}
+    ${X11_LIBRARIES}
     dl
     m
 )

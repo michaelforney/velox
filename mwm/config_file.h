@@ -23,6 +23,7 @@
 #define MWM_CONFIG_FILE_H
 
 void parse_config();
+FILE * open_config_file(const char * name);
 
 #endif
 

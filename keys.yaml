@@ -1,0 +1,74 @@
+%YAML 1.1
+---
+mod: mod_4
+mwm:
+
+    focus_next:
+        - mod: [mod]
+          key: h
+    focus_previous:
+        - mod: [mod]
+          key: t
+
+    move_next:
+        - mod: [mod, mod_shift]
+          key: h
+    move_previous:
+        - mod: [mod, mod_shift]
+          key: t
+
+    kill_focused_window:
+        - mod: [mod, mod_shift]
+          key: c
+
+    next_layout:
+        - mod: [mod]
+          key: space
+    previous_layout:
+        - mod: [mod, mod_shift]
+          key: space
+
+    quit:
+        - mod: [mod, mod_shift]
+          key: q
+
+layout_tile:
+    decrease_master_factor:
+        - mod: [mod]
+          key: d
+    increase_master_factor:
+        - mod: [mod]
+          key: n
+    increase_master_count:
+        - mod: [mod, mod_shift]
+          key: d
+    decrease_master_count:
+        - mod: [mod, mod_shift]
+          key: n
+    increase_column_count:
+        - mod: [mod, mod_control]
+          key: d
+    decrease_column_count:
+        - mod: [mod, mod_control]
+          key: n
+
+spawn:
+    spawn_terminal:
+        - mod: [mod, mod_shift]
+          key: Return
+    spawn_dmenu:
+        - mod: [mod]
+          key: r
+
+tag:
+    set_tag_1: [{mod: [mod], key: "1"}]
+    set_tag_2: [{mod: [mod], key: "2"}]
+    set_tag_3: [{mod: [mod], key: "3"}]
+    set_tag_4: [{mod: [mod], key: "4"}]
+    set_tag_5: [{mod: [mod], key: "5"}]
+    set_tag_6: [{mod: [mod], key: "6"}]
+    set_tag_7: [{mod: [mod], key: "7"}]
+    set_tag_8: [{mod: [mod], key: "8"}]
+    set_tag_9: [{mod: [mod], key: "9"}]
+...
+

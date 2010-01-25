@@ -12,10 +12,11 @@ find_package(XCB REQUIRED)
 find_package(XCB-Atom REQUIRED)
 find_package(XCB-ICCCM REQUIRED)
 find_package(XCB-Aux REQUIRED)
+find_package(X11 REQUIRED) # For XStringToKeysym
 
 add_subdirectory(libmwm)
 add_subdirectory(mwm)
 add_subdirectory(plugins)
 
-install(FILES mwm.yaml DESTINATION /etc/mwm)
+install(FILES mwm.yaml keys.yaml DESTINATION /etc/mwm)
 
