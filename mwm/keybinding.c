@@ -30,7 +30,8 @@
 #include "mwm.h"
 
 #define ADD_TAG_KEY_BINDINGS(N) \
-    add_configured_key_binding("tag", STRING_SYMBOL(set_tag_ ## N));
+    add_configured_key_binding("tag", STRING_SYMBOL(set_tag_ ## N)); \
+    add_configured_key_binding("tag", STRING_SYMBOL(move_focus_to_tag_ ## N));
 
 #define STRING_SYMBOL(name) #name, &name
 
