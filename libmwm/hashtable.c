@@ -51,6 +51,7 @@ struct mwm_hashtable * mwm_hashtable_create(uint32_t size, uint32_t (* hash_func
     hashtable->data = (void **) malloc(size * sizeof(void *));
     memset(hashtable->data, 0, size * sizeof(void *));
     hashtable->hash_function = hash_function;
+    hashtable->size = size;
 
     return hashtable;
 }
