@@ -742,6 +742,9 @@ void update_name_class(struct mwm_window * window)
 
     window->name = strndup(xcb_get_property_value(wm_name_reply), xcb_get_property_value_length(wm_name_reply));
     window->class = strndup(xcb_get_property_value(wm_class_reply), xcb_get_property_value_length(wm_class_reply));
+
+    free(wm_name_reply);
+    free(wm_class_reply);
 }
 
 void manage(xcb_window_t window_id)
@@ -965,7 +968,12 @@ void manage_existing_windows()
 
         free(window_attributes_replies[child]);
         free(property_replies[child]);
+        free(state_replies[child]);
     }
+
+    free(window_attributes_replies);
+    free(property_replies);
+    free(state_replies);
 }
 
 void spawn(char * const * command)
@@ -1208,17 +1216,24 @@ void map_request(xcb_map_request_event_t * event)
 void property_notify(xcb_property_notify_event_t * event)
 {
     xcb_get_atom_name_cookie_t atom_name_cookie;
-    xcb_get_atom_name_reply_t * atom_name;
+    xcb_get_atom_name_reply_t * atom_name_reply;
 
     printf("property_notify: %i\n", event->window);
 
     atom_name_cookie = xcb_get_atom_name(c, event->atom);
-    atom_name = xcb_get_atom_name_reply(c, atom_name_cookie, NULL);
+    atom_name_reply = xcb_get_atom_name_reply(c, atom_name_cookie, NULL);
 
-    if (atom_name)
+    if (atom_name_reply)
     {
-        printf("atom: %s\n", strndup(xcb_get_atom_name_name(atom_name), xcb_get_atom_name_name_length(atom_name)));
+        const char * atom_name = strndup(
+            xcb_get_atom_name_name(atom_name_reply),
+            xcb_get_atom_name_name_length(atom_name_reply)
+        );
+        printf("atom: %s\n", atom_name);
+        free(atom_name);
     }
+
+    free(atom_name_reply);
 }
 
 void unmap_notify(xcb_unmap_notify_event_t * event)

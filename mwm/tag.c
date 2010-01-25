@@ -34,7 +34,7 @@ void add_tag(const char * name, struct mwm_loop * layouts)
     struct mwm_tag * tag;
 
     tag = (struct mwm_tag *) malloc(sizeof(struct mwm_tag));
-    //memset(tag, 0, sizeof(struct mwm_tag));
+    memset(tag, 0, sizeof(struct mwm_tag));
 
     tag->id = 1 << tag_count++;
     tag->name = strdup(name);
