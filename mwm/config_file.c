@@ -42,7 +42,6 @@ FILE * open_config_file(const char * name)
 void parse_config()
 {
     FILE * file;
-    char path[1024];
 
     yaml_parser_t parser;
     yaml_document_t document;
@@ -53,6 +52,7 @@ void parse_config()
 
     yaml_parser_initialize(&parser);
     yaml_parser_set_input_file(&parser, file);
+
     if (yaml_parser_load(&parser, &document))
     {
         yaml_node_t * map;
@@ -70,7 +70,7 @@ void parse_config()
 
             assert(key->type == YAML_SCALAR_NODE);
 
-            if (strcmp(key->data.scalar.value, "plugins") == 0)
+            if (strcmp((const char const *) key->data.scalar.value, "plugins") == 0)
             {
                 yaml_node_item_t * plugin_item;
                 yaml_node_t * node;
@@ -81,9 +81,7 @@ void parse_config()
                 {
                     node = yaml_document_get_node(&document, *plugin_item);
 
-                    snprintf(path, sizeof(path), "%s/mwm_%s.so", getenv("MWM_PLUGIN_PATH"), node->data.scalar.value);
-
-                    load_plugin(path);
+                    load_plugin((const char const *) node->data.scalar.value);
                 }
             }
         }

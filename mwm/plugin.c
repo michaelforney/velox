@@ -21,6 +21,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 #include <dlfcn.h>
 #include <assert.h>
 
@@ -28,12 +30,69 @@
 
 struct mwm_list * plugins;
 
-void load_plugin(const char * path)
+void * locate_plugin(const char const * name)
+{
+    char search_path[1024];
+    char plugin_path[1024];
+    char * start, * end;
+    char * directory_path;
+    void * handle = NULL;
+    bool searching = true;
+
+    if (getenv("MWM_PLUGIN_PATH") != NULL)
+    {
+        snprintf(search_path, sizeof(search_path), "%s", getenv("MWM_PLUGIN_PATH"));
+    }
+    else
+    {
+        snprintf(search_path, sizeof(search_path), "%s/.mwm/plugins:/usr/lib/mwm/plugins",
+            getenv("HOME")
+        );
+    }
+
+    start = search_path;
+
+    while (searching)
+    {
+        end = strchr(start, ':');
+
+        if (end == NULL)
+        {
+            directory_path = strdup(start);
+            searching = false;
+        }
+        else
+        {
+            directory_path = strndup(start, end - start);
+            start = end + 1;
+        }
+
+        snprintf(plugin_path, sizeof(plugin_path), "%s/mwm_%s.so", directory_path, name);
+
+        printf("trying: %s...", plugin_path);
+
+        handle = dlopen(plugin_path, RTLD_LAZY);
+
+        if (handle)
+        {
+            printf("found\n");
+            searching = false;
+        }
+        else
+        {
+            printf("not found\n");
+        }
+    }
+
+    return handle;
+}
+
+void load_plugin(const char * name)
 {
     void * plugin_handle;
     struct mwm_plugin * plugin;
 
-    plugin_handle = dlopen(path, RTLD_NOW);
+    plugin_handle = locate_plugin(name);
 
     assert(plugin_handle);
 
