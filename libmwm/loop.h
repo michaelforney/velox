@@ -1,22 +1,20 @@
-// vim: fdm=syntax fo=croql noet sw=4 sts=4 ts=8
-
 /* mwm: libmwm/loop.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This file is a part of mwm.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * mwm is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License version 2, as published by the Free
+ * Software Foundation.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
  *
+ * You should have received a copy of the GNU General Public License along
+ * with mwm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef LIBMWM_LOOP_H
@@ -39,4 +37,6 @@ void mwm_loop_swap(struct mwm_loop * first, struct mwm_loop * second);
 bool mwm_loop_is_singleton(struct mwm_loop * loop);
 
 #endif
+
+// vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 
