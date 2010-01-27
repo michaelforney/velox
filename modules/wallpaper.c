@@ -1,6 +1,6 @@
 // vim: fdm=syntax fo=croql sw=4 sts=4 ts=8
 
-/* mwm: plugins/wallpaper.c
+/* mwm: modules/wallpaper.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -34,14 +34,14 @@ void set_wallpaper();
 
 void initialize()
 {
-    printf(">>> wallpaper plugin\n");
+    printf(">>> wallpaper module\n");
 
     add_startup_hook(&set_wallpaper);
 }
 
 void cleanup()
 {
-    printf("<<< wallpaper plugin\n");
+    printf("<<< wallpaper module\n");
 }
 
 void set_wallpaper()

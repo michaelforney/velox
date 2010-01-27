@@ -24,7 +24,7 @@
 
 #include "config_file.h"
 
-#include "plugin-private.h"
+#include "module-private.h"
 
 FILE * open_config_file(const char * name)
 {
@@ -71,18 +71,18 @@ void parse_config()
 
             assert(key->type == YAML_SCALAR_NODE);
 
-            if (strcmp((const char const *) key->data.scalar.value, "plugins") == 0)
+            if (strcmp((const char const *) key->data.scalar.value, "modules") == 0)
             {
-                yaml_node_item_t * plugin_item;
+                yaml_node_item_t * module_item;
                 yaml_node_t * node;
 
                 assert(value->type == YAML_SEQUENCE_NODE);
 
-                for (plugin_item = value->data.sequence.items.start; plugin_item < value->data.sequence.items.top; ++plugin_item)
+                for (module_item = value->data.sequence.items.start; module_item < value->data.sequence.items.top; ++module_item)
                 {
-                    node = yaml_document_get_node(&document, *plugin_item);
+                    node = yaml_document_get_node(&document, *module_item);
 
-                    load_plugin((const char const *) node->data.scalar.value);
+                    load_module((const char const *) node->data.scalar.value);
                 }
             }
         }

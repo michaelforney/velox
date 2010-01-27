@@ -14,5 +14,4 @@ Things that still need to get done, in no particular order:
 * Support having multiple tags enabled at the same time
 * Support for having windows visible on multiple tags
 * Support for multiple screens
-* Search for plugins in multiple directories
 

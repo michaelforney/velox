@@ -38,7 +38,7 @@
 #include "keybinding.h"
 #include "config_file.h"
 
-#include "plugin-private.h"
+#include "module-private.h"
 #include "config_file-private.h"
 #include "keybinding-private.h"
 #include "hook-private.h"
@@ -293,7 +293,7 @@ void setup()
     setup_key_bindings();
     setup_hooks();
 
-    initialize_plugins();
+    initialize_modules();
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
@@ -1358,7 +1358,7 @@ void quit()
 
 void cleanup()
 {
-    cleanup_plugins();
+    cleanup_modules();
     cleanup_key_bindings();
     cleanup_tags();
     cleanup_layouts();

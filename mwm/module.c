@@ -1,6 +1,6 @@
 // vim: fdm=syntax fo=croql sw=4 sts=4 ts=8
 
-/* mwm: mwm/plugin.c
+/* mwm: mwm/module.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -26,14 +26,14 @@
 #include <dlfcn.h>
 #include <assert.h>
 
-#include "plugin-private.h"
+#include "module-private.h"
 
-struct mwm_list * plugins;
+struct mwm_list * modules;
 
-void * open_plugin(const char const * name)
+void * open_module(const char const * name)
 {
     char search_path[1024];
-    char plugin_path[1024];
+    char module_path[1024];
     char * start, * end;
     char * directory_path;
     void * handle = NULL;
@@ -45,7 +45,7 @@ void * open_plugin(const char const * name)
     }
     else
     {
-        snprintf(search_path, sizeof(search_path), "%s/.mwm/plugins:/usr/lib/mwm/plugins",
+        snprintf(search_path, sizeof(search_path), "%s/.mwm/modules:/usr/lib/mwm/modules",
             getenv("HOME")
         );
     }
@@ -67,11 +67,11 @@ void * open_plugin(const char const * name)
             start = end + 1;
         }
 
-        snprintf(plugin_path, sizeof(plugin_path), "%s/mwm_%s.so", directory_path, name);
+        snprintf(module_path, sizeof(module_path), "%s/mwm_%s.so", directory_path, name);
 
-        printf("trying: %s...", plugin_path);
+        printf("trying: %s...", module_path);
 
-        handle = dlopen(plugin_path, RTLD_LAZY);
+        handle = dlopen(module_path, RTLD_LAZY);
 
         if (handle)
         {
@@ -87,51 +87,51 @@ void * open_plugin(const char const * name)
     return handle;
 }
 
-void load_plugin(const char const * name)
+void load_module(const char const * name)
 {
-    void * plugin_handle;
-    struct mwm_plugin * plugin;
+    void * module_handle;
+    struct mwm_module * module;
 
-    plugin_handle = open_plugin(name);
+    module_handle = open_module(name);
 
-    assert(plugin_handle);
+    assert(module_handle);
 
-    plugin = (struct mwm_plugin *) malloc(sizeof(struct mwm_plugin));
+    module = (struct mwm_module *) malloc(sizeof(struct mwm_module));
 
-    plugin->handle = plugin_handle;
-    plugin->name = dlsym(plugin_handle, "name");
-    plugin->initialize = dlsym(plugin_handle, "initialize");
-    plugin->cleanup = dlsym(plugin_handle, "cleanup");
+    module->handle = module_handle;
+    module->name = dlsym(module_handle, "name");
+    module->initialize = dlsym(module_handle, "initialize");
+    module->cleanup = dlsym(module_handle, "cleanup");
 
-    printf("loaded plugin: %s\n", plugin->name);
+    printf("loaded module: %s\n", module->name);
 
-    plugins = mwm_list_insert(plugins, plugin);
+    modules = mwm_list_insert(modules, module);
 }
 
-void initialize_plugins()
+void initialize_modules()
 {
     struct mwm_list * iterator;
 
-    for (iterator = plugins; iterator != NULL; iterator = iterator->next)
+    for (iterator = modules; iterator != NULL; iterator = iterator->next)
     {
-        ((struct mwm_plugin *) iterator->data)->initialize();
+        ((struct mwm_module *) iterator->data)->initialize();
     }
 }
 
-void cleanup_plugins()
+void cleanup_modules()
 {
-    struct mwm_plugin * plugin;
+    struct mwm_module * module;
 
-    while (plugins)
+    while (modules)
     {
-        plugin = (struct mwm_plugin *) plugins->data;
-        plugin->cleanup();
+        module = (struct mwm_module *) modules->data;
+        module->cleanup();
 
-        dlclose(plugin->handle);
+        dlclose(module->handle);
 
-        free(plugin);
+        free(module);
 
-        plugins = mwm_list_remove_first(plugins);
+        modules = mwm_list_remove_first(modules);
     }
 }
 

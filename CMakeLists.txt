@@ -16,7 +16,7 @@ find_package(X11 REQUIRED) # For XStringToKeysym
 
 add_subdirectory(libmwm)
 add_subdirectory(mwm)
-add_subdirectory(plugins)
+add_subdirectory(modules)
 
 install(FILES mwm.yaml keys.yaml DESTINATION /etc/mwm)
 

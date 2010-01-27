@@ -1,6 +1,6 @@
 // vim: fdm=syntax fo=croql sw=4 sts=4 ts=8
 
-/* mwm: mwm/plugin-private.h
+/* mwm: mwm/module-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -19,12 +19,12 @@
  *
  */
 
-#ifndef MWM_PLUGIN_PRIVATE_H
-#define MWM_PLUGIN_PRIVATE_H
+#ifndef MWM_MODULE_PRIVATE_H
+#define MWM_MODULE_PRIVATE_H
 
 #include <libmwm/list.h>
 
-struct mwm_plugin
+struct mwm_module
 {
     void * handle;
     const char * name;
@@ -32,11 +32,11 @@ struct mwm_plugin
     void (* cleanup)();
 };
 
-extern struct mwm_list * plugins;
+extern struct mwm_list * modules;
 
-void load_plugin(const char * path);
-void initialize_plugins();
-void cleanup_plugins();
+void load_module(const char * path);
+void initialize_modules();
+void cleanup_modules();
 
 #endif
 

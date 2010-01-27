@@ -8,7 +8,7 @@ add_executable(mwm
     tag.c
     keybinding.c
     config_file.c
-    plugin.c
+    module.c
 )
 
 include_directories(${mwm_SOURCE_DIR})
