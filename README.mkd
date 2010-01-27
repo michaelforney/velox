@@ -1,14 +1,74 @@
-MWM
+mwm
 ===
+mwm is a simple wm inspired by dwm, xmonad and awesome.
 
-MWM is a simple wm inspired by dwm, xmonad and awesome.
+Configuration
+-------------
+mwm currently uses [YAML] for its configuration files. As of right now, all of
+the configuration is done through two files, `mwm.yaml`, and `keys.yaml`. mwm
+searches for these files first locally (in ~/.mwm/), and then system wide
+(in /etc/mwm/).
 
-Todo
+### mwm.yaml
+`mwm.yaml` is where global settings for mwm will reside. Currently, the only
+configuration variable used from mwm.yaml is `modules`. The value of `modules`
+should be a list of modules to load on startup.
+
+### keys.yaml
+`keys.yaml` is where you can configure key bindings for mwm. Modules can make
+use of these bindings using `add_configured_key_binding`.
+
+The format for `keys.yaml` is as follows:
+
+    group: # The group the contained key bindings belong in
+        binding_name: # The name of the binding
+            - # A list containing a list of bindings performing the same action
+              #
+              # Each binding consists of a map containing the keys "mod" and "key"
+              #
+              # The value associated with the "mod" key should be a list of
+              # the modifiers for the key binding, which will be OR'd together
+              #
+              # The possible values are:
+              #     * mod_shift
+              #     * mod_lock
+              #     * mod_control
+              #     * mod_1
+              #     * mod_2
+              #     * mod_3
+              #     * mod_4
+              #     * mod_5
+              #     * mod_any
+              #
+              mod: [mod_X, mod_Y]
+              # The value associated with the "key" key should be the keysym
+              # for the key binding.
+              #
+              # Keysyms can be obtained from the "keysymdef.h' header from
+              # X.Org. NOTE: The "Xk_" should be excluded
+              key: keysym
+
+Modules
+-------
+Support for modules is still in its infancy, but soon shall allow users to
+customize their environment through the addition of layouts, hooks, and
+key bindings.
+
+Currently there are only three required definitions to constitute a module.
+
+1. There must be a string called `name` which should be set to an identifying
+name for the module.
+2. There must be an `initialize` function which will be called shortly after
+mwm starts
+3. There must be a `cleanup` function which can perform any necessary actions
+prior to the modules unloading.
+
+TODO
 ----
-
 Things that still need to get done, in no particular order:
 
-* Status bar: Add a statusbar to indicate current workspace and other cool stuff
+* Status bar: Add a statusbar to indicate current workspace and other cool
+stuff
 * Mouse buttons: Allow moving and resizing of floating windows with the mouse
 * Support having multiple tags enabled at the same time
 * Support for having windows visible on multiple tags
@@ -17,4 +77,6 @@ Things that still need to get done, in no particular order:
     * Avoid struts: Layout windows around struts (statusbars, etc)
 * Easily configurable and usable colors
 * Easier and more automatic allocation of atoms
+
+[YAML]: http://www.yaml.org/
 
