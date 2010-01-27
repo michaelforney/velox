@@ -9,9 +9,12 @@ Todo
 Things that still need to get done, in no particular order:
 
 * Status bar: Add a statusbar to indicate current workspace and other cool stuff
-* Avoid struts: Layout windows around struts (statusbars, etc)
 * Mouse buttons: Allow moving and resizing of floating windows with the mouse
 * Support having multiple tags enabled at the same time
 * Support for having windows visible on multiple tags
 * Support for multiple screens
+* EWMH support
+    * Avoid struts: Layout windows around struts (statusbars, etc)
+* Easily configurable and usable colors
+* Easier and more automatic allocation of atoms
 
