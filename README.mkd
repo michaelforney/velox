@@ -63,6 +63,14 @@ mwm starts
 3. There must be a `cleanup` function which can perform any necessary actions
 prior to the modules unloading.
 
+Layouts
+-------
+Currently, mwm includes two layouts by default; tile and grid. These layouts
+are similar to ones you might have seen in other projects. More layouts can be
+added through the use of modules, and `add_layout`. The most important part of
+a layout is its arrange function, which takes as arguments, a cyclical linked
+list of windows and layout state.
+
 TODO
 ----
 Things that still need to get done, in no particular order:
