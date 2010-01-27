@@ -55,7 +55,6 @@ void spawn_dmenu()
     char * const command[] = {
         "dmenu_run",
         "-b",
-        "-fn", "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*",
         "-nb", "#222222",
         "-nf", "#999999",
         "-sb", "#338833",
