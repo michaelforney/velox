@@ -23,8 +23,7 @@
 #include <xcb/xcb.h>
 
 #include <libmwm/loop.h>
-
-#include "layout.h"
+#include <mwm/layout.h>
 
 struct mwm_tag
 {
