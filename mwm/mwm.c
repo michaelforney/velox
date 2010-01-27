@@ -997,29 +997,6 @@ void spawn(char * const command[])
     }
 }
 
-void spawn_terminal()
-{
-    printf("spawning terminal\n");
-    char * const command[] = { "urxvt", NULL };
-    spawn(command);
-}
-
-void spawn_dmenu()
-{
-    printf("spawning dmenu\n");
-    char * const command[] = {
-        "dmenu_run",
-        "-b",
-        "-fn", "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*",
-        "-nb", "#222222",
-        "-nf", "#999999",
-        "-sb", "#338833",
-        "-sf", "#FFFFFF",
-        NULL
-    };
-    spawn(command);
-}
-
 /* X event handlers */
 void button_press(xcb_button_press_event_t * event)
 {

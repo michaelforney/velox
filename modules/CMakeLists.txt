@@ -1,6 +1,6 @@
 # mwm: modules/CMakeLists.txt
 
-set(MWM_MODULES wallpaper)
+set(MWM_MODULES wallpaper spawn)
 
 include_directories(${mwm_SOURCE_DIR})
 

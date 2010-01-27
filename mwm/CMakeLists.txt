@@ -35,6 +35,7 @@ install(FILES
     mwm.h
     tag.h
     window.h
+    module.h
 
     DESTINATION include/mwm
 )

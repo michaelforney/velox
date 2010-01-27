@@ -189,10 +189,6 @@ void setup_configured_keys()
 
 void setup_key_bindings()
 {
-    /* Commands */
-    add_configured_key_binding("spawn", STRING_SYMBOL(spawn_terminal));
-    add_configured_key_binding("spawn", STRING_SYMBOL(spawn_dmenu));
-
     /* Window focus */
     add_configured_key_binding("mwm", STRING_SYMBOL(focus_next));
     add_configured_key_binding("mwm", STRING_SYMBOL(focus_previous));
