@@ -1,0 +1,6 @@
+Authors of mwm
+==============
+
+* Michael Forney <[michael@obberon.com](mailto:michael@obberon.com)>
+    - Main code
+
