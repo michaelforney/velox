@@ -11,7 +11,7 @@ add_executable(mwm
     plugin.c
 )
 
-include_directories(${mwm_SOURCE_DIR}/libmwm)
+include_directories(${mwm_SOURCE_DIR})
 
 target_link_libraries(mwm
     libmwm
@@ -26,4 +26,16 @@ target_link_libraries(mwm
 )
 
 install(TARGETS mwm DESTINATION bin)
+
+install(FILES
+    config_file.h
+    hook.h
+    keybinding.h
+    layout.h
+    mwm.h
+    tag.h
+    window.h
+
+    DESTINATION include/mwm
+)
 

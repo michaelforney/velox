@@ -25,7 +25,8 @@
 #include <string.h>
 #include <dirent.h>
 
-#include "hook.h"
+#include <mwm/mwm.h>
+#include <mwm/hook.h>
 
 const char name[] = "wallpaper";
 
@@ -52,7 +53,7 @@ void set_wallpaper()
     uint16_t wallpaper_index;
     DIR * directory;
     struct dirent * entry;
-    const char * command[] = {
+    char * command[] = {
         "feh",
         "--bg-scale",
         NULL,

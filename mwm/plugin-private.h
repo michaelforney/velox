@@ -1,6 +1,6 @@
 // vim: fdm=syntax fo=croql sw=4 sts=4 ts=8
 
-/* mwm: mwm/plugin.h
+/* mwm: mwm/plugin-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -19,10 +19,10 @@
  *
  */
 
-#ifndef MWM_PLUGIN_H
-#define MWM_PLUGIN_H
+#ifndef MWM_PLUGIN_PRIVATE_H
+#define MWM_PLUGIN_PRIVATE_H
 
-#include "list.h"
+#include <libmwm/list.h>
 
 struct mwm_plugin
 {

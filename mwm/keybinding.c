@@ -23,9 +23,10 @@
 #include <assert.h>
 #include <X11/Xlib.h> // For XStringToKeysym
 
+#include <libmwm/hashtable.h>
+
 #include "keybinding.h"
 #include "tag.h"
-#include "hashtable.h"
 #include "config_file.h"
 #include "mwm.h"
 

@@ -26,11 +26,11 @@
 #include <dlfcn.h>
 #include <assert.h>
 
-#include "plugin.h"
+#include "plugin-private.h"
 
 struct mwm_list * plugins;
 
-void * locate_plugin(const char const * name)
+void * open_plugin(const char const * name)
 {
     char search_path[1024];
     char plugin_path[1024];
@@ -87,12 +87,12 @@ void * locate_plugin(const char const * name)
     return handle;
 }
 
-void load_plugin(const char * name)
+void load_plugin(const char const * name)
 {
     void * plugin_handle;
     struct mwm_plugin * plugin;
 
-    plugin_handle = locate_plugin(name);
+    plugin_handle = open_plugin(name);
 
     assert(plugin_handle);
 

@@ -1,4 +1,4 @@
-/* mwm: libmwm/tag.h
+/* mwm: mwm/hook-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -17,13 +17,15 @@
  *
  */
 
-#ifndef LIBMWM_TAG_H
-#define LIBMWM_TAG_H
+#ifndef MWM_HOOK_PRIVATE_H
+#define MWM_HOOK_PRIVATE_H
 
-void add_tag(
-    const char * name
-    // TODO: Layouts
-);
+#include "window.h"
+
+void setup_hooks();
+
+void run_startup_hooks();
+void run_manage_hooks(struct mwm_window * window);
 
 #endif
 

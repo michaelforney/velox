@@ -1,6 +1,6 @@
 /* mwm: mwm/mwm.h
  *
- * Copyright (c) 2009 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #include <xcb/xcb.h>
 
-#include "tag.h"
+#include <mwm/window.h>
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -34,11 +34,11 @@ extern uint16_t screen_height;
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 
-void synthetic_configure();
+void synthetic_configure(struct mwm_window * window);
 
 void arrange();
 
-void spawn(char * const * cmd);
+void spawn(char * const cmd[]);
 void spawn_terminal();
 void spawn_dmenu();
 

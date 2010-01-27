@@ -23,7 +23,8 @@
 #include <assert.h>
 
 #include "config_file.h"
-#include "plugin.h"
+
+#include "plugin-private.h"
 
 FILE * open_config_file(const char * name)
 {

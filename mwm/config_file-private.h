@@ -1,4 +1,6 @@
-/* mwm: libmwm/tag.h
+// vim: fdm=syntax fo=croql sw=4 sts=4 ts=8 et
+
+/* mwm: mwm/config_file-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -17,5 +19,10 @@
  *
  */
 
-#include "tag.h"
+#ifndef MWM_CONFIG_FILE_PRIVATE_H
+#define MWM_CONFIG_FILE_PRIVATE_H
+
+void parse_config();
+
+#endif
 

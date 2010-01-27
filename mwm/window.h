@@ -1,6 +1,6 @@
 /* mwm: mwm/window.h
  *
- * Copyright (c) 2009 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 
 #include <xcb/xcb.h>
 
-#include <list.h>
-#include <tag.h>
+#include <libmwm/list.h>
+#include <libmwm/loop.h>
 
 struct mwm_window
 {

@@ -1,7 +1,6 @@
 # mwm: libmwm/CMakeLists.txt
 
 add_library(libmwm SHARED
-    tag.c
     list.c
     loop.c
     hashtable.c
@@ -10,4 +9,12 @@ add_library(libmwm SHARED
 set_target_properties(libmwm PROPERTIES OUTPUT_NAME mwm)
 
 install(TARGETS libmwm DESTINATION lib${LIB_SUFFIX})
+
+install(FILES
+    list.h
+    loop.h
+    hashtable.h
+
+    DESTINATION include/libmwm
+)
 

@@ -1,6 +1,6 @@
 /* mwm: mwm/layout.h
  *
- * Copyright (c) 2009 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
 
 #include <stdint.h>
 
-#include "loop.h"
-#include "hashtable.h"
+#include <libmwm/loop.h>
+#include <libmwm/hashtable.h>
 
 struct mwm_layout_state
 {

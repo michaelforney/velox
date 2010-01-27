@@ -20,18 +20,13 @@
 #ifndef MWM_HOOK_H
 #define MWM_HOOK_H
 
-#include "window.h"
+#include <mwm/window.h>
 
 typedef void (* mwm_startup_hook_t)();
 typedef void (* mwm_manage_hook_t)(struct mwm_window *);
 
-void setup_hooks();
-
 void add_startup_hook(mwm_startup_hook_t hook);
 void add_manage_hook(mwm_manage_hook_t hook);
-
-void run_startup_hooks();
-void run_manage_hooks(struct mwm_window * window);
 
 #endif
 

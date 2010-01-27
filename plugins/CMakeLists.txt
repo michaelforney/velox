@@ -2,10 +2,7 @@
 
 set(MWM_PLUGINS wallpaper)
 
-include_directories(
-    ${mwm_SOURCE_DIR}/libmwm
-    ${mwm_SOURCE_DIR}/mwm
-)
+include_directories(${mwm_SOURCE_DIR})
 
 foreach(PLUGIN ${MWM_PLUGINS})
     add_library(mwm_${PLUGIN} MODULE ${PLUGIN}.c)

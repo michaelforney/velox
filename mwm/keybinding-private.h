@@ -1,6 +1,6 @@
-/* mwm: mwm/keybinding.h
+/* mwm: mwm/keybinding-private.h
  *
- * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,26 +17,19 @@
  *
  */
 
-#ifndef MWM_KEYBINDING_H
-#define MWM_KEYBINDING_H
+#ifndef MWM_KEYBINDING_PRIVATE_H
+#define MWM_KEYBINDING_PRIVATE_H
 
 #include <xcb/xcb.h>
 
-struct mwm_key
-{
-    uint16_t modifiers;
-    xcb_keysym_t keysym;
-};
+#include <libmwm/list.h>
 
-struct mwm_key_binding
-{
-    struct mwm_key * key;
-    xcb_keycode_t keycode;
-    void (* function)();
-};
+extern struct mwm_list * key_bindings;
 
-void add_key_binding(struct mwm_key * key, void (* function)());
-void add_configured_key_binding(const char * group, const char * name, void (* function)());
+void setup_configured_keys();
+
+void setup_key_bindings();
+void cleanup_key_bindings();
 
 #endif
 

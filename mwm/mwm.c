@@ -37,7 +37,11 @@
 #include "hook.h"
 #include "keybinding.h"
 #include "config_file.h"
-#include "plugin.h"
+
+#include "plugin-private.h"
+#include "config_file-private.h"
+#include "keybinding-private.h"
+#include "hook-private.h"
 
 /* X variables */
 xcb_connection_t * c;
@@ -977,7 +981,7 @@ void manage_existing_windows()
     free(state_replies);
 }
 
-void spawn(char * const * command)
+void spawn(char * const command[])
 {
     if (fork() == 0)
     {
@@ -996,14 +1000,14 @@ void spawn(char * const * command)
 void spawn_terminal()
 {
     printf("spawning terminal\n");
-    const char * command[] = { "urxvt", NULL };
+    char * const command[] = { "urxvt", NULL };
     spawn(command);
 }
 
 void spawn_dmenu()
 {
     printf("spawning dmenu\n");
-    const char * command[] = {
+    char * const command[] = {
         "dmenu_run",
         "-b",
         "-fn", "-*-terminus-medium-*-*-*-12-*-*-*-*-*-*-*",
@@ -1226,7 +1230,7 @@ void property_notify(xcb_property_notify_event_t * event)
 
     if (atom_name_reply)
     {
-        const char * atom_name = strndup(
+        char * atom_name = strndup(
             xcb_get_atom_name_name(atom_name_reply),
             xcb_get_atom_name_name_length(atom_name_reply)
         );
