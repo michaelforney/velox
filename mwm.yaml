@@ -1,6 +1,8 @@
 %YAML 1.1
 ---
 modules:
+    - layout_tile
+    - layout_grid
     - wallpaper
     - spawn
 ...

@@ -42,6 +42,7 @@
 #include "config_file-private.h"
 #include "keybinding-private.h"
 #include "hook-private.h"
+#include "layout-private.h"
 
 /* X variables */
 xcb_connection_t * c;
@@ -288,12 +289,13 @@ void setup()
     }
 
     setup_layouts();
-    setup_tags();
     setup_configured_keys();
     setup_key_bindings();
     setup_hooks();
 
     initialize_modules();
+
+    setup_tags();
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
@@ -635,84 +637,6 @@ void kill_focused_window()
     }
 
     xcb_flush(c);
-}
-
-void increase_master_factor()
-{
-    printf("increase_master_factor()\n");
-
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
-    {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
-        state->master_factor = MIN(state->master_factor + 0.025, 1.0);
-
-        arrange();
-    }
-}
-
-void decrease_master_factor()
-{
-    printf("decrease_master_factor()\n");
-
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
-    {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
-        state->master_factor = MAX(state->master_factor - 0.025, 0.0);
-
-        arrange();
-    }
-}
-
-void increase_master_count()
-{
-    printf("increase_master_count()\n");
-
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
-    {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
-        state->master_count++;
-
-        arrange();
-    }
-}
-
-void decrease_master_count()
-{
-    printf("decrease_master_count()\n");
-
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
-    {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
-        state->master_count = MAX(state->master_count - 1, 0);
-
-        arrange();
-    }
-}
-
-void increase_column_count()
-{
-    printf("increase_column_count()\n");
-
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
-    {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
-        state->column_count++;
-
-        arrange();
-    }
-}
-
-void decrease_column_count()
-{
-    printf("decrease_column_count()\n");
-
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
-    {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
-        state->column_count = MAX(state->column_count - 1, 1);
-
-        arrange();
-    }
 }
 
 void arrange()

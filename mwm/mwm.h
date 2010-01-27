@@ -23,6 +23,7 @@
 #include <xcb/xcb.h>
 
 #include <mwm/window.h>
+#include <mwm/tag.h>
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -33,6 +34,8 @@ extern uint16_t screen_width;
 extern uint16_t screen_height;
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
+
+extern struct mwm_tag * tag;
 
 void synthetic_configure(struct mwm_window * window);
 

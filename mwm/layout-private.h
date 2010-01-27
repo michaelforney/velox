@@ -1,4 +1,6 @@
-/* mwm: mwm/layout.h
+// vim: fdm=syntax fo=croql noet sw=4 sts=4 ts=8
+
+/* mwm: mwm/layout-private.h
  *
  * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
@@ -17,29 +19,14 @@
  *
  */
 
-#ifndef MWM_LAYOUT_H
-#define MWM_LAYOUT_H
+#ifndef MWM_LAYOUT_PRIVATE_H
+#define MWM_LAYOUT_PRIVATE_H
 
-#include <stdint.h>
+extern struct mwm_hashtable * layouts;
 
-#include <libmwm/loop.h>
-#include <libmwm/hashtable.h>
-
-struct mwm_layout_state
-{
-    uint16_t pad[32];
-};
-
-typedef void (* mwm_arrange_t)(struct mwm_loop * list, struct mwm_layout_state * state);
-
-struct mwm_layout
-{
-    const char * identifier;
-    mwm_arrange_t arrange;
-    struct mwm_layout_state default_state;
-};
-
-void add_layout(const char const * identifier, mwm_arrange_t arrange, struct mwm_layout_state * default_state);
+void setup_layouts();
+void cleanup_layouts();
 
 #endif
+
 

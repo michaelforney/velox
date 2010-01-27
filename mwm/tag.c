@@ -26,6 +26,8 @@
 #include "tag.h"
 #include "mwm.h"
 
+#include "layout-private.h"
+
 struct mwm_list * tags;
 
 uint8_t tag_count;

@@ -198,14 +198,6 @@ void setup_key_bindings()
     /* Window operations */
     add_configured_key_binding("mwm", STRING_SYMBOL(kill_focused_window));
 
-    /* Layout modification */
-    add_configured_key_binding("layout_tile", STRING_SYMBOL(increase_master_factor));
-    add_configured_key_binding("layout_tile", STRING_SYMBOL(decrease_master_factor));
-    add_configured_key_binding("layout_tile", STRING_SYMBOL(increase_master_count));
-    add_configured_key_binding("layout_tile", STRING_SYMBOL(decrease_master_count));
-    add_configured_key_binding("layout_tile", STRING_SYMBOL(increase_column_count));
-    add_configured_key_binding("layout_tile", STRING_SYMBOL(decrease_column_count));
-
     /* Layout control */
     add_configured_key_binding("mwm", STRING_SYMBOL(next_layout));
     add_configured_key_binding("mwm", STRING_SYMBOL(previous_layout));
