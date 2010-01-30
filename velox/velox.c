@@ -30,6 +30,7 @@
 #include <xcb/xcb_aux.h>
 
 #include <X11/keysym.h>
+#include <X11/cursorfont.h>
 
 #include "velox.h"
 #include "window.h"
@@ -61,9 +62,9 @@ xcb_atom_t _NET_SUPPORTED, _NET_WM_NAME;
 /* X cursors */
 enum
 {
-    POINTER_ID = 56,
-    RESIZE_ID = 120,
-    MOVE_ID = 52
+    POINTER_ID = XC_left_ptr,
+    RESIZE_ID = XC_sizing,
+    MOVE_ID = XC_fleur
 };
 enum
 {
