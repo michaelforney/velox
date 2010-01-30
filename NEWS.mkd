@@ -1,0 +1,8 @@
+News for velox
+==============
+
+0.0.1 (January 29, 2010)
+------------------------
+* Initial release of velox
+* Start of module/configuration support
+
