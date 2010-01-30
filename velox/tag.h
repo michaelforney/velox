@@ -1,41 +1,41 @@
-/* mwm: mwm/tag.h
+/* velox: velox/tag.h
  *
  * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MWM_TAG_H
-#define MWM_TAG_H
+#ifndef VELOX_TAG_H
+#define VELOX_TAG_H
 
 #include <xcb/xcb.h>
 
-#include <libmwm/loop.h>
-#include <mwm/layout.h>
+#include <libvelox/loop.h>
+#include <velox/layout.h>
 
-struct mwm_tag
+struct velox_tag
 {
     uint64_t id;
     const char * name;
-    struct mwm_loop * layout;
-    struct mwm_loop * windows;
-    struct mwm_loop * focus;
-    struct mwm_layout_state state;
+    struct velox_loop * layout;
+    struct velox_loop * windows;
+    struct velox_loop * focus;
+    struct velox_layout_state state;
 };
 
-extern struct mwm_list * tags;
+extern struct velox_list * tags;
 
 void setup_tags();
 void cleanup_tags();

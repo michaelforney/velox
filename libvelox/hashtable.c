@@ -1,20 +1,20 @@
-/* mwm: libmwm/hashtable.c
+/* velox: libvelox/hashtable.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdlib.h>
@@ -41,11 +41,11 @@ uint32_t sdbm_hash(const char * string)
  * @param hash_function The hashing function to use
  * @return The newly created hash table
  */
-struct mwm_hashtable * mwm_hashtable_create(uint32_t size, uint32_t (* hash_function)(const char * string))
+struct velox_hashtable * velox_hashtable_create(uint32_t size, uint32_t (* hash_function)(const char * string))
 {
-    struct mwm_hashtable * hashtable;
+    struct velox_hashtable * hashtable;
 
-    hashtable = (struct mwm_hashtable *) malloc(sizeof(struct mwm_hashtable));
+    hashtable = (struct velox_hashtable *) malloc(sizeof(struct velox_hashtable));
     hashtable->data = (void **) malloc(size * sizeof(void *));
     memset(hashtable->data, 0, size * sizeof(void *));
     hashtable->hash_function = hash_function;
@@ -61,7 +61,7 @@ struct mwm_hashtable * mwm_hashtable_create(uint32_t size, uint32_t (* hash_func
  * @param key The key to lookup
  * @return The value looked up
  */
-void * mwm_hashtable_lookup(struct mwm_hashtable * hashtable, const char * key)
+void * velox_hashtable_lookup(struct velox_hashtable * hashtable, const char * key)
 {
     return hashtable->data[hashtable->hash_function(key) % hashtable->size];
 }
@@ -73,7 +73,7 @@ void * mwm_hashtable_lookup(struct mwm_hashtable * hashtable, const char * key)
  * @param key The key to insert the value
  * @param value The value to insert into the hashtable
  */
-void mwm_hashtable_insert(struct mwm_hashtable * hashtable, const char * key, void * value)
+void velox_hashtable_insert(struct velox_hashtable * hashtable, const char * key, void * value)
 {
     hashtable->data[hashtable->hash_function(key) % hashtable->size] = value;
 }
@@ -84,7 +84,7 @@ void mwm_hashtable_insert(struct mwm_hashtable * hashtable, const char * key, vo
  * @param hashtable The hashtable to unset the key from
  * @param key The key to unset
  */
-void mwm_hashtable_unset(struct mwm_hashtable * hashtable, const char * key)
+void velox_hashtable_unset(struct velox_hashtable * hashtable, const char * key)
 {
     hashtable->data[hashtable->hash_function(key) % hashtable->size] = NULL;
 }
@@ -96,7 +96,7 @@ void mwm_hashtable_unset(struct mwm_hashtable * hashtable, const char * key)
  * @param key The key to check for
  * @return Whether or not the key exists in the hashtable
  */
-bool mwm_hashtable_exists(struct mwm_hashtable * hashtable, const char * key)
+bool velox_hashtable_exists(struct velox_hashtable * hashtable, const char * key)
 {
     return hashtable->data[hashtable->hash_function(key) % hashtable->size] != NULL;
 }
@@ -107,7 +107,7 @@ bool mwm_hashtable_exists(struct mwm_hashtable * hashtable, const char * key)
  * @param hashtable The hashtable to clear
  * @param free_data Whether or not to free the data
  */
-void mwm_hashtable_clear(struct mwm_hashtable * hashtable, bool free_data)
+void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data)
 {
     if (free_data)
     {

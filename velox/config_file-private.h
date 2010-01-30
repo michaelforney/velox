@@ -1,31 +1,26 @@
-/* mwm: mwm/hook-private.h
+/* velox: velox/config_file-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MWM_HOOK_PRIVATE_H
-#define MWM_HOOK_PRIVATE_H
+#ifndef VELOX_CONFIG_FILE_PRIVATE_H
+#define VELOX_CONFIG_FILE_PRIVATE_H
 
-#include "window.h"
-
-void setup_hooks();
-
-void run_startup_hooks();
-void run_manage_hooks(struct mwm_window * window);
+void parse_config();
 
 #endif
 

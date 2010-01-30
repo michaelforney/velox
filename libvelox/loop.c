@@ -1,20 +1,20 @@
-/* mwm: libmwm/loop.c
+/* velox: libvelox/loop.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdlib.h>
@@ -32,10 +32,10 @@
  * @param data The data to insert into the loop
  * @return A new pointer to the loop
  */
-struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data)
+struct velox_loop * velox_loop_insert(struct velox_loop * loop, void * data)
 {
-    struct mwm_loop * new_loop = (struct mwm_loop *) malloc(sizeof(struct mwm_loop));
-    memset(new_loop, 0, sizeof(struct mwm_loop));
+    struct velox_loop * new_loop = (struct velox_loop *) malloc(sizeof(struct velox_loop));
+    memset(new_loop, 0, sizeof(struct velox_loop));
 
     new_loop->data = data;
 
@@ -69,12 +69,12 @@ struct mwm_loop * mwm_loop_insert(struct mwm_loop * loop, void * data)
  * @param loop The loop to remove the element from
  * @return A new pointer to the loop
  */
-struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop)
+struct velox_loop * velox_loop_remove(struct velox_loop * loop)
 {
-    struct mwm_loop * new_loop;
+    struct velox_loop * new_loop;
 
     /* If there is only one element in the loop */
-    if (mwm_loop_is_singleton(loop))
+    if (velox_loop_is_singleton(loop))
     {
         free(loop);
         return NULL;
@@ -99,7 +99,7 @@ struct mwm_loop * mwm_loop_remove(struct mwm_loop * loop)
  * @param free_data Whether or not to free the data enclosed in the loop
  * @return A new pointer to the loop, in this case NULL
  */
-struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data)
+struct velox_loop * velox_loop_delete(struct velox_loop * loop, bool free_data)
 {
     while (loop != NULL)
     {
@@ -108,7 +108,7 @@ struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data)
             free(loop->data);
         }
 
-        loop = mwm_loop_remove(loop);
+        loop = velox_loop_remove(loop);
     }
 
     return NULL;
@@ -122,7 +122,7 @@ struct mwm_loop * mwm_loop_delete(struct mwm_loop * loop, bool free_data)
  * @param loop The loop to copy
  * @return A copy of the loop
  */
-struct mwm_loop * mwm_loop_copy(struct mwm_loop * loop)
+struct velox_loop * velox_loop_copy(struct velox_loop * loop)
 {
     if (loop == NULL)
     {
@@ -130,14 +130,14 @@ struct mwm_loop * mwm_loop_copy(struct mwm_loop * loop)
     }
     else
     {
-        struct mwm_loop * iterator;
-        struct mwm_loop * new_loop = NULL;
+        struct velox_loop * iterator;
+        struct velox_loop * new_loop = NULL;
 
         iterator = loop;
 
         do
         {
-            new_loop = mwm_loop_insert(new_loop, iterator->data);
+            new_loop = velox_loop_insert(new_loop, iterator->data);
             iterator = iterator->next;
         } while (iterator != loop);
 
@@ -153,7 +153,7 @@ struct mwm_loop * mwm_loop_copy(struct mwm_loop * loop)
  * @param first The first element to swap
  * @param second The second element to swap
  */
-void mwm_loop_swap(struct mwm_loop * first, struct mwm_loop * second)
+void velox_loop_swap(struct velox_loop * first, struct velox_loop * second)
 {
     void * data;
 
@@ -177,7 +177,7 @@ void mwm_loop_swap(struct mwm_loop * first, struct mwm_loop * second)
  * @param loop The loop to check
  * @return True if the loop contains a single element, false otherwise
  */
-bool mwm_loop_is_singleton(struct mwm_loop * loop)
+bool velox_loop_is_singleton(struct velox_loop * loop)
 {
     return (loop == loop->previous) && (loop == loop->next);
 }

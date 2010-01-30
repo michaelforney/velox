@@ -1,20 +1,20 @@
-/* mwm: modules/layout_grid.c
+/* velox: modules/layout_grid.c
  *
  * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdint.h>
@@ -24,17 +24,17 @@
 #include <string.h>
 #include <assert.h>
 
-#include <mwm/mwm.h>
-#include <mwm/window.h>
-#include <mwm/layout.h>
+#include <velox/velox.h>
+#include <velox/window.h>
+#include <velox/layout.h>
 
 const char const name[] = "layout_grid";
 
-void grid_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_state);
+void grid_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state);
 
 void initialize()
 {
-    struct mwm_layout_state state;
+    struct velox_layout_state state;
 
     printf(">>> layout_grid module\n");
 
@@ -46,10 +46,10 @@ void cleanup()
     printf("<<< layout_grid module\n");
 }
 
-void grid_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_state)
+void grid_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state)
 {
-    struct mwm_window * window = NULL;
-    struct mwm_loop * iterator = NULL;
+    struct velox_window * window = NULL;
+    struct velox_loop * iterator = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
@@ -74,7 +74,7 @@ void grid_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_s
     iterator = windows;
     do
     {
-        if (!((struct mwm_window *) iterator->data)->floating)
+        if (!((struct velox_window *) iterator->data)->floating)
         {
             window_count++;
         }
@@ -101,7 +101,7 @@ void grid_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_s
     window_index = 0;
     do
     {
-        window = (struct mwm_window *) iterator->data;
+        window = (struct velox_window *) iterator->data;
 
         if (!window->floating)
         {

@@ -1,5 +1,5 @@
-Authors of mwm
-==============
+Authors of velox
+================
 
 * Michael Forney <[michael@obberon.com](mailto:michael@obberon.com)>
     - Main code

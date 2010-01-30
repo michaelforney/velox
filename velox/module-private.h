@@ -1,28 +1,28 @@
-/* mwm: mwm/module-private.h
+/* velox: velox/module-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MWM_MODULE_PRIVATE_H
-#define MWM_MODULE_PRIVATE_H
+#ifndef VELOX_MODULE_PRIVATE_H
+#define VELOX_MODULE_PRIVATE_H
 
-#include <libmwm/list.h>
+#include <libvelox/list.h>
 
-struct mwm_module
+struct velox_module
 {
     void * handle;
     const char * name;
@@ -30,7 +30,7 @@ struct mwm_module
     void (* cleanup)();
 };
 
-extern struct mwm_list * modules;
+extern struct velox_list * modules;
 
 void load_module(const char * path);
 void initialize_modules();

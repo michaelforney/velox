@@ -1,17 +1,17 @@
-# mwm: modules/CMakeLists.txt
+# velox: modules/CMakeLists.txt
 
-set(MWM_MODULES
+set(VELOX_MODULES
     layout_tile
     layout_grid
     wallpaper
     spawn
 )
 
-include_directories(${mwm_SOURCE_DIR})
+include_directories(${velox_SOURCE_DIR})
 
-foreach(module ${MWM_MODULES})
-    add_library(mwm_${module} MODULE ${module}.c)
-    set_target_properties(mwm_${module} PROPERTIES PREFIX "")
-    install(TARGETS mwm_${module} DESTINATION lib${LIB_SUFFIX}/mwm/modules)
+foreach(module ${VELOX_MODULES})
+    add_library(velox_${module} MODULE ${module}.c)
+    set_target_properties(velox_${module} PROPERTIES PREFIX "")
+    install(TARGETS velox_${module} DESTINATION lib${LIB_SUFFIX}/velox/modules)
 endforeach(module)
 

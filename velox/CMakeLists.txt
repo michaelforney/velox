@@ -1,7 +1,7 @@
-# mwm: mwm/CMakeLists.txt
+# velox: velox/CMakeLists.txt
 
-add_executable(mwm
-    mwm.c
+add_executable(velox
+    velox.c
     window.c
     layout.c
     hook.c
@@ -11,10 +11,10 @@ add_executable(mwm
     module.c
 )
 
-include_directories(${mwm_SOURCE_DIR})
+include_directories(${velox_SOURCE_DIR})
 
-target_link_libraries(mwm
-    libmwm
+target_link_libraries(velox
+    libvelox
     ${XCB_LIBRARIES}
     ${XCB-Atom_LIBRARIES}
     ${XCB-ICCCM_LIBRARIES}
@@ -25,18 +25,18 @@ target_link_libraries(mwm
     m
 )
 
-install(TARGETS mwm DESTINATION bin)
+install(TARGETS velox DESTINATION bin)
 
 install(FILES
     config_file.h
     hook.h
     keybinding.h
     layout.h
-    mwm.h
+    velox.h
     tag.h
     window.h
     module.h
 
-    DESTINATION include/mwm
+    DESTINATION include/velox
 )
 

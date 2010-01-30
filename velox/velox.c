@@ -1,20 +1,20 @@
-/* mwm: mwm/mwm.c
+/* velox: velox/velox.c
  *
  * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdlib.h>
@@ -31,7 +31,7 @@
 
 #include <X11/keysym.h>
 
-#include "mwm.h"
+#include "velox.h"
 #include "window.h"
 #include "tag.h"
 #include "hook.h"
@@ -74,35 +74,35 @@ enum
 
 xcb_cursor_t cursors[3];
 
-/* MWM variables */
+/* VELOX variables */
 bool running = true;
 uint64_t tag_mask = 0;
-struct mwm_tag * tag = NULL;
+struct velox_tag * tag = NULL;
 uint16_t pending_unmaps = 0;
 uint8_t clear_event_type = 0;
 
 uint32_t border_pixel;
 uint32_t border_focus_pixel;
 
-/* MWM constants */
+/* VELOX constants */
 const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
 const uint16_t border_width = 2;
 const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 
-/* MWM macros */
+/* VELOX macros */
 #define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
 
-struct mwm_window * tags_lookup_window(xcb_window_t window_id)
+struct velox_window * tags_lookup_window(xcb_window_t window_id)
 {
-    struct mwm_list * iterator;
-    struct mwm_tag * tag;
-    struct mwm_window * window;
+    struct velox_list * iterator;
+    struct velox_tag * tag;
+    struct velox_window * window;
     uint16_t index;
 
     for (iterator = tags; iterator != NULL; iterator = iterator->next)
     {
-        tag = (struct mwm_tag *) iterator->data;
+        tag = (struct velox_tag *) iterator->data;
         window = window_loop_lookup(tag->windows, window_id);
 
         if (window != NULL)
@@ -119,8 +119,8 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
         xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
         xcb_keysym_t * keysyms;
-        struct mwm_list * iterator;
-        struct mwm_key_binding * binding;
+        struct velox_list * iterator;
+        struct velox_key_binding * binding;
         uint16_t keysym_index;
         uint16_t extra_modifier_index;
         uint16_t extra_modifiers[] = {
@@ -142,7 +142,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
         keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
         for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
         {
-            binding = (struct mwm_key_binding *) iterator->data;
+            binding = (struct velox_key_binding *) iterator->data;
 
             for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
             {
@@ -179,7 +179,7 @@ void check_wm_running()
     error = xcb_request_check(c, change_attributes_cookie);
     if (error)
     {
-        fprintf(stderr, "mwm: another window manager is already running\n");
+        fprintf(stderr, "velox: another window manager is already running\n");
         exit(EXIT_FAILURE);
     }
 }
@@ -202,7 +202,7 @@ void setup()
 
     if (xcb_connection_has_error(c))
     {
-        fprintf(stderr, "mwm: could not open display\n");
+        fprintf(stderr, "velox: could not open display\n");
         exit(EXIT_FAILURE);
     }
 
@@ -299,7 +299,7 @@ void setup()
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
-    tag = (struct mwm_tag *) tags->data;
+    tag = (struct velox_tag *) tags->data;
 }
 
 void show_window(xcb_window_t window_id)
@@ -335,7 +335,7 @@ void hide_window(xcb_window_t window_id)
  *
  * @param window The window to send the request to
  */
-void synthetic_configure(struct mwm_window * window)
+void synthetic_configure(struct velox_window * window)
 {
     xcb_configure_notify_event_t event;
 
@@ -360,7 +360,7 @@ void synthetic_configure(struct mwm_window * window)
  *
  * @param wnidow The window to send the request to
  */
-void synthetic_unmap(struct mwm_window * window)
+void synthetic_unmap(struct velox_window * window)
 {
     xcb_unmap_notify_event_t event;
 
@@ -408,11 +408,11 @@ void focus(xcb_window_t window_id)
 
 void set_tag(uint8_t index)
 {
-    struct mwm_list * tag_iterator;
-    struct mwm_tag * new_tag;
+    struct velox_list * tag_iterator;
+    struct velox_tag * new_tag;
 
     for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
-    new_tag = (struct mwm_tag *) tag_iterator->data;
+    new_tag = (struct velox_tag *) tag_iterator->data;
 
     printf("set_tag: %i\n", new_tag);
 
@@ -422,8 +422,8 @@ void set_tag(uint8_t index)
     }
     else
     {
-        struct mwm_loop * iterator;
-        struct mwm_window * window;
+        struct velox_loop * iterator;
+        struct velox_window * window;
 
         if (new_tag->windows)
         {
@@ -431,7 +431,7 @@ void set_tag(uint8_t index)
             iterator = new_tag->windows;
             do
             {
-                show_window(((struct mwm_window *) iterator->data)->window_id);
+                show_window(((struct velox_window *) iterator->data)->window_id);
                 iterator = iterator->next;
             } while (iterator != new_tag->windows);
         }
@@ -442,7 +442,7 @@ void set_tag(uint8_t index)
             iterator = tag->windows;
             do
             {
-                hide_window(((struct mwm_window *) iterator->data)->window_id);
+                hide_window(((struct velox_window *) iterator->data)->window_id);
                 iterator = iterator->next;
             } while (iterator != tag->windows);
         }
@@ -452,7 +452,7 @@ void set_tag(uint8_t index)
         if (tag->windows)
         {
             assert(new_tag->focus != NULL);
-            focus(((struct mwm_window *) new_tag->focus->data)->window_id);
+            focus(((struct velox_window *) new_tag->focus->data)->window_id);
         }
         else
         {
@@ -465,11 +465,11 @@ void set_tag(uint8_t index)
 
 void move_focus_to_tag(uint8_t index)
 {
-    struct mwm_list * tag_iterator;
-    struct mwm_tag * new_tag;
+    struct velox_list * tag_iterator;
+    struct velox_tag * new_tag;
 
     for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
-    new_tag = (struct mwm_tag *) tag_iterator->data;
+    new_tag = (struct velox_tag *) tag_iterator->data;
 
     printf("move_focus_to_tag: %i\n", new_tag);
 
@@ -479,16 +479,16 @@ void move_focus_to_tag(uint8_t index)
     }
     else
     {
-        struct mwm_loop * next_focus;
-        struct mwm_window * window;
+        struct velox_loop * next_focus;
+        struct velox_window * window;
 
-        window = (struct mwm_window *) tag->focus->data;
+        window = (struct velox_window *) tag->focus->data;
 
         window->tag = new_tag;
 
-        new_tag->windows = mwm_loop_insert(new_tag->windows, tag->focus->data);
+        new_tag->windows = velox_loop_insert(new_tag->windows, tag->focus->data);
 
-        if (mwm_loop_is_singleton(new_tag->windows))
+        if (velox_loop_is_singleton(new_tag->windows))
         {
             new_tag->focus = new_tag->windows;
         }
@@ -496,17 +496,17 @@ void move_focus_to_tag(uint8_t index)
         /* If we removed the first element */
         if (tag->focus == tag->windows)
         {
-            tag->focus = mwm_loop_remove(tag->focus);
+            tag->focus = velox_loop_remove(tag->focus);
             tag->windows = tag->focus;
         }
         else
         {
-            tag->focus = mwm_loop_remove(tag->focus);
+            tag->focus = velox_loop_remove(tag->focus);
         }
 
         if (tag->focus)
         {
-            focus(((struct mwm_window *) tag->focus->data)->window_id);
+            focus(((struct velox_window *) tag->focus->data)->window_id);
         }
         else
         {
@@ -526,7 +526,7 @@ void next_layout()
     printf("next_layout()\n");
 
     tag->layout = tag->layout->next;
-    tag->state = ((struct mwm_layout *) tag->layout->data)->default_state;
+    tag->state = ((struct velox_layout *) tag->layout->data)->default_state;
 
     arrange();
 }
@@ -536,7 +536,7 @@ void previous_layout()
     printf("next_layout()\n");
 
     tag->layout = tag->layout->previous;
-    tag->state = ((struct mwm_layout *) tag->layout->data)->default_state;
+    tag->state = ((struct velox_layout *) tag->layout->data)->default_state;
 
     arrange();
 }
@@ -552,7 +552,7 @@ void focus_next()
 
     tag->focus = tag->focus->next;
 
-    focus(((struct mwm_window *) tag->focus->data)->window_id);
+    focus(((struct velox_window *) tag->focus->data)->window_id);
 }
 
 void focus_previous()
@@ -566,7 +566,7 @@ void focus_previous()
 
     tag->focus = tag->focus->previous;
 
-    focus(((struct mwm_window *) tag->focus->data)->window_id);
+    focus(((struct velox_window *) tag->focus->data)->window_id);
 }
 
 void move_next()
@@ -578,7 +578,7 @@ void move_next()
         return;
     }
 
-    mwm_loop_swap(tag->focus, tag->focus->next);
+    velox_loop_swap(tag->focus, tag->focus->next);
     tag->focus = tag->focus->next;
 
     arrange();
@@ -593,7 +593,7 @@ void move_previous()
         return;
     }
 
-    mwm_loop_swap(tag->focus, tag->focus->previous);
+    velox_loop_swap(tag->focus, tag->focus->previous);
     tag->focus = tag->focus->previous;
 
     arrange();
@@ -650,12 +650,12 @@ void arrange()
     }
 
     assert(tag->layout->data != NULL);
-    ((struct mwm_layout *) tag->layout->data)->arrange(tag->windows, &tag->state);
+    ((struct velox_layout *) tag->layout->data)->arrange(tag->windows, &tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;
 }
 
-void update_name_class(struct mwm_window * window)
+void update_name_class(struct velox_window * window)
 {
     xcb_get_property_cookie_t wm_name_cookie, wm_class_cookie;
     xcb_get_property_reply_t * wm_name_reply, * wm_class_reply;
@@ -680,8 +680,8 @@ void manage(xcb_window_t window_id)
 {
     printf("manage(%i)\n", window_id);
 
-    struct mwm_window * window = NULL;
-    struct mwm_window * transient = NULL;
+    struct velox_window * window = NULL;
+    struct velox_window * transient = NULL;
     xcb_get_property_cookie_t transient_for_cookie;
     xcb_get_property_reply_t * transient_for_reply = NULL;
     xcb_get_geometry_cookie_t geometry_cookie;
@@ -694,7 +694,7 @@ void manage(xcb_window_t window_id)
     transient_for_cookie = xcb_get_property(c, false, window_id, WM_TRANSIENT_FOR, WINDOW, 0, 1);
     geometry_cookie = xcb_get_geometry(c, window_id);
 
-    window = (struct mwm_window *) malloc(sizeof(struct mwm_window));
+    window = (struct velox_window *) malloc(sizeof(struct velox_window));
     printf("allocated window: %i\n", window);
 
     window->window_id = window_id;
@@ -758,7 +758,7 @@ void manage(xcb_window_t window_id)
 
     if (tag == window->tag)
     {
-        tag->windows = mwm_loop_insert(tag->windows, window)->previous;
+        tag->windows = velox_loop_insert(tag->windows, window)->previous;
         tag->focus = tag->windows;
 
         arrange();
@@ -774,14 +774,14 @@ void manage(xcb_window_t window_id)
     }
     else
     {
-        window->tag->windows = mwm_loop_insert(window->tag->windows, window)->previous;
+        window->tag->windows = velox_loop_insert(window->tag->windows, window)->previous;
         window->tag->focus = window->tag->windows;
     }
 }
 
-void unmanage(struct mwm_window * window)
+void unmanage(struct velox_window * window)
 {
-    struct mwm_loop * iterator;
+    struct velox_loop * iterator;
 
     iterator = window->tag->windows;
     if (iterator == NULL) return;
@@ -791,7 +791,7 @@ void unmanage(struct mwm_window * window)
         {
             if (iterator == window->tag->focus)
             {
-                if (mwm_loop_is_singleton(window->tag->windows))
+                if (velox_loop_is_singleton(window->tag->windows))
                 {
                     window->tag->focus = NULL;
                 }
@@ -803,19 +803,19 @@ void unmanage(struct mwm_window * window)
 
             if (iterator == window->tag->windows)
             {
-                iterator = mwm_loop_remove(iterator);
+                iterator = velox_loop_remove(iterator);
                 window->tag->windows = iterator;
             }
             else
             {
-                iterator = mwm_loop_remove(iterator);
+                iterator = velox_loop_remove(iterator);
             }
 
             if (tag == window->tag)
             {
                 if (tag->focus)
                 {
-                    focus(((struct mwm_window *) tag->focus->data)->window_id);
+                    focus(((struct velox_window *) tag->focus->data)->window_id);
                 }
                 else
                 {
@@ -932,7 +932,7 @@ void configure_request(xcb_configure_request_event_t * event)
     // TODO: Rewrite
     printf("configure_request\n");
 
-    struct mwm_window * window = NULL;
+    struct velox_window * window = NULL;
 
     window = tags_lookup_window(event->window);
 
@@ -1012,7 +1012,7 @@ void configure_notify(xcb_configure_notify_event_t * event)
 
 void destroy_notify(xcb_destroy_notify_event_t * event)
 {
-    struct mwm_window * window;
+    struct velox_window * window;
 
     printf("destroy_notify\n");
 
@@ -1038,15 +1038,15 @@ void enter_notify(xcb_enter_notify_event_t * event)
     }
     else
     {
-        struct mwm_loop * element;
+        struct velox_loop * element;
 
         element = window_loop_locate(tag->windows, event->event);
 
         if (element != NULL)
         {
-            struct mwm_window * window;
+            struct velox_window * window;
 
-            window = (struct mwm_window *) element->data;
+            window = (struct velox_window *) element->data;
             printf("mode: %i\n", event->mode);
             printf("detail: %i\n", event->detail);
 
@@ -1067,8 +1067,8 @@ void leave_notify(xcb_leave_notify_event_t * event)
 void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
-    struct mwm_list * iterator;
-    struct mwm_key_binding * binding;
+    struct velox_list * iterator;
+    struct velox_key_binding * binding;
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
@@ -1077,7 +1077,7 @@ void key_press(xcb_key_press_event_t * event)
 
     for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
     {
-        binding = (struct mwm_key_binding *) iterator->data;
+        binding = (struct velox_key_binding *) iterator->data;
 
         if (keysym == binding->key->keysym && CLEAN_MASK(event->state) == binding->key->modifiers)
         {
@@ -1101,7 +1101,7 @@ void mapping_notify(xcb_mapping_notify_event_t * event)
 
 void map_request(xcb_map_request_event_t * event)
 {
-    struct mwm_window * maybe_window;
+    struct velox_window * maybe_window;
     xcb_get_window_attributes_cookie_t window_attributes_cookie;
     xcb_get_window_attributes_reply_t * window_attributes;
 
@@ -1144,7 +1144,7 @@ void property_notify(xcb_property_notify_event_t * event)
 
 void unmap_notify(xcb_unmap_notify_event_t * event)
 {
-    struct mwm_window * window;
+    struct velox_window * window;
 
     printf("unmap_notify: %i\n", event->window);
 

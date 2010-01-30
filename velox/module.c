@@ -1,20 +1,20 @@
-/* mwm: mwm/module.c
+/* velox: velox/module.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdlib.h>
@@ -26,7 +26,7 @@
 
 #include "module-private.h"
 
-struct mwm_list * modules;
+struct velox_list * modules;
 
 void * open_module(const char const * name)
 {
@@ -37,13 +37,13 @@ void * open_module(const char const * name)
     void * handle = NULL;
     bool searching = true;
 
-    if (getenv("MWM_PLUGIN_PATH") != NULL)
+    if (getenv("VELOX_PLUGIN_PATH") != NULL)
     {
-        snprintf(search_path, sizeof(search_path), "%s", getenv("MWM_PLUGIN_PATH"));
+        snprintf(search_path, sizeof(search_path), "%s", getenv("VELOX_PLUGIN_PATH"));
     }
     else
     {
-        snprintf(search_path, sizeof(search_path), "%s/.mwm/modules:/usr/lib/mwm/modules",
+        snprintf(search_path, sizeof(search_path), "%s/.velox/modules:/usr/lib/velox/modules",
             getenv("HOME")
         );
     }
@@ -65,7 +65,7 @@ void * open_module(const char const * name)
             start = end + 1;
         }
 
-        snprintf(module_path, sizeof(module_path), "%s/mwm_%s.so", directory_path, name);
+        snprintf(module_path, sizeof(module_path), "%s/velox_%s.so", directory_path, name);
 
         printf("trying: %s...", module_path);
 
@@ -88,13 +88,13 @@ void * open_module(const char const * name)
 void load_module(const char const * name)
 {
     void * module_handle;
-    struct mwm_module * module;
+    struct velox_module * module;
 
     module_handle = open_module(name);
 
     assert(module_handle);
 
-    module = (struct mwm_module *) malloc(sizeof(struct mwm_module));
+    module = (struct velox_module *) malloc(sizeof(struct velox_module));
 
     module->handle = module_handle;
     module->name = dlsym(module_handle, "name");
@@ -103,33 +103,33 @@ void load_module(const char const * name)
 
     printf("loaded module: %s\n", module->name);
 
-    modules = mwm_list_insert(modules, module);
+    modules = velox_list_insert(modules, module);
 }
 
 void initialize_modules()
 {
-    struct mwm_list * iterator;
+    struct velox_list * iterator;
 
     for (iterator = modules; iterator != NULL; iterator = iterator->next)
     {
-        ((struct mwm_module *) iterator->data)->initialize();
+        ((struct velox_module *) iterator->data)->initialize();
     }
 }
 
 void cleanup_modules()
 {
-    struct mwm_module * module;
+    struct velox_module * module;
 
     while (modules)
     {
-        module = (struct mwm_module *) modules->data;
+        module = (struct velox_module *) modules->data;
         module->cleanup();
 
         dlclose(module->handle);
 
         free(module);
 
-        modules = mwm_list_remove_first(modules);
+        modules = velox_list_remove_first(modules);
     }
 }
 

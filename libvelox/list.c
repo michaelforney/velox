@@ -1,20 +1,20 @@
-/* mwm: libmwm/list.c
+/* velox: libvelox/list.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdlib.h>
@@ -32,10 +32,10 @@
  * @param data The data to insert into the list
  * @return A new pointer to the list
  */
-struct mwm_list * mwm_list_insert(struct mwm_list * list, void * data)
+struct velox_list * velox_list_insert(struct velox_list * list, void * data)
 {
-    struct mwm_list * new_list = (struct mwm_list *) malloc(sizeof(struct mwm_list));
-    memset(new_list, 0, sizeof(struct mwm_list));
+    struct velox_list * new_list = (struct velox_list *) malloc(sizeof(struct velox_list));
+    memset(new_list, 0, sizeof(struct velox_list));
 
     new_list->data = data;
     new_list->next = list;
@@ -58,18 +58,18 @@ struct mwm_list * mwm_list_insert(struct mwm_list * list, void * data)
  * @param data The data to append to the list
  * @return A new pointer to the list
  */
-struct mwm_list * mwm_list_append(struct mwm_list * list, void * data)
+struct velox_list * velox_list_append(struct velox_list * list, void * data)
 {
-    struct mwm_list * iterator;
+    struct velox_list * iterator;
 
     if (list == NULL)
     {
-        return mwm_list_insert(list, data);
+        return velox_list_insert(list, data);
     }
 
     for (iterator = list; iterator->next != NULL; iterator = iterator->next);
 
-    return mwm_list_insert_after(iterator, data);
+    return velox_list_insert_after(iterator, data);
 }
 
 /**
@@ -81,11 +81,11 @@ struct mwm_list * mwm_list_append(struct mwm_list * list, void * data)
  * @param data The data to insert into the list
  * @return A new pointer to the list
  */
-struct mwm_list * mwm_list_insert_after(struct mwm_list * list, void * data)
+struct velox_list * velox_list_insert_after(struct velox_list * list, void * data)
 {
     assert(list != NULL);
 
-    list->next = mwm_list_insert(list->next, data);
+    list->next = velox_list_insert(list->next, data);
     list->next->previous = list;
 
     return list;
@@ -99,9 +99,9 @@ struct mwm_list * mwm_list_insert_after(struct mwm_list * list, void * data)
  * @param list The list to remove the first element from. This must not be NULL
  * @return A new pointer to the list
  */
-struct mwm_list * mwm_list_remove_first(struct mwm_list * list)
+struct velox_list * velox_list_remove_first(struct velox_list * list)
 {
-    struct mwm_list * new_list;
+    struct velox_list * new_list;
 
     assert(list != NULL);
 
@@ -130,15 +130,15 @@ struct mwm_list * mwm_list_remove_first(struct mwm_list * list)
  * @param list The list to remove the last element from. This must not be NULL
  * @return A new pointer to the list
  */
-struct mwm_list * mwm_list_remove_last(struct mwm_list * list)
+struct velox_list * velox_list_remove_last(struct velox_list * list)
 {
-    struct mwm_list * iterator;
+    struct velox_list * iterator;
 
     assert(list != NULL);
 
     for (iterator = list; iterator->next != NULL; iterator = iterator->next);
 
-    return mwm_list_remove_first(iterator);
+    return velox_list_remove_first(iterator);
 }
 
 /**
@@ -149,10 +149,10 @@ struct mwm_list * mwm_list_remove_last(struct mwm_list * list)
  * @param list The list to be reversed
  * @return A new pointer to the list
  */
-struct mwm_list * mwm_list_reverse(struct mwm_list * list)
+struct velox_list * velox_list_reverse(struct velox_list * list)
 {
-    struct mwm_list * iterator;
-    struct mwm_list * next;
+    struct velox_list * iterator;
+    struct velox_list * next;
 
     for (iterator = list; iterator != NULL; iterator = iterator->previous)
     {
@@ -176,10 +176,10 @@ struct mwm_list * mwm_list_reverse(struct mwm_list * list)
  * @param free_data Whether or not to free the contents
  * @return A new pointer to the list
  */
-struct mwm_list * mwm_list_delete(struct mwm_list * list, bool free_data)
+struct velox_list * velox_list_delete(struct velox_list * list, bool free_data)
 {
-    struct mwm_list * iterator;
-    struct mwm_list * next;
+    struct velox_list * iterator;
+    struct velox_list * next;
 
     for (iterator = list, next = iterator; next != NULL; iterator = next)
     {
@@ -203,7 +203,7 @@ struct mwm_list * mwm_list_delete(struct mwm_list * list, bool free_data)
  * @param first The first element to swap
  * @param second The second element to swap
  */
-void mwm_list_swap(struct mwm_list * first, struct mwm_list * second)
+void velox_list_swap(struct velox_list * first, struct velox_list * second)
 {
     void * data;
 

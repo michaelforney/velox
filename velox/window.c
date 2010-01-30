@@ -1,23 +1,23 @@
-/* mwm: mwm/window.c
+/* velox: velox/window.c
  *
  * Copyright (c) 2009 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mwm.h"
+#include "velox.h"
 #include "window.h"
 
 #include <stdlib.h>
@@ -28,14 +28,14 @@
 
 #include <xcb/xcb_atom.h>
 
-struct mwm_window * window_list_lookup(struct mwm_list * list, xcb_window_t window_id)
+struct velox_window * window_list_lookup(struct velox_list * list, xcb_window_t window_id)
 {
-    struct mwm_list * iterator;
-    struct mwm_window * window;
+    struct velox_list * iterator;
+    struct velox_window * window;
 
     for (iterator = list; iterator != NULL; iterator = iterator->next)
     {
-        window = (struct mwm_window *) iterator->data;
+        window = (struct velox_window *) iterator->data;
 
         if (window->window_id == window_id)
         {
@@ -46,34 +46,34 @@ struct mwm_window * window_list_lookup(struct mwm_list * list, xcb_window_t wind
     return NULL;
 }
 
-struct mwm_list * window_list_delete(struct mwm_list * list, xcb_window_t window_id)
+struct velox_list * window_list_delete(struct velox_list * list, xcb_window_t window_id)
 {
-    struct mwm_list * iterator;
-    struct mwm_window * window;
+    struct velox_list * iterator;
+    struct velox_window * window;
 
-    window = (struct mwm_window *) list->data;
+    window = (struct velox_window *) list->data;
 
     if (window->window_id == window_id)
     {
-        return mwm_list_remove_first(list);
+        return velox_list_remove_first(list);
     }
 
     for (iterator = list; iterator != NULL; iterator = iterator->next)
     {
-        window = (struct mwm_window *) iterator->data;
+        window = (struct velox_window *) iterator->data;
 
         if (window->window_id == window_id)
         {
-            mwm_list_remove_first(iterator);
+            velox_list_remove_first(iterator);
         }
     }
 
     return list;
 }
 
-struct mwm_window * window_loop_lookup(struct mwm_loop * loop, xcb_window_t window_id)
+struct velox_window * window_loop_lookup(struct velox_loop * loop, xcb_window_t window_id)
 {
-    struct mwm_loop * iterator;
+    struct velox_loop * iterator;
 
     if (loop == NULL)
     {
@@ -81,12 +81,12 @@ struct mwm_window * window_loop_lookup(struct mwm_loop * loop, xcb_window_t wind
     }
     else
     {
-        struct mwm_window * window;
+        struct velox_window * window;
 
         iterator = loop;
         do
         {
-            window = (struct mwm_window *) iterator->data;
+            window = (struct velox_window *) iterator->data;
 
             if (window->window_id == window_id)
             {
@@ -100,9 +100,9 @@ struct mwm_window * window_loop_lookup(struct mwm_loop * loop, xcb_window_t wind
     return NULL;
 }
 
-struct mwm_loop * window_loop_locate(struct mwm_loop * loop, xcb_window_t window_id)
+struct velox_loop * window_loop_locate(struct velox_loop * loop, xcb_window_t window_id)
 {
-    struct mwm_loop * iterator;
+    struct velox_loop * iterator;
 
     if (loop == NULL)
     {
@@ -110,12 +110,12 @@ struct mwm_loop * window_loop_locate(struct mwm_loop * loop, xcb_window_t window
     }
     else
     {
-        struct mwm_window * window;
+        struct velox_window * window;
 
         iterator = loop;
         do
         {
-            if (((struct mwm_window *) iterator->data)->window_id == window_id)
+            if (((struct velox_window *) iterator->data)->window_id == window_id)
             {
                 return iterator;
             }

@@ -1,20 +1,20 @@
-/* mwm: mwm/keybinding.c
+/* velox: velox/keybinding.c
  *
  * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdio.h>
@@ -23,12 +23,12 @@
 #include <assert.h>
 #include <X11/Xlib.h> // For XStringToKeysym
 
-#include <libmwm/hashtable.h>
+#include <libvelox/hashtable.h>
 
 #include "keybinding.h"
 #include "tag.h"
 #include "config_file.h"
-#include "mwm.h"
+#include "velox.h"
 
 #define ADD_TAG_KEY_BINDINGS(N) \
     add_configured_key_binding("tag", STRING_SYMBOL(set_tag_ ## N)); \
@@ -38,8 +38,8 @@
 
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
-struct mwm_hashtable * configured_keys = NULL;
-struct mwm_list * key_bindings = NULL;
+struct velox_hashtable * configured_keys = NULL;
+struct velox_list * key_bindings = NULL;
 
 uint16_t modifier_value(const char * name)
 {
@@ -60,13 +60,13 @@ void setup_configured_keys()
 {
     FILE * file;
     char identifier[256];
-    struct mwm_key * key;
-    struct mwm_list * keys;
+    struct velox_key * key;
+    struct velox_list * keys;
 
     yaml_parser_t parser;
     yaml_document_t document;
 
-    configured_keys = mwm_hashtable_create(1024, &sdbm_hash);
+    configured_keys = velox_hashtable_create(1024, &sdbm_hash);
     printf("size: %i\n", configured_keys->size);
     file = open_config_file("keys.yaml");
 
@@ -130,7 +130,7 @@ void setup_configured_keys()
 
                     assert(mapping_node->type == YAML_MAPPING_NODE);
 
-                    key = (struct mwm_key *) malloc(sizeof(struct mwm_key));
+                    key = (struct velox_key *) malloc(sizeof(struct velox_key));
 
                     /* Identify key */
                     for (key_pair = mapping_node->data.mapping.pairs.start;
@@ -168,11 +168,11 @@ void setup_configured_keys()
                     }
 
                     printf("%s: modifiers: %i, keysym: %x\n", identifier, key->modifiers, key->keysym);
-                    keys = mwm_list_insert(keys, key);
+                    keys = velox_list_insert(keys, key);
                 }
 
-                assert(!mwm_hashtable_exists(configured_keys, identifier));
-                mwm_hashtable_insert(configured_keys, identifier, keys);
+                assert(!velox_hashtable_exists(configured_keys, identifier));
+                velox_hashtable_insert(configured_keys, identifier, keys);
             }
         }
 
@@ -190,20 +190,20 @@ void setup_configured_keys()
 void setup_key_bindings()
 {
     /* Window focus */
-    add_configured_key_binding("mwm", STRING_SYMBOL(focus_next));
-    add_configured_key_binding("mwm", STRING_SYMBOL(focus_previous));
-    add_configured_key_binding("mwm", STRING_SYMBOL(move_next));
-    add_configured_key_binding("mwm", STRING_SYMBOL(move_previous));
+    add_configured_key_binding("velox", STRING_SYMBOL(focus_next));
+    add_configured_key_binding("velox", STRING_SYMBOL(focus_previous));
+    add_configured_key_binding("velox", STRING_SYMBOL(move_next));
+    add_configured_key_binding("velox", STRING_SYMBOL(move_previous));
 
     /* Window operations */
-    add_configured_key_binding("mwm", STRING_SYMBOL(kill_focused_window));
+    add_configured_key_binding("velox", STRING_SYMBOL(kill_focused_window));
 
     /* Layout control */
-    add_configured_key_binding("mwm", STRING_SYMBOL(next_layout));
-    add_configured_key_binding("mwm", STRING_SYMBOL(previous_layout));
+    add_configured_key_binding("velox", STRING_SYMBOL(next_layout));
+    add_configured_key_binding("velox", STRING_SYMBOL(previous_layout));
 
     /* Quit */
-    add_configured_key_binding("mwm", STRING_SYMBOL(quit));
+    add_configured_key_binding("velox", STRING_SYMBOL(quit));
 
     /* Tags */
     ADD_TAG_KEY_BINDINGS(1)
@@ -219,25 +219,25 @@ void setup_key_bindings()
 
 void cleanup_key_bindings()
 {
-    key_bindings = mwm_list_delete(key_bindings, true);
+    key_bindings = velox_list_delete(key_bindings, true);
 }
 
-void add_key_binding(struct mwm_key * key, void (* function)())
+void add_key_binding(struct velox_key * key, void (* function)())
 {
-    struct mwm_key_binding * binding;
+    struct velox_key_binding * binding;
 
-    binding = (struct mwm_key_binding *) malloc(sizeof(struct mwm_key_binding));
+    binding = (struct velox_key_binding *) malloc(sizeof(struct velox_key_binding));
     binding->key = key;
     binding->keycode = 0;
     binding->function = function;
 
-    key_bindings = mwm_list_insert(key_bindings, binding);
+    key_bindings = velox_list_insert(key_bindings, binding);
 }
 
 void add_configured_key_binding(const char * group, const char * name, void (* function)())
 {
-    struct mwm_list * keys;
-    struct mwm_list * iterator;
+    struct velox_list * keys;
+    struct velox_list * iterator;
     char identifier[strlen(group) + strlen(name) + 1];
 
     sprintf(identifier, "%s:%s", group, name);
@@ -247,11 +247,11 @@ void add_configured_key_binding(const char * group, const char * name, void (* f
         return;
     }
 
-    keys = mwm_hashtable_lookup(configured_keys, identifier);
+    keys = velox_hashtable_lookup(configured_keys, identifier);
 
     for (iterator = keys; iterator != NULL; iterator = iterator->next)
     {
-        add_key_binding((struct mwm_key *) iterator->data, function);
+        add_key_binding((struct velox_key *) iterator->data, function);
     }
 }
 

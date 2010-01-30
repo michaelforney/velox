@@ -1,20 +1,20 @@
-/* mwm: mwm/config_file.c
+/* velox: velox/config_file.c
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <yaml.h>
@@ -29,10 +29,10 @@ FILE * open_config_file(const char * name)
     FILE * file;
     char path[1024];
 
-    snprintf(path, sizeof(path), "%s/.mwm/%s", getenv("HOME"), name);
+    snprintf(path, sizeof(path), "%s/.velox/%s", getenv("HOME"), name);
     if ((file = fopen(path, "r")) != NULL) return file;
 
-    snprintf(path, sizeof(path), "/etc/mwm/%s", name);
+    snprintf(path, sizeof(path), "/etc/velox/%s", name);
     if ((file = fopen(path, "r")) != NULL) return file;
 
     return NULL;
@@ -45,7 +45,7 @@ void parse_config()
     yaml_parser_t parser;
     yaml_document_t document;
 
-    file = open_config_file("mwm.yaml");
+    file = open_config_file("velox.yaml");
 
     if (file == NULL) return;
 

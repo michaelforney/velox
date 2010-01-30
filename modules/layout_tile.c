@@ -1,20 +1,20 @@
-/* mwm: modules/layout_tile.c
+/* velox: modules/layout_tile.c
  *
  * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
  *
- * This file is a part of mwm.
+ * This file is a part of velox.
  *
- * mwm is free software; you can redistribute it and/or modify it under the
+ * velox is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License version 2, as published by the Free
  * Software Foundation.
  *
- * mwm is distributed in the hope that it will be useful, but WITHOUT ANY
+ * velox is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
  * details.
  *
  * You should have received a copy of the GNU General Public License along
- * with mwm.  If not, see <http://www.gnu.org/licenses/>.
+ * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <stdint.h>
@@ -24,14 +24,14 @@
 #include <string.h>
 #include <assert.h>
 
-#include <mwm/mwm.h>
-#include <mwm/module.h>
-#include <mwm/window.h>
-#include <mwm/layout.h>
+#include <velox/velox.h>
+#include <velox/module.h>
+#include <velox/window.h>
+#include <velox/layout.h>
 
 const char const name[] = "layout_tile";
 
-struct mwm_tile_layout_state
+struct velox_tile_layout_state
 {
     float master_factor;
     uint16_t master_count;
@@ -39,11 +39,11 @@ struct mwm_tile_layout_state
     uint16_t pad[28];
 };
 
-void tile_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_state);
+void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state);
 
 void initialize()
 {
-    struct mwm_tile_layout_state state;
+    struct velox_tile_layout_state state;
 
     printf(">>> layout_tile module\n");
 
@@ -51,7 +51,7 @@ void initialize()
     state.master_count = 1;
     state.column_count = 1;
 
-    add_layout("tile", &tile_arrange, (struct mwm_layout_state *) &state);
+    add_layout("tile", &tile_arrange, (struct velox_layout_state *) &state);
 
     /* Layout modification */
     MODULE_KEYBINDING(increase_master_factor)
@@ -67,11 +67,11 @@ void cleanup()
     printf("<<< layout_tile module\n");
 }
 
-void tile_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_state)
+void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state)
 {
-    struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) generic_state;
-    struct mwm_window * window = NULL;
-    struct mwm_loop * iterator = NULL;
+    struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) generic_state;
+    struct velox_window * window = NULL;
+    struct velox_loop * iterator = NULL;
     uint16_t mask;
     uint32_t values[4];
     uint16_t window_count = 0;
@@ -95,7 +95,7 @@ void tile_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_s
     iterator = windows;
     do
     {
-        if (!((struct mwm_window *) iterator->data)->floating)
+        if (!((struct velox_window *) iterator->data)->floating)
         {
             window_count++;
         }
@@ -121,7 +121,7 @@ void tile_arrange(struct mwm_loop * windows, struct mwm_layout_state * generic_s
     window_index = 0;
     do
     {
-        window = (struct mwm_window *) iterator->data;
+        window = (struct velox_window *) iterator->data;
 
         if (!window->floating)
         {
@@ -182,9 +182,9 @@ void increase_master_factor()
 {
     printf("increase_master_factor()\n");
 
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&tag->state);
         state->master_factor = MIN(state->master_factor + 0.025, 1.0);
 
         arrange();
@@ -195,9 +195,9 @@ void decrease_master_factor()
 {
     printf("decrease_master_factor()\n");
 
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&tag->state);
         state->master_factor = MAX(state->master_factor - 0.025, 0.0);
 
         arrange();
@@ -208,9 +208,9 @@ void increase_master_count()
 {
     printf("increase_master_count()\n");
 
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&tag->state);
         state->master_count++;
 
         arrange();
@@ -221,9 +221,9 @@ void decrease_master_count()
 {
     printf("decrease_master_count()\n");
 
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&tag->state);
         state->master_count = MAX(state->master_count - 1, 0);
 
         arrange();
@@ -234,9 +234,9 @@ void increase_column_count()
 {
     printf("increase_column_count()\n");
 
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&tag->state);
         state->column_count++;
 
         arrange();
@@ -247,9 +247,9 @@ void decrease_column_count()
 {
     printf("decrease_column_count()\n");
 
-    if (strcmp(((struct mwm_layout *) tag->layout->data)->identifier, "tile") == 0)
+    if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
-        struct mwm_tile_layout_state * state = (struct mwm_tile_layout_state *) (&tag->state);
+        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&tag->state);
         state->column_count = MAX(state->column_count - 1, 1);
 
         arrange();

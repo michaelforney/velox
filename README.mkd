@@ -1,21 +1,21 @@
-mwm
-===
-mwm is a simple wm inspired by dwm, xmonad and awesome.
+velox
+=====
+velox is a simple wm inspired by dwm, xmonad and awesome.
 
 Configuration
 -------------
-mwm currently uses [YAML] for its configuration files. As of right now, all of
-the configuration is done through two files, `mwm.yaml`, and `keys.yaml`. mwm
-searches for these files first locally (in ~/.mwm/), and then system wide
-(in /etc/mwm/).
+velox currently uses [YAML] for its configuration files. As of right now, all of
+the configuration is done through two files, `velox.yaml`, and `keys.yaml`. velox
+searches for these files first locally (in ~/.velox/), and then system wide
+(in /etc/velox/).
 
-### mwm.yaml
-`mwm.yaml` is where global settings for mwm will reside. Currently, the only
-configuration variable used from mwm.yaml is `modules`. The value of `modules`
+### velox.yaml
+`velox.yaml` is where global settings for velox will reside. Currently, the only
+configuration variable used from velox.yaml is `modules`. The value of `modules`
 should be a list of modules to load on startup.
 
 ### keys.yaml
-`keys.yaml` is where you can configure key bindings for mwm. Modules can make
+`keys.yaml` is where you can configure key bindings for velox. Modules can make
 use of these bindings using `add_configured_key_binding`.
 
 The format for `keys.yaml` is as follows:
@@ -59,13 +59,13 @@ Currently there are only three required definitions to constitute a module.
 1. There must be a string called `name` which should be set to an identifying
 name for the module.
 2. There must be an `initialize` function which will be called shortly after
-mwm starts
+velox starts
 3. There must be a `cleanup` function which can perform any necessary actions
 prior to the modules unloading.
 
 Layouts
 -------
-Currently, mwm includes two layouts by default; tile and grid. These layouts
+Currently, velox includes two layouts by default; tile and grid. These layouts
 are similar to ones you might have seen in other projects. More layouts can be
 added through the use of modules, and `add_layout`. The most important part of
 a layout is its arrange function, which takes as arguments, a cyclical linked
