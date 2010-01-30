@@ -22,6 +22,12 @@ spawn:
     spawn_terminal  : [{mod: [*mod, mod_shift], key: Return}]
     spawn_dmenu     : [{mod: [*mod],            key: r}]
 
+mpd:
+    play_pause      : [{mod: [mod_any],         key: XF86AudioPlay}]
+    next            : [{mod: [mod_any],         key: XF86AudioNext}]
+    previous        : [{mod: [mod_any],         key: XF86AudioPrev}]
+    stop            : [{mod: [mod_any],         key: XF86AudioStop}]
+
 tag:
     set_tag_1: [{mod: [*mod], key: 1}]
     set_tag_2: [{mod: [*mod], key: 2}]

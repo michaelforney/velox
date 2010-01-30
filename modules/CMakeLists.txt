@@ -5,6 +5,7 @@ set(VELOX_MODULES
     layout_grid
     wallpaper
     spawn
+    mpd
 )
 
 include_directories(${velox_SOURCE_DIR})
@@ -14,4 +15,6 @@ foreach(module ${VELOX_MODULES})
     set_target_properties(velox_${module} PROPERTIES PREFIX "")
     install(TARGETS velox_${module} DESTINATION lib${LIB_SUFFIX}/velox/modules)
 endforeach(module)
+
+target_link_libraries(velox_mpd mpdclient)
 
