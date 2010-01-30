@@ -1072,15 +1072,18 @@ void key_press(xcb_key_press_event_t * event)
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
-    printf("keysym: %i\n", keysym);
+    printf("keysym: %x\n", keysym);
     printf("modifiers: %i\n", event->state);
 
     for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
     {
         binding = (struct velox_key_binding *) iterator->data;
 
-        if (keysym == binding->key->keysym && CLEAN_MASK(event->state) == binding->key->modifiers)
+        if (keysym == binding->key->keysym &&
+            ((binding->key->modifiers == XCB_MOD_MASK_ANY) ||
+            (CLEAN_MASK(event->state) == binding->key->modifiers)))
         {
+            if (CLEAN_MASK(event->state) == 0) printf("found\n");
             if (binding->function != NULL)
             {
                 binding->function();
