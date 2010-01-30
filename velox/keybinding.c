@@ -181,7 +181,7 @@ void setup_configured_keys()
     }
     else
     {
-        printf("Error parsing document\n");
+        printf("YAML error: %s\n", parser.problem);
     }
 
     fclose(file);
