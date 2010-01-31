@@ -11,10 +11,15 @@ set(VELOX_MODULES
 include_directories(${velox_SOURCE_DIR})
 
 foreach(module ${VELOX_MODULES})
-    add_library(velox_${module} MODULE ${module}.c)
-    set_target_properties(velox_${module} PROPERTIES PREFIX "")
-    install(TARGETS velox_${module} DESTINATION lib${LIB_SUFFIX}/velox/modules)
+    string(TOUPPER ${module} module_upper)
+    if(ENABLE_${module_upper})
+        add_library(velox_${module} MODULE ${module}.c)
+        set_target_properties(velox_${module} PROPERTIES PREFIX "")
+        install(TARGETS velox_${module} DESTINATION lib${LIB_SUFFIX}/velox/modules)
+    endif(ENABLE_${module_upper})
 endforeach(module)
 
-target_link_libraries(velox_mpd mpdclient)
+if(ENABLE_MPD)
+    target_link_libraries(velox_mpd ${LibMPDClient_LIBRARIES})
+endif(ENABLE_MPD)
 
