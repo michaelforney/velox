@@ -6,5 +6,9 @@ modules:
     - wallpaper
     - spawn
     - mpd
+--- !velox:mpd
+host: localhost
+port: 6600
+timeout: 2000
 ...
 
