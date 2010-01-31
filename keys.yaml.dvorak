@@ -1,22 +1,22 @@
 %YAML 1.1
 ---
 velox:
-    focus_next          : [{mod: [&mod mod_4],      key: j}]
-    focus_previous      : [{mod: [*mod],            key: k}]
-    move_next           : [{mod: [*mod, mod_shift], key: j}]
-    move_previous       : [{mod: [*mod, mod_shift], key: k}]
+    focus_next          : [{mod: [&mod mod_4],      key: h}]
+    focus_previous      : [{mod: [*mod],            key: t}]
+    move_next           : [{mod: [*mod, mod_shift], key: h}]
+    move_previous       : [{mod: [*mod, mod_shift], key: t}]
     kill_focused_window : [{mod: [*mod, mod_shift], key: c}]
     next_layout         : [{mod: [*mod],            key: space}]
     previous_layout     : [{mod: [*mod, mod_shift], key: space}]
     quit                : [{mod: [*mod, mod_shift], key: q}]
 
 layout_tile:
-    decrease_master_factor  : [{mod: [*mod],                key: h}]
-    increase_master_factor  : [{mod: [*mod],                key: l}]
-    increase_master_count   : [{mod: [*mod, mod_shift],     key: h}]
-    decrease_master_count   : [{mod: [*mod, mod_shift],     key: l}]
-    increase_column_count   : [{mod: [*mod, mod_control],   key: h}]
-    decrease_column_count   : [{mod: [*mod, mod_control],   key: l}]
+    decrease_master_factor  : [{mod: [*mod],                key: d}]
+    increase_master_factor  : [{mod: [*mod],                key: n}]
+    increase_master_count   : [{mod: [*mod, mod_shift],     key: d}]
+    decrease_master_count   : [{mod: [*mod, mod_shift],     key: n}]
+    increase_column_count   : [{mod: [*mod, mod_control],   key: d}]
+    decrease_column_count   : [{mod: [*mod, mod_control],   key: n}]
 
 spawn:
     spawn_terminal  : [{mod: [*mod, mod_shift], key: Return}]
