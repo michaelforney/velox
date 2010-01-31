@@ -88,3 +88,5 @@ stuff
 
 [YAML]: http://www.yaml.org/
 
+<!-- vim: set ft=mkd tw=80 spell spelllang=en fo=ctroqln : -->
+
