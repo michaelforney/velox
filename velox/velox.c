@@ -930,28 +930,17 @@ void button_press(xcb_button_press_event_t * event)
 
 void configure_request(xcb_configure_request_event_t * event)
 {
-    // TODO: Rewrite
     printf("configure_request\n");
 
     struct velox_window * window = NULL;
 
     window = tags_lookup_window(event->window);
 
-    if (window)
+    /* Case 1 of the ICCCM 4.1.5 */
+    if (window && !window->floating)
     {
-        /* Case 3 of the ICCCM 4.1.5 */
-        if (event->value_mask & (XCB_CONFIG_WINDOW_BORDER_WIDTH | XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT))
-        {
-            printf("configure_request: case 3\n");
-            window->border_width = event->border_width;
-            // TODO: Make sure this is right
-        }
-        /* Case 1 of the ICCCM 4.1.5 */
-        else
-        {
-            printf("configure_request: case 1\n");
-            synthetic_configure(window);
-        }
+        printf("configure_request: case 1\n");
+        synthetic_configure(window);
     }
     /* Case 2 of the ICCCM 4.1.5 */
     else
