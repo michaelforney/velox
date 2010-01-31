@@ -22,13 +22,52 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <assert.h>
+#include <yaml.h>
 
 #include <velox/velox.h>
 #include <velox/hook.h>
 
 const char name[] = "wallpaper";
 
-void set_wallpaper();
+static const char * path = "wallpaper";
+
+static void set_wallpaper();
+
+void configure(yaml_document_t * document)
+{
+    yaml_node_t * map;
+    yaml_node_pair_t * pair;
+
+    yaml_node_t * key, * value;
+
+    printf("Wallpaper: Loading configuration...");
+
+    map = yaml_document_get_root_node(document);
+    assert(map->type == YAML_MAPPING_NODE);
+
+    for (pair = map->data.mapping.pairs.start;
+        pair < map->data.mapping.pairs.top;
+        ++pair)
+    {
+        key = yaml_document_get_node(document, pair->key);
+        value = yaml_document_get_node(document, pair->value);
+
+        assert(key->type == YAML_SCALAR_NODE);
+
+        if (strcmp((const char const *) key->data.scalar.value, "path") == 0)
+        {
+            assert(value->type == YAML_SCALAR_NODE);
+
+            /* TODO: Free this when cleaning up. I'm not sure how to
+             * differentiate between a configured value and the default, so for
+             * now, we will accept a memory leak. */
+            path = strdup((const char const *) value->data.scalar.value);
+        }
+    }
+
+    printf("done\n\tPath: %s\n", path);
+}
 
 void initialize()
 {
@@ -42,11 +81,9 @@ void cleanup()
     printf("<<< wallpaper module\n");
 }
 
-void set_wallpaper()
+static void set_wallpaper()
 {
-    char ** wallpapers;
-    char wallpaper_path[1024];
-    uint16_t wallpaper_capacity = 64;
+    char * wallpaper;
     uint16_t wallpaper_count = 0;
     uint16_t wallpaper_index;
     DIR * directory;
@@ -58,16 +95,13 @@ void set_wallpaper()
         NULL
     };
 
-    snprintf(wallpaper_path, sizeof(wallpaper_path), "%s/wallpaper", getenv("HOME"));
-
-    wallpapers = malloc(wallpaper_capacity);
-    directory = opendir(wallpaper_path);
+    directory = opendir(path);
 
     printf("set_wallpaper()\n");
 
     if (directory == NULL)
     {
-        printf("could not open wallpaper directory: %s\n", wallpaper_path);
+        printf("could not open wallpaper directory: %s\n", path);
         return;
     }
 
@@ -78,31 +112,36 @@ void set_wallpaper()
     {
         wallpaper_count++;
 
-        if (wallpaper_count > wallpaper_capacity)
-        {
-            wallpaper_capacity *= 2;
-            wallpapers = realloc(wallpapers, wallpaper_capacity);
-        }
-
-        wallpapers[wallpaper_count - 1] = malloc(strlen(entry->d_name) + strlen(wallpaper_path) + 2);
-        sprintf(wallpapers[wallpaper_count - 1], "%s/%s", wallpaper_path, entry->d_name);
     }
-
-    closedir(directory);
 
     if (wallpaper_count > 0)
     {
-        /* Pick a random wallpaper */
+        uint16_t index;
+
+        rewinddir(directory);
+
+        readdir(directory); // .
+        readdir(directory); // ..
+
         wallpaper_index = rand() % wallpaper_count;
-        printf("setting wallpaper to: %s\n", wallpapers[wallpaper_index]);
 
-        command[2] = wallpapers[wallpaper_index];
+        for (index = 0; index < wallpaper_index; ++index, readdir(directory));
 
-        /* Execute feh, the background setter */
-        spawn(command);
+        entry = readdir(directory);
+
+        {
+            char wallpaper[strlen(entry->d_name) + strlen(path) + 2];
+
+            sprintf(wallpaper, "%s/%s", path, entry->d_name);
+            closedir(directory);
+
+            printf("Wallpaper: Setting wallpaper to: %s\n", wallpaper);
+            command[2] = wallpaper;
+
+            /* Execute feh, the background setter */
+            spawn(command);
+        }
     }
-
-    free(wallpapers);
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

@@ -10,5 +10,9 @@ modules:
 host: localhost
 port: 6600
 timeout: 2000
+--- !velox:wallpaper
+# NOTE: This path is relative to the directory in which velox was executed. If
+# you want to be more specific, include the absolute path
+path: wallpaper
 ...
 
