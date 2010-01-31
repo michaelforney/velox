@@ -20,6 +20,8 @@
 #ifndef VELOX_MODULE_PRIVATE_H
 #define VELOX_MODULE_PRIVATE_H
 
+#include <yaml.h>
+
 #include <libvelox/list.h>
 
 struct velox_module
@@ -28,11 +30,13 @@ struct velox_module
     const char * name;
     void (* initialize)();
     void (* cleanup)();
+    void (* configure)(yaml_document_t * document);
 };
 
 extern struct velox_list * modules;
 
 void load_module(const char * path);
+void configure_module(const char const * name, yaml_document_t * document);
 void initialize_modules();
 void cleanup_modules();
 

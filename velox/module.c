@@ -100,10 +100,34 @@ void load_module(const char const * name)
     module->name = dlsym(module_handle, "name");
     module->initialize = dlsym(module_handle, "initialize");
     module->cleanup = dlsym(module_handle, "cleanup");
+    module->configure = dlsym(module_handle, "configure");
+
+    assert(module->initialize);
+    assert(module->cleanup);
 
     printf("loaded module: %s\n", module->name);
 
     modules = velox_list_insert(modules, module);
+}
+
+void configure_module(const char const * name, yaml_document_t * document)
+{
+    struct velox_list * iterator = modules;
+    struct velox_module * module;
+
+    for (iterator = modules; iterator != NULL; iterator = iterator->next)
+    {
+        module = (struct velox_module *) iterator->data;
+
+        if (strcmp(name, module->name) == 0)
+        {
+            if (module->configure)
+            {
+                module->configure(document);
+                return;
+            }
+        }
+    }
 }
 
 void initialize_modules()

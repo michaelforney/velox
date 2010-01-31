@@ -45,6 +45,15 @@ void parse_config()
     yaml_parser_t parser;
     yaml_document_t document;
 
+    yaml_node_t * root;
+
+    yaml_node_t * map;
+    yaml_node_pair_t * pair;
+
+    yaml_node_t * key, * value;
+
+    char name[256];
+
     file = open_config_file("velox.yaml");
 
     if (file == NULL) return;
@@ -52,48 +61,60 @@ void parse_config()
     yaml_parser_initialize(&parser);
     yaml_parser_set_input_file(&parser, file);
 
-    if (yaml_parser_load(&parser, &document))
+    if (!yaml_parser_load(&parser, &document))
     {
-        yaml_node_t * map;
-        yaml_node_pair_t * pair;
+        fprintf(stderr, "Error parsing config file\n");
+        goto cleanup;
+    }
 
-        yaml_node_t * key, * value;
+    map = yaml_document_get_root_node(&document);
+    assert(map->type == YAML_MAPPING_NODE);
 
-        map = document.nodes.start;
-        assert(map->type == YAML_MAPPING_NODE);
+    for (pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; ++pair)
+    {
+        key = yaml_document_get_node(&document, pair->key);
+        value = yaml_document_get_node(&document, pair->value);
 
-        for (pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; ++pair)
+        assert(key->type == YAML_SCALAR_NODE);
+
+        if (strcmp((const char const *) key->data.scalar.value, "modules") == 0)
         {
-            key = yaml_document_get_node(&document, pair->key);
-            value = yaml_document_get_node(&document, pair->value);
+            yaml_node_item_t * module_item;
+            yaml_node_t * node;
 
-            assert(key->type == YAML_SCALAR_NODE);
+            assert(value->type == YAML_SEQUENCE_NODE);
 
-            if (strcmp((const char const *) key->data.scalar.value, "modules") == 0)
+            for (module_item = value->data.sequence.items.start;
+                module_item < value->data.sequence.items.top;
+                ++module_item)
             {
-                yaml_node_item_t * module_item;
-                yaml_node_t * node;
+                node = yaml_document_get_node(&document, *module_item);
 
-                assert(value->type == YAML_SEQUENCE_NODE);
-
-                for (module_item = value->data.sequence.items.start; module_item < value->data.sequence.items.top; ++module_item)
-                {
-                    node = yaml_document_get_node(&document, *module_item);
-
-                    load_module((const char const *) node->data.scalar.value);
-                }
+                load_module((const char const *) node->data.scalar.value);
             }
         }
+    }
+
+    yaml_document_delete(&document);
+
+    while (yaml_parser_load(&parser, &document))
+    {
+        if (yaml_document_get_root_node(&document) == NULL)
+        {
+            yaml_document_delete(&document);
+            break;
+        }
+
+        sscanf((const char const *) yaml_document_get_root_node(&document)->tag, "!velox:%s", name);
+
+        configure_module(name, &document);
 
         yaml_document_delete(&document);
-        yaml_parser_delete(&parser);
-    }
-    else
-    {
-        printf("Error parsing document\n");
     }
 
-    fclose(file);
+    cleanup:
+        yaml_parser_delete(&parser);
+        fclose(file);
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
