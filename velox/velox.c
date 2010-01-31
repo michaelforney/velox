@@ -94,12 +94,26 @@ const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 /* VELOX macros */
 #define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
 
+void cleanup_windows()
+{
+    struct velox_tag * tag;
+
+    while (tags != NULL)
+    {
+        tag = (struct velox_tag *) tags->data;
+        velox_loop_delete(tag->windows, true);
+        free(tag);
+
+        tags = velox_list_remove_first(tags);
+    }
+
+}
+
 struct velox_window * tags_lookup_window(xcb_window_t window_id)
 {
     struct velox_list * iterator;
     struct velox_tag * tag;
     struct velox_window * window;
-    uint16_t index;
 
     for (iterator = tags; iterator != NULL; iterator = iterator->next)
     {
@@ -386,6 +400,7 @@ void focus(xcb_window_t window_id)
 
     if (focus_reply->focus == window_id)
     {
+        free(focus_reply);
         return;
     }
 
@@ -737,6 +752,8 @@ void manage(xcb_window_t window_id)
     window->height = geometry->height;
     window->border_width = border_width;
 
+    free(geometry);
+
     update_name_class(window);
 
     run_manage_hooks(window);
@@ -838,7 +855,7 @@ void manage_existing_windows()
     printf("manage_existing_windows()\n");
 
     xcb_query_tree_cookie_t query_cookie;
-    xcb_query_tree_reply_t * query;
+    xcb_query_tree_reply_t * query_reply;
     xcb_window_t * children;
     uint16_t child, child_count;
     xcb_get_window_attributes_cookie_t * window_attributes_cookies;
@@ -849,9 +866,9 @@ void manage_existing_windows()
     xcb_get_property_reply_t ** state_replies;
 
     query_cookie = xcb_query_tree(c, root);
-    query = xcb_query_tree_reply(c, query_cookie, NULL);
-    children = xcb_query_tree_children(query);
-    child_count = xcb_query_tree_children_length(query);
+    query_reply = xcb_query_tree_reply(c, query_cookie, NULL);
+    children = xcb_query_tree_children(query_reply);
+    child_count = xcb_query_tree_children_length(query_reply);
 
     window_attributes_cookies = (xcb_get_window_attributes_cookie_t *) malloc(child_count * sizeof(xcb_get_window_attributes_cookie_t));
     window_attributes_replies = (xcb_get_window_attributes_reply_t **) malloc(child_count * sizeof(xcb_get_window_attributes_reply_t *));
@@ -901,6 +918,10 @@ void manage_existing_windows()
         free(state_replies[child]);
     }
 
+    free(query_reply);
+    free(window_attributes_cookies);
+    free(property_cookies);
+    free(state_cookies);
     free(window_attributes_replies);
     free(property_replies);
     free(state_replies);
@@ -1106,9 +1127,14 @@ void map_request(xcb_map_request_event_t * event)
 
     window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
 
-    if (!maybe_window && window_attributes && !window_attributes->override_redirect)
+    if (window_attributes)
     {
-        manage(event->window);
+        if (!maybe_window && !window_attributes->override_redirect)
+        {
+            manage(event->window);
+        }
+
+        free(window_attributes);
     }
 }
 
@@ -1254,6 +1280,7 @@ void cleanup()
 {
     cleanup_modules();
     cleanup_key_bindings();
+    cleanup_windows();
     cleanup_tags();
     cleanup_layouts();
 

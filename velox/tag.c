@@ -70,6 +70,8 @@ void setup_tags()
     add_tag("music",    velox_loop_copy(default_layouts));
     add_tag("misc",     velox_loop_copy(default_layouts));
 
+    velox_loop_delete(default_layouts, false);
+
     tags = velox_list_reverse(tags);
 }
 
