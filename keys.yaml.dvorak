@@ -1,3 +1,5 @@
+# velox: keys.yaml.dvorak
+
 %YAML 1.1
 ---
 velox:
@@ -23,6 +25,9 @@ spawn:
     spawn_dmenu     : [{mod: [*mod],            key: r}]
 
 mpd:
+    # NOTE: On most keyboards, there is only one play/pause key which usually
+    # maps to XF86AudioPlay. This setup maps both the pause and play keys (if
+    # they exist) to a single play/pause toggle function.
     play_pause:
         - {mod: [mod_any], key: XF86AudioPlay}
         - {mod: [mod_any], key: XF86AudioPause}
@@ -51,4 +56,6 @@ tag:
     move_focus_to_tag_8: [{mod: [*mod, mod_shift], key: 8}]
     move_focus_to_tag_9: [{mod: [*mod, mod_shift], key: 9}]
 ...
+
+# vim: ft=yaml fo=croql et sw=4 sts=4 ts=8 tw=80
 
