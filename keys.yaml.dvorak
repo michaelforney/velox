@@ -23,7 +23,9 @@ spawn:
     spawn_dmenu     : [{mod: [*mod],            key: r}]
 
 mpd:
-    play_pause      : [{mod: [mod_any],         key: XF86AudioPlay}]
+    play_pause:
+        - {mod: [mod_any], key: XF86AudioPlay}
+        - {mod: [mod_any], key: XF86AudioPause}
     next            : [{mod: [mod_any],         key: XF86AudioNext}]
     previous        : [{mod: [mod_any],         key: XF86AudioPrev}]
     stop            : [{mod: [mod_any],         key: XF86AudioStop}]
