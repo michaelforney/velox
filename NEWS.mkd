@@ -1,8 +1,27 @@
 News for velox
 ==============
 
+0.0.2 (February 1, 2010)
+------------------------
+* Fixed bug with handling configure request events
+* Add mpd module allowing you to control mpd playback with keybindings
+* Make the following modules configurable:
+    - layout\_tile
+    - spawn (Arbitrary commands can now be configured)
+    - wallpaper
+    - mpd
+* Window border width is now configurable
+* Keybinding functions can now have arguments passed to them
+* Various memory leaks are now corrected
+* Default keybindings are now optimized for the qwerty keyboard layout
+* Modules can now be enabled or disabled at runtime
+* Use a standard pointer instead of gumby
+* Fix keybindings which use XCB\_MOD\_MASK\_ANY as the modifier
+
 0.0.1 (January 29, 2010)
 ------------------------
 * Initial release of velox
 * Start of module/configuration support
+
+<!-- vim: set ft=mkd tw=80 spell spelllang=en fo=ctroqln : -->
 
