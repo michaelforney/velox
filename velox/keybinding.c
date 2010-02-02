@@ -67,7 +67,8 @@ void setup_configured_keys()
     yaml_document_t document;
 
     configured_keys = velox_hashtable_create(1024, &sdbm_hash);
-    printf("size: %i\n", configured_keys->size);
+
+    /* Look for and open keys.yaml in the standard configuration directories */
     file = open_config_file("keys.yaml");
 
     assert(file);
@@ -226,6 +227,7 @@ void add_key_binding(struct velox_key * key, void (* function)(void * arg), void
 {
     struct velox_key_binding * binding;
 
+    /* Allocate a new key binding and set its values */
     binding = (struct velox_key_binding *) malloc(sizeof(struct velox_key_binding));
     binding->key = key;
     binding->keycode = 0;
@@ -241,14 +243,18 @@ void add_configured_key_binding(const char * group, const char * name, void (* f
     struct velox_list * iterator;
     char identifier[strlen(group) + strlen(name) + 1];
 
-    sprintf(identifier, "%s:%s", group, name);
-
     if (configured_keys == NULL)
     {
         return;
     }
 
+    sprintf(identifier, "%s:%s", group, name);
+
+    /* Lookup the list of keys associated with that binding in the
+     * configured_keys table */
     keys = velox_hashtable_lookup(configured_keys, identifier);
+
+    assert(keys);
 
     for (iterator = keys; iterator != NULL; iterator = iterator->next)
     {

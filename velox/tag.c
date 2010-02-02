@@ -36,6 +36,7 @@ void add_tag(const char * name, struct velox_loop * layouts)
 {
     struct velox_tag * tag;
 
+    /* Allocate a new tag, then set its attributes */
     tag = (struct velox_tag *) malloc(sizeof(struct velox_tag));
     memset(tag, 0, sizeof(struct velox_tag));
 
@@ -44,8 +45,8 @@ void add_tag(const char * name, struct velox_loop * layouts)
     tag->layout = layouts;
     tag->state = ((struct velox_layout *) layouts->data)->default_state;
 
+    /* Add the tag to the list of tags */
     tags = velox_list_insert(tags, tag);
-    printf("tag: %i\n", tag);
 }
 
 void setup_tags()
@@ -55,6 +56,8 @@ void setup_tags()
 
     tags = NULL;
     tag_count = 0;
+
+    /* TODO: Make this configurable */
 
     default_layouts = NULL;
     default_layouts = velox_loop_insert(default_layouts, velox_hashtable_lookup(layouts, "tile"));
@@ -79,7 +82,11 @@ void cleanup_tags()
 {
     while (tags != NULL)
     {
+        /* Delete the layout loop structure, without freeing the data. We let
+         * the layout cleanup function do this */
         velox_loop_delete(((struct velox_tag *) tags->data)->layout, false);
+
+        /* Free the tag, then remove it from the list */
         free(tags->data);
         tags = velox_list_remove_first(tags);
     }
@@ -96,6 +103,8 @@ void cleanup_tags()
         move_focus_to_tag(N); \
     }
 
+/* TODO: These can now all be a single function thanks to arguments to
+ * keybindings */
 TAG_FUNCTIONS(1)
 TAG_FUNCTIONS(2)
 TAG_FUNCTIONS(3)

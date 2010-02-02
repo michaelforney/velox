@@ -33,6 +33,7 @@ struct velox_list * manage_hooks;
 
 void setup_hooks()
 {
+    // TODO: Should these be a part of some plugin instead?
     add_manage_hook(&handle_floating);
     add_manage_hook(&handle_fullscreen);
 }
@@ -70,6 +71,7 @@ void run_manage_hooks(struct velox_window * window)
 /* Manage hooks */
 void handle_floating(struct velox_window * window)
 {
+    /* TODO: Make download konqueror windows floating */
     if (strcmp(window->name, "MPlayer") == 0)
     {
         window->floating = true;

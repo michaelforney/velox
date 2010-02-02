@@ -30,9 +30,12 @@ FILE * open_config_file(const char * name)
     FILE * file;
     char path[1024];
 
+    /* First check in "${HOME}/.velox/" */
     snprintf(path, sizeof(path), "%s/.velox/%s", getenv("HOME"), name);
     if ((file = fopen(path, "r")) != NULL) return file;
 
+    /* Then try the global "/etc/velox" */
+    // TODO: Some users might not use this as the global configuration directory
     snprintf(path, sizeof(path), "/etc/velox/%s", name);
     if ((file = fopen(path, "r")) != NULL) return file;
 
@@ -55,8 +58,10 @@ void parse_config()
 
     char name[256];
 
+    /* Look for velox.yaml in the config directories */
     file = open_config_file("velox.yaml");
 
+    /* Nothing to do if there is no configuration file */
     if (file == NULL) return;
 
     yaml_parser_initialize(&parser);
@@ -68,9 +73,11 @@ void parse_config()
         goto cleanup;
     }
 
+    /* The root node should be a mapping */
     map = yaml_document_get_root_node(&document);
     assert(map->type == YAML_MAPPING_NODE);
 
+    /* For each key/value pair in the root mapping */
     for (pair = map->data.mapping.pairs.start; pair < map->data.mapping.pairs.top; ++pair)
     {
         key = yaml_document_get_node(&document, pair->key);
@@ -78,6 +85,7 @@ void parse_config()
 
         assert(key->type == YAML_SCALAR_NODE);
 
+        /* The module section */
         if (strcmp((const char const *) key->data.scalar.value, "modules") == 0)
         {
             yaml_node_item_t * module_item;
@@ -85,6 +93,7 @@ void parse_config()
 
             assert(value->type == YAML_SEQUENCE_NODE);
 
+            /* For each module */
             for (module_item = value->data.sequence.items.start;
                 module_item < value->data.sequence.items.top;
                 ++module_item)
@@ -94,19 +103,21 @@ void parse_config()
                 load_module((const char const *) node->data.scalar.value);
             }
         }
+        /* The border_width property */
         else if (strcmp((const char const *) key->data.scalar.value, "border_width") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
 
-            border_width = atoi((const char const *) value->data.scalar.value);
-            printf("set border_width: %u\n", border_width);
+            border_width = strtoul((const char const *) value->data.scalar.value, NULL, 10);
         }
     }
 
     yaml_document_delete(&document);
 
+    /* While we still have documents to parse */
     while (yaml_parser_load(&parser, &document))
     {
+        /* If the document contains no root node, we are at the end */
         if (yaml_document_get_root_node(&document) == NULL)
         {
             yaml_document_delete(&document);
@@ -115,6 +126,7 @@ void parse_config()
 
         sscanf((const char const *) yaml_document_get_root_node(&document)->tag, "!velox:%s", name);
 
+        /* Configure the specified module with this YAML document */
         configure_module(name, &document);
 
         yaml_document_delete(&document);

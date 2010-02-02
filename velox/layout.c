@@ -34,11 +34,13 @@ struct velox_hashtable * layouts;
 
 void setup_layouts()
 {
+    /* Create a new hashtable to store the layouts */
     layouts = velox_hashtable_create(1024, &sdbm_hash);
 }
 
 void cleanup_layouts()
 {
+    /* Clear the hashtable, and free all of the layouts */
     velox_hashtable_clear(layouts, true);
 }
 
@@ -46,12 +48,15 @@ void add_layout(const char const * identifier, velox_arrange_t arrange, struct v
 {
     struct velox_layout * layout;
 
+    /* Create a new layout and set its fields */
     layout = (struct velox_layout *) malloc(sizeof(struct velox_layout));
 
     layout->identifier = strdup(identifier);
     layout->arrange = arrange;
     layout->default_state = *default_state;
 
+    /* Make sure the layout doesn't already exist in the table
+     * TODO: Handle collisions */
     assert(!velox_hashtable_exists(layouts, layout->identifier));
     velox_hashtable_insert(layouts, layout->identifier, layout);
 }
