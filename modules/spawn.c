@@ -86,7 +86,6 @@ void configure(yaml_document_t * document)
                     value->data.sequence.items.top -
                     value->data.sequence.items.start
                 ] = NULL;
-                printf("\t%u. command: %x\n", item - sequence->data.sequence.items.start, command);
 
                 for (command_item = value->data.sequence.items.start;
                     command_item < value->data.sequence.items.top;
@@ -97,7 +96,6 @@ void configure(yaml_document_t * document)
                     assert(command_node->type == YAML_SCALAR_NODE);
 
                     command[command_item - value->data.sequence.items.start] = strdup((const char const *) command_node->data.scalar.value);
-                    printf("\t\t%u. %s: %x\n", command_item - value->data.sequence.items.start, command[command_item - value->data.sequence.items.start], command[command_item - value->data.sequence.items.start]);
                 }
 
                 commands[item - sequence->data.sequence.items.start] = command;
@@ -130,8 +128,6 @@ void cleanup()
     const char ** command_iterator;
 
     printf("Spawn: Cleaning up...");
-
-    printf("commands: %u\n", commands);
 
     for (iterator = commands; *iterator != NULL; ++iterator)
     {
