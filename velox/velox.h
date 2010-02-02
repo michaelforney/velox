@@ -32,6 +32,7 @@ extern xcb_connection_t * c;
 
 extern uint16_t screen_width;
 extern uint16_t screen_height;
+extern uint16_t border_width;
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 

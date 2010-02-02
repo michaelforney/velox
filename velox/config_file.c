@@ -22,6 +22,7 @@
 
 #include "config_file.h"
 
+#include "velox.h"
 #include "module-private.h"
 
 FILE * open_config_file(const char * name)
@@ -92,6 +93,13 @@ void parse_config()
 
                 load_module((const char const *) node->data.scalar.value);
             }
+        }
+        else if (strcmp((const char const *) key->data.scalar.value, "border_width") == 0)
+        {
+            assert(value->type == YAML_SCALAR_NODE);
+
+            border_width = atoi((const char const *) value->data.scalar.value);
+            printf("set border_width: %u\n", border_width);
         }
     }
 

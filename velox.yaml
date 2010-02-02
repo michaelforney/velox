@@ -1,3 +1,5 @@
+# velox: velox.yaml
+
 %YAML 1.1
 ---
 modules:
@@ -6,6 +8,7 @@ modules:
     - wallpaper
     - spawn
     - mpd
+border_width: 2
 --- !velox:mpd
 host: localhost
 port: 6600

@@ -85,10 +85,11 @@ uint8_t clear_event_type = 0;
 uint32_t border_pixel;
 uint32_t border_focus_pixel;
 
+uint16_t border_width = 2;
+
 /* VELOX constants */
 const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
-const uint16_t border_width = 2;
 const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 
 /* VELOX macros */
