@@ -304,8 +304,11 @@ void setup()
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, _NET_SUPPORTED, ATOM, 32, sizeof(net_atoms) / sizeof(xcb_atom_t), net_atoms);
     }
 
-    setup_layouts();
     setup_configured_keys();
+
+    parse_config();
+
+    setup_layouts();
     setup_key_bindings();
     setup_hooks();
 
@@ -1299,7 +1302,6 @@ int main(int argc, char ** argv)
 {
     srand(time(NULL));
 
-    parse_config();
     setup();
     manage_existing_windows();
     run_startup_hooks();

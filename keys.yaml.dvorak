@@ -21,8 +21,8 @@ layout_tile:
     decrease_column_count   : [{mod: [*mod, mod_control],   key: n}]
 
 spawn:
-    spawn_terminal  : [{mod: [*mod, mod_shift], key: Return}]
-    spawn_dmenu     : [{mod: [*mod],            key: r}]
+    terminal    : [{mod: [*mod, mod_shift], key: Return}]
+    dmenu       : [{mod: [*mod],            key: r}]
 
 mpd:
     # NOTE: On most keyboards, there is only one play/pause key which usually
