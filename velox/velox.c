@@ -895,7 +895,7 @@ void manage_existing_windows()
         property_replies[child] = xcb_get_property_reply(c, property_cookies[child], NULL);
         state_replies[child] = xcb_get_property_reply(c, state_cookies[child], NULL);
 
-        if (window_attributes_replies[child]->override_redirect || *(xcb_window_t *) xcb_get_property_value(property_replies[child]))
+        if (window_attributes_replies[child]->override_redirect || *((xcb_window_t *) xcb_get_property_value(property_replies[child])))
         {
             printf("override_redirect or transient\n");
             continue;
@@ -912,7 +912,9 @@ void manage_existing_windows()
     }
     for (child = 0; child < child_count; child++)
     {
-        if (*(xcb_window_t *) xcb_get_property_value(property_replies[child]) && (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE || ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC))
+        if (*((xcb_window_t *) xcb_get_property_value(property_replies[child])) &&
+            (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE ||
+            ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC))
         {
             manage(children[child]);
         }
