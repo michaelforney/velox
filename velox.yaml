@@ -9,6 +9,10 @@ modules:
     - spawn
     - mpd
 border_width: 2
+--- !velox:layout_tile
+master_factor: 0.5
+master_count: 1
+column_count: 1
 --- !velox:mpd
 host: localhost
 port: 6600

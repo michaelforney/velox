@@ -23,6 +23,7 @@
 #include <math.h>
 #include <string.h>
 #include <assert.h>
+#include <yaml.h>
 
 #include <velox/velox.h>
 #include <velox/module.h>
@@ -39,19 +40,71 @@ struct velox_tile_layout_state
     uint16_t pad[28];
 };
 
-void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state);
+static struct velox_tile_layout_state default_state = {
+    0.5,    // Master factor
+    1,      // Master count
+    1       // Column count
+};
 
-void initialize()
+static void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state);
+
+static void increase_master_factor();
+static void decrease_master_factor();
+static void increase_master_count();
+static void decrease_master_count();
+static void increase_column_count();
+static void decrease_column_count();
+
+void configure(yaml_document_t * document)
 {
-    struct velox_tile_layout_state state;
+    yaml_node_t * map;
+    yaml_node_pair_t * pair;
 
+    yaml_node_t * key, * value;
+
+    printf("Tile Layout: Loading configuration...");
+
+    map = yaml_document_get_root_node(document);
+    assert(map->type == YAML_MAPPING_NODE);
+
+    for (pair = map->data.mapping.pairs.start;
+        pair < map->data.mapping.pairs.top;
+        ++pair)
+    {
+        key = yaml_document_get_node(document, pair->key);
+        value = yaml_document_get_node(document, pair->value);
+
+        assert(key->type == YAML_SCALAR_NODE);
+
+        if (strcmp((const char const *) key->data.scalar.value, "master_factor") == 0)
+        {
+            assert(value->type == YAML_SCALAR_NODE);
+            default_state.master_factor = strtod((const char const *) value->data.scalar.value, NULL);
+        }
+        else if (strcmp((const char const *) key->data.scalar.value, "master_count") == 0)
+        {
+            assert(value->type == YAML_SCALAR_NODE);
+            default_state.master_count = strtoul((const char const *) value->data.scalar.value, NULL, 10);
+        }
+        else if (strcmp((const char const *) key->data.scalar.value, "column_count") == 0)
+        {
+            assert(value->type == YAML_SCALAR_NODE);
+            default_state.column_count = strtoul((const char const *) value->data.scalar.value, NULL, 10);
+        }
+    }
+
+    printf("done\n\tMaster factor: %f\n\tMaster count: %u\n\tColumn_count: %u\n",
+        default_state.master_factor,
+        default_state.master_count,
+        default_state.column_count
+    );
+}
+
+bool initialize()
+{
     printf(">>> layout_tile module\n");
 
-    state.master_factor = 0.5;
-    state.master_count = 1;
-    state.column_count = 1;
-
-    add_layout("tile", &tile_arrange, (struct velox_layout_state *) &state);
+    add_layout("tile", &tile_arrange, (struct velox_layout_state *) &default_state);
 
     /* Layout modification */
     MODULE_KEYBINDING(increase_master_factor, NULL)
@@ -60,6 +113,8 @@ void initialize()
     MODULE_KEYBINDING(decrease_master_count, NULL)
     MODULE_KEYBINDING(increase_column_count, NULL)
     MODULE_KEYBINDING(decrease_column_count, NULL)
+
+    return true;
 }
 
 void cleanup()
@@ -67,7 +122,7 @@ void cleanup()
     printf("<<< layout_tile module\n");
 }
 
-void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state)
+static void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state)
 {
     struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) generic_state;
     struct velox_window * window = NULL;
@@ -178,7 +233,7 @@ void tile_arrange(struct velox_loop * windows, struct velox_layout_state * gener
     } while (iterator != windows);
 }
 
-void increase_master_factor()
+static void increase_master_factor()
 {
     printf("increase_master_factor()\n");
 
@@ -191,7 +246,7 @@ void increase_master_factor()
     }
 }
 
-void decrease_master_factor()
+static void decrease_master_factor()
 {
     printf("decrease_master_factor()\n");
 
@@ -204,7 +259,7 @@ void decrease_master_factor()
     }
 }
 
-void increase_master_count()
+static void increase_master_count()
 {
     printf("increase_master_count()\n");
 
@@ -217,7 +272,7 @@ void increase_master_count()
     }
 }
 
-void decrease_master_count()
+static void decrease_master_count()
 {
     printf("decrease_master_count()\n");
 
@@ -230,7 +285,7 @@ void decrease_master_count()
     }
 }
 
-void increase_column_count()
+static void increase_column_count()
 {
     printf("increase_column_count()\n");
 
@@ -243,7 +298,7 @@ void increase_column_count()
     }
 }
 
-void decrease_column_count()
+static void decrease_column_count()
 {
     printf("decrease_column_count()\n");
 
