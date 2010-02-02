@@ -1098,7 +1098,7 @@ void key_press(xcb_key_press_event_t * event)
             if (CLEAN_MASK(event->state) == 0) printf("found\n");
             if (binding->function != NULL)
             {
-                binding->function();
+                binding->function(binding->arg);
             }
         }
     }

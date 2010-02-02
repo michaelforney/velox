@@ -31,8 +31,8 @@
 #include "velox.h"
 
 #define ADD_TAG_KEY_BINDINGS(N) \
-    add_configured_key_binding("tag", STRING_SYMBOL(set_tag_ ## N)); \
-    add_configured_key_binding("tag", STRING_SYMBOL(move_focus_to_tag_ ## N));
+    add_configured_key_binding("tag", STRING_SYMBOL(set_tag_ ## N), NULL); \
+    add_configured_key_binding("tag", STRING_SYMBOL(move_focus_to_tag_ ## N), NULL);
 
 #define STRING_SYMBOL(name) #name, &name
 
@@ -190,20 +190,20 @@ void setup_configured_keys()
 void setup_key_bindings()
 {
     /* Window focus */
-    add_configured_key_binding("velox", STRING_SYMBOL(focus_next));
-    add_configured_key_binding("velox", STRING_SYMBOL(focus_previous));
-    add_configured_key_binding("velox", STRING_SYMBOL(move_next));
-    add_configured_key_binding("velox", STRING_SYMBOL(move_previous));
+    add_configured_key_binding("velox", STRING_SYMBOL(focus_next), NULL);
+    add_configured_key_binding("velox", STRING_SYMBOL(focus_previous), NULL);
+    add_configured_key_binding("velox", STRING_SYMBOL(move_next), NULL);
+    add_configured_key_binding("velox", STRING_SYMBOL(move_previous), NULL);
 
     /* Window operations */
-    add_configured_key_binding("velox", STRING_SYMBOL(kill_focused_window));
+    add_configured_key_binding("velox", STRING_SYMBOL(kill_focused_window), NULL);
 
     /* Layout control */
-    add_configured_key_binding("velox", STRING_SYMBOL(next_layout));
-    add_configured_key_binding("velox", STRING_SYMBOL(previous_layout));
+    add_configured_key_binding("velox", STRING_SYMBOL(next_layout), NULL);
+    add_configured_key_binding("velox", STRING_SYMBOL(previous_layout), NULL);
 
     /* Quit */
-    add_configured_key_binding("velox", STRING_SYMBOL(quit));
+    add_configured_key_binding("velox", STRING_SYMBOL(quit), NULL);
 
     /* Tags */
     ADD_TAG_KEY_BINDINGS(1)
@@ -222,7 +222,7 @@ void cleanup_key_bindings()
     key_bindings = velox_list_delete(key_bindings, true);
 }
 
-void add_key_binding(struct velox_key * key, void (* function)())
+void add_key_binding(struct velox_key * key, void (* function)(void * arg), void * arg)
 {
     struct velox_key_binding * binding;
 
@@ -230,11 +230,12 @@ void add_key_binding(struct velox_key * key, void (* function)())
     binding->key = key;
     binding->keycode = 0;
     binding->function = function;
+    binding->arg = arg;
 
     key_bindings = velox_list_insert(key_bindings, binding);
 }
 
-void add_configured_key_binding(const char * group, const char * name, void (* function)())
+void add_configured_key_binding(const char * group, const char * name, void (* function)(void * arg), void * arg)
 {
     struct velox_list * keys;
     struct velox_list * iterator;
@@ -251,7 +252,7 @@ void add_configured_key_binding(const char * group, const char * name, void (* f
 
     for (iterator = keys; iterator != NULL; iterator = iterator->next)
     {
-        add_key_binding((struct velox_key *) iterator->data, function);
+        add_key_binding((struct velox_key *) iterator->data, function, arg);
     }
 }
 

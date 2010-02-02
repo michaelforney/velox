@@ -31,8 +31,8 @@ void initialize()
 {
     printf(">>> spawn module\n");
 
-    MODULE_KEYBINDING(spawn_terminal)
-    MODULE_KEYBINDING(spawn_dmenu)
+    MODULE_KEYBINDING(spawn_terminal, NULL)
+    MODULE_KEYBINDING(spawn_dmenu, NULL)
 }
 
 void cleanup()

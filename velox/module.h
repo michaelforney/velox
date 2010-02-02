@@ -22,8 +22,8 @@
 
 #include <velox/keybinding.h>
 
-#define MODULE_KEYBINDING(function) \
-    add_configured_key_binding(name, #function, &function);
+#define MODULE_KEYBINDING(function, arg) \
+    add_configured_key_binding(name, #function, &function, arg);
 
 #endif
 

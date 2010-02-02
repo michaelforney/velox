@@ -54,12 +54,12 @@ void initialize()
     add_layout("tile", &tile_arrange, (struct velox_layout_state *) &state);
 
     /* Layout modification */
-    MODULE_KEYBINDING(increase_master_factor)
-    MODULE_KEYBINDING(decrease_master_factor)
-    MODULE_KEYBINDING(increase_master_count)
-    MODULE_KEYBINDING(decrease_master_count)
-    MODULE_KEYBINDING(increase_column_count)
-    MODULE_KEYBINDING(decrease_column_count)
+    MODULE_KEYBINDING(increase_master_factor, NULL)
+    MODULE_KEYBINDING(decrease_master_factor, NULL)
+    MODULE_KEYBINDING(increase_master_count, NULL)
+    MODULE_KEYBINDING(decrease_master_count, NULL)
+    MODULE_KEYBINDING(increase_column_count, NULL)
+    MODULE_KEYBINDING(decrease_column_count, NULL)
 }
 
 void cleanup()

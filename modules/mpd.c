@@ -103,10 +103,10 @@ bool initialize()
 
     if (!check_error) return false;
 
-    MODULE_KEYBINDING(play_pause)
-    MODULE_KEYBINDING(next)
-    MODULE_KEYBINDING(previous)
-    MODULE_KEYBINDING(stop)
+    MODULE_KEYBINDING(play_pause, NULL)
+    MODULE_KEYBINDING(next, NULL)
+    MODULE_KEYBINDING(previous, NULL)
+    MODULE_KEYBINDING(stop, NULL)
 
     printf("done\n");
 

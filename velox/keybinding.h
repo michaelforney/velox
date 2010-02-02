@@ -32,11 +32,12 @@ struct velox_key_binding
 {
     struct velox_key * key;
     xcb_keycode_t keycode;
-    void (* function)();
+    void (* function)(void * arg);
+    void * arg;
 };
 
-void add_key_binding(struct velox_key * key, void (* function)());
-void add_configured_key_binding(const char * group, const char * name, void (* function)());
+void add_key_binding(struct velox_key * key, void (* function)(void * arg), void * arg);
+void add_configured_key_binding(const char * group, const char * name, void (* function)(void * arg), void * arg);
 
 #endif
 
