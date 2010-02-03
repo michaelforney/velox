@@ -39,20 +39,6 @@ static void next();
 static void previous();
 static void stop();
 
-static bool check_error()
-{
-    if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS)
-    {
-        fprintf(stderr, "\nMPD: %s\n", mpd_connection_get_error_message(mpd_c));
-
-        return false;
-    }
-    else
-    {
-        return true;
-    }
-}
-
 void configure(yaml_document_t * document)
 {
     yaml_node_t * map;
@@ -101,7 +87,11 @@ bool initialize()
     mpd_c = mpd_connection_new(host, port, timeout);
     assert(mpd_c);
 
-    if (!check_error) return false;
+    if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS)
+    {
+        fprintf(stderr, "\nMPD: %s\n", mpd_connection_get_error_message(mpd_c));
+        return false;
+    }
 
     MODULE_KEYBINDING(play_pause, NULL)
     MODULE_KEYBINDING(next, NULL)
@@ -124,26 +114,46 @@ void cleanup()
 
 static void play_pause()
 {
+    /* If there is an error, and we cannot recover from it, stop */
+    if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
+    {
+        return;
+    }
+
     mpd_run_toggle_pause(mpd_c);
-    check_error();
 }
 
 static void next()
 {
+    /* If there is an error, and we cannot recover from it, stop */
+    if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
+    {
+        return;
+    }
+
     mpd_run_next(mpd_c);
-    check_error();
 }
 
 static void previous()
 {
+    /* If there is an error, and we cannot recover from it, stop */
+    if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
+    {
+        return;
+    }
+
     mpd_run_previous(mpd_c);
-    check_error();
 }
 
 static void stop()
 {
+    /* If there is an error, and we cannot recover from it, stop */
+    if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
+    {
+        return;
+    }
+
     mpd_run_stop(mpd_c);
-    check_error();
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
