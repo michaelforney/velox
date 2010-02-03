@@ -680,8 +680,8 @@ void update_name_class(struct velox_window * window)
     xcb_get_property_cookie_t wm_name_cookie, wm_class_cookie;
     xcb_get_property_reply_t * wm_name_reply, * wm_class_reply;
 
-    wm_name_cookie = xcb_get_property(c, false, window->window_id, WM_NAME, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
-    wm_class_cookie = xcb_get_property(c, false, window->window_id, WM_CLASS, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
+    wm_name_cookie = xcb_get_property(c, false, window->window_id, XCB_ATOM_WM_NAME, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
+    wm_class_cookie = xcb_get_property(c, false, window->window_id, XCB_ATOM_WM_CLASS, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
 
     wm_name_reply = xcb_get_property_reply(c, wm_name_cookie, NULL);
     wm_class_reply = xcb_get_property_reply(c, wm_class_cookie, NULL);
@@ -711,7 +711,7 @@ void manage(xcb_window_t window_id)
     uint32_t values[2];
     uint32_t property_values[2];
 
-    transient_for_cookie = xcb_get_property(c, false, window_id, WM_TRANSIENT_FOR, WINDOW, 0, 1);
+    transient_for_cookie = xcb_get_property(c, false, window_id, XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
     geometry_cookie = xcb_get_geometry(c, window_id);
 
     window = (struct velox_window *) malloc(sizeof(struct velox_window));
@@ -722,7 +722,7 @@ void manage(xcb_window_t window_id)
     transient_for_reply = xcb_get_property_reply(c, transient_for_cookie, NULL);
     transient_id = *((xcb_window_t *) xcb_get_property_value(transient_for_reply));
 
-    if (transient_for_reply->type == WINDOW && transient_id)
+    if (transient_for_reply->type == XCB_ATOM_WINDOW && transient_id)
     {
         printf("transient_id: %i\n", transient_id);
         transient = tags_lookup_window(transient_id);
@@ -886,7 +886,7 @@ void manage_existing_windows()
     for (child = 0; child < child_count; child++)
     {
         window_attributes_cookies[child] = xcb_get_window_attributes(c, children[child]);
-        property_cookies[child] = xcb_get_property(c, false, children[child], WM_TRANSIENT_FOR, WINDOW, 0, 1);
+        property_cookies[child] = xcb_get_property(c, false, children[child], XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
         state_cookies[child] = xcb_get_property(c, false, children[child], WM_STATE, WM_STATE, 0, 2);
     }
     for (child = 0; child < child_count; child++)

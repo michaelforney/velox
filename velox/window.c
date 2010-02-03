@@ -134,7 +134,7 @@ bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol)
     xcb_atom_t * protocols;
     uint16_t protocols_length, index;
 
-    protocols_cookie = xcb_get_property(c, false, window, WM_PROTOCOLS, ATOM, 0, UINT_MAX);
+    protocols_cookie = xcb_get_property(c, false, window, WM_PROTOCOLS, XCB_ATOM_ATOM, 0, UINT_MAX);
     protocols_reply = xcb_get_property_reply(c, protocols_cookie, NULL);
 
     protocols = (xcb_atom_t *) xcb_get_property_value(protocols_reply);
