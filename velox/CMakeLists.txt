@@ -9,6 +9,7 @@ add_executable(velox
     keybinding.c
     config_file.c
     module.c
+    ewmh.c
 )
 
 include_directories(${velox_SOURCE_DIR})
@@ -19,6 +20,7 @@ target_link_libraries(velox
     ${XCB-Atom_LIBRARIES}
     ${XCB-ICCCM_LIBRARIES}
     ${XCB-Aux_LIBRARIES}
+    ${XCB-EWMH_LIBRARIES}
     ${LibYAML_LIBRARIES}
     ${X11_LIBRARIES}
     dl
@@ -36,6 +38,7 @@ install(FILES
     tag.h
     window.h
     module.h
+    ewmh.h
 
     DESTINATION include/velox
 )

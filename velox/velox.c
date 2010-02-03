@@ -44,6 +44,7 @@
 #include "keybinding-private.h"
 #include "hook-private.h"
 #include "layout-private.h"
+#include "ewmh-private.h"
 
 /* X variables */
 xcb_connection_t * c;
@@ -55,9 +56,8 @@ uint16_t screen_width = 0;
 uint16_t screen_height = 0;
 
 /* X atoms */
-const uint16_t atom_length = 5;
+const uint16_t atom_length = 3;
 xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
-xcb_atom_t _NET_SUPPORTED, _NET_WM_NAME;
 
 /* X cursors */
 enum
@@ -244,8 +244,6 @@ void setup()
     atom_cookies[0] = xcb_intern_atom(c, false, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
     atom_cookies[1] = xcb_intern_atom(c, false, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
     atom_cookies[2] = xcb_intern_atom(c, false, strlen("WM_STATE"), "WM_STATE");
-    atom_cookies[3] = xcb_intern_atom(c, false, strlen("_NET_SUPPORTED"), "_NET_SUPPORTED");
-    atom_cookies[4] = xcb_intern_atom(c, false, strlen("_NET_WM_NAME"), "_NET_WM_NAME");
 
     /* Setup cursors */
     cursor_font = xcb_generate_id(c);
@@ -290,19 +288,8 @@ void setup()
     WM_STATE = atom_reply->atom;
     free(atom_reply);
     atom_reply = xcb_intern_atom_reply(c, atom_cookies[3], NULL);
-    _NET_SUPPORTED = atom_reply->atom;
-    free(atom_reply);
-    atom_reply = xcb_intern_atom_reply(c, atom_cookies[4], NULL);
-    _NET_WM_NAME = atom_reply->atom;
-    free(atom_reply);
 
     free(atom_cookies);
-
-    {
-        xcb_atom_t net_atoms[] = { _NET_SUPPORTED, _NET_WM_NAME };
-
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, root, _NET_SUPPORTED, ATOM, 32, sizeof(net_atoms) / sizeof(xcb_atom_t), net_atoms);
-    }
 
     setup_configured_keys();
 
@@ -315,6 +302,7 @@ void setup()
     initialize_modules();
 
     setup_tags();
+    setup_ewmh();
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
@@ -1284,6 +1272,7 @@ void quit()
 
 void cleanup()
 {
+    cleanup_ewmh();
     cleanup_modules();
     cleanup_key_bindings();
     cleanup_windows();
