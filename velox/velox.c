@@ -434,7 +434,7 @@ void set_tag(uint8_t index)
     for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
     new_tag = (struct velox_tag *) tag_iterator->data;
 
-    printf("set_tag: %i\n", new_tag);
+    printf("set_tag: %u\n", (uint32_t) new_tag);
 
     if (tag == new_tag)
     {
@@ -491,7 +491,7 @@ void move_focus_to_tag(uint8_t index)
     for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
     new_tag = (struct velox_tag *) tag_iterator->data;
 
-    printf("move_focus_to_tag: %i\n", new_tag);
+    printf("move_focus_to_tag: %i\n", (uint32_t) new_tag);
 
     if (tag->windows == NULL)
     {
@@ -662,7 +662,7 @@ void kill_focused_window()
 void arrange()
 {
     printf("arrange()\n");
-    printf("tag: %i\n", tag);
+    printf("tag: %i\n", (uint32_t) tag);
 
     if (tag->windows == NULL)
     {
@@ -715,7 +715,7 @@ void manage(xcb_window_t window_id)
     geometry_cookie = xcb_get_geometry(c, window_id);
 
     window = (struct velox_window *) malloc(sizeof(struct velox_window));
-    printf("allocated window: %i\n", window);
+    printf("allocated window: %i\n", (uint32_t) window);
 
     window->window_id = window_id;
 
