@@ -5,34 +5,34 @@
 modules:
     - layout_tile
     - layout_grid
+    - spawn
 #     - wallpaper
-#     - spawn
-#     - mpd
+    - mpd
 border_width: 2
 --- !velox:layout_tile
 master_factor: 0.5
 master_count: 1
 column_count: 1
-# --- !velox:mpd
-# host: localhost
-# port: 6600
-# timeout: 2000
-# --- !velox:wallpaper
-# # NOTE: This path is relative to the directory in which velox was executed. If
-# # you want to be more specific, include the absolute path
-# path: wallpaper
-# --- !velox:spawn
-# - command: [urxvtc]
-#   binding: terminal
-#   arguments: []
-# - command: [
-#     "dmenu_run",
-#     "-b",
-#     "-nb", "#222222",
-#     "-nf", "#999999",
-#     "-sb", "#338833",
-#     "-sf", "#FFFFFF"
-#   ]
-#   binding: dmenu
+--- !velox:spawn
+- command: [urxvtc]
+  binding: terminal
+  arguments: []
+- command: [
+    "dmenu_run",
+    "-b",
+    "-nb", "#222222",
+    "-nf", "#999999",
+    "-sb", "#338833",
+    "-sf", "#FFFFFF"
+  ]
+  binding: dmenu
+--- !velox:mpd
+host: localhost
+port: 6600
+timeout: 2000
+--- !velox:wallpaper
+# NOTE: This path is relative to the directory in which velox was executed. If
+# you want to be more specific, include the absolute path
+path: wallpaper
 ...
 
