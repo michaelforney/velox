@@ -48,8 +48,6 @@ void configure(yaml_document_t * document)
         sequence->data.sequence.items.start
     ] = NULL;
 
-    printf("commands: %x\n", commands);
-
     for (item = sequence->data.sequence.items.start;
         item < sequence->data.sequence.items.top;
         ++item)

@@ -267,6 +267,7 @@ void setup()
 
     xcb_change_window_attributes(c, root, mask, values);
 
+    /* Check color allocation replies */
     border_color_reply = xcb_alloc_color_reply(c, border_color_cookie, NULL);
     border_focus_color_reply = xcb_alloc_color_reply(c, border_focus_color_cookie, NULL);
 
