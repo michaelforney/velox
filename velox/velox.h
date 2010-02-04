@@ -57,6 +57,7 @@ void kill_focused_window();
 void next_layout();
 void previous_layout();
 
+void die(const char const * message, ...);
 void quit();
 
 void set_tag(uint8_t index);

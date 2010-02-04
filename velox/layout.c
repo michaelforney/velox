@@ -40,8 +40,8 @@ void setup_layouts()
 
 void cleanup_layouts()
 {
-    /* Clear the hashtable, and free all of the layouts */
-    velox_hashtable_clear(layouts, true);
+    /* Delete the hashtable, and free all of the layouts */
+    velox_hashtable_delete(layouts, true);
 }
 
 void add_layout(const char const * identifier, velox_arrange_t arrange, struct velox_layout_state * default_state)

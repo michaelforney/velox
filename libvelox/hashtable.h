@@ -39,6 +39,7 @@ void velox_hashtable_insert(struct velox_hashtable * hashtable, const char * key
 void velox_hashtable_unset(struct velox_hashtable * hashtable, const char * key);
 bool velox_hashtable_exists(struct velox_hashtable * hashtable, const char * key);
 void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data);
+void velox_hashtable_delete(struct velox_hashtable * hashtable, bool free_data);
 
 #endif
 

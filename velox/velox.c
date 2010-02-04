@@ -193,8 +193,7 @@ void check_wm_running()
     error = xcb_request_check(c, change_attributes_cookie);
     if (error)
     {
-        fprintf(stderr, "velox: another window manager is already running\n");
-        exit(EXIT_FAILURE);
+        die("Another window manager is already running");
     }
 }
 
@@ -214,11 +213,7 @@ void setup()
 
     c = xcb_connect(NULL, NULL);
 
-    if (xcb_connection_has_error(c))
-    {
-        fprintf(stderr, "velox: could not open display\n");
-        exit(EXIT_FAILURE);
-    }
+    if (xcb_connection_has_error(c)) die("Could not open display");
 
     setup = xcb_get_setup(c);
 
@@ -981,18 +976,36 @@ void cleanup()
     cleanup_layouts();
 
     /* X cursors */
-    xcb_free_cursor(c, cursors[POINTER]);
-    xcb_free_cursor(c, cursors[RESIZE]);
-    xcb_free_cursor(c, cursors[MOVE]);
-
-    /* X colors */
+    if (!xcb_connection_has_error(c))
     {
-        uint32_t pixels[] = { border_pixel, border_focus_pixel };
+        xcb_free_cursor(c, cursors[POINTER]);
+        xcb_free_cursor(c, cursors[RESIZE]);
+        xcb_free_cursor(c, cursors[MOVE]);
 
-        xcb_free_colors(c, screen->default_colormap, 0, sizeof(pixels) / 4, pixels);
+        /* X colors */
+        {
+            uint32_t pixels[] = { border_pixel, border_focus_pixel };
+
+            xcb_free_colors(c, screen->default_colormap, 0, sizeof(pixels) / 4, pixels);
+        }
+
+        xcb_disconnect(c);
     }
+}
 
-    xcb_disconnect(c);
+void die(const char const * message, ...)
+{
+    va_list args;
+
+    va_start(args, message);
+    fputs("FATAL: ", stderr);
+    vfprintf(stderr, message, args);
+    fputc('\n', stderr);
+    va_end(args);
+
+    cleanup();
+
+    exit(EXIT_FAILURE);
 }
 
 int main(int argc, char ** argv)

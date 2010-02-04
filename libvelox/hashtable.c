@@ -125,5 +125,20 @@ void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data)
     memset(hashtable->data, 0, hashtable->size * sizeof(void *));
 }
 
+/**
+ * Delete a hashtable, and optionally free the data
+ *
+ * @param hashtable The hashtable to delete
+ * @param free_data Whether or not to free the data
+ */
+void velox_hashtable_delete(struct velox_hashtable * hashtable, bool free_data)
+{
+    if (hashtable == NULL) return;
+
+    velox_hashtable_clear(hashtable, free_data);
+
+    free(hashtable);
+}
+
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 
