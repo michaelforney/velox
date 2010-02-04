@@ -985,7 +985,12 @@ void cleanup()
     xcb_free_cursor(c, cursors[RESIZE]);
     xcb_free_cursor(c, cursors[MOVE]);
 
-    // TODO: Free colors
+    /* X colors */
+    {
+        uint32_t pixels[] = { border_pixel, border_focus_pixel };
+
+        xcb_free_colors(c, screen->default_colormap, 0, sizeof(pixels) / 4, pixels);
+    }
 
     xcb_disconnect(c);
 }
