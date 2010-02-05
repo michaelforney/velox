@@ -46,7 +46,7 @@ static struct velox_tile_layout_state default_state = {
     1       // Column count
 };
 
-static void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state);
+static void tile_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state);
 
 static void increase_master_factor();
 static void decrease_master_factor();
@@ -122,115 +122,105 @@ void cleanup()
     printf("<<< layout_tile module\n");
 }
 
-static void tile_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state)
+static void tile_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state)
 {
     struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) generic_state;
+
+    /* For looping through the window list */
     struct velox_window * window = NULL;
     struct velox_loop * iterator = NULL;
-    uint16_t mask;
-    uint32_t values[4];
+
+    /* Window counts */
     uint16_t window_count = 0;
-    uint16_t window_index = 0;
-    uint16_t rows_per_column;
-    uint16_t column_width;
+    uint16_t master_count; // The *real* master count
+    uint16_t column_count; // The *real* column count
+    uint16_t grid_count;
+
+    /* The current row count */
+    uint16_t row_count;
+
+    /* Indices */
+    uint16_t index = 0;
     uint16_t column_index = 0;
     uint16_t row_index = 0;
-    uint16_t row_count;
+
+    /* Areas */
+    struct velox_area master_area;
+    struct velox_area grid_area;
+    struct velox_area grid_column_area;
+    struct velox_area window_area;
 
     printf("tile_arrange\n");
 
-    printf("screen_width: %i, screen_height: %i\n", screen_width, screen_height);
-
-    if (windows == NULL)
-    {
-        return;
-    }
+    if (windows == NULL) return;
 
     /* Calculate number of windows */
     iterator = windows;
     do
     {
-        if (!((struct velox_window *) iterator->data)->floating)
-        {
-            window_count++;
-        }
+        if (!((struct velox_window *) iterator->data)->floating) window_count++;
 
         iterator = iterator->next;
     } while (iterator != windows);
 
-    printf("window_count: %i\n", window_count);
+    master_count = MIN(window_count, state->master_count);
+    grid_count = window_count - state->master_count;
+    column_count = MIN(grid_count, state->column_count);
 
-    column_width = ((state->master_count == 0) ? screen_width : (screen_width - (state->master_factor * screen_width))) / MIN(window_count - state->master_count, state->column_count);
-
-    if ((window_count - state->master_count) % state->column_count == 0)
+    /* Set the master and grid areas
+     *
+     * There is no grid area */
+    if (window_count <= state->master_count) master_area = *area;
+    /* There is both a master area, and grid area */
+    else if (state->master_count > 0)
     {
-        row_count = (window_count - state->master_count) / state->column_count;
-    }
-    else
-    {
-        row_count = ((window_count - state->master_count) / state->column_count) + ((column_index < ((window_count - state->master_count) % state->column_count)) ? 1 : 0);
-    }
+        master_area = *area;
+        master_area.x1 = state->master_factor * (area->x1 - area->x0);
 
-    /* Arrange the windows */
+        grid_area = *area;
+        grid_area.x0 = master_area.x1;
+    }
+    /* There is no master area */
+    else grid_area = *area;
+
+    /* Arrange the master windows */
+    printf("arranging masters\n");
     iterator = windows;
-    window_index = 0;
-    do
+    for (index = 0; index < master_count; iterator = iterator->next)
     {
         window = (struct velox_window *) iterator->data;
 
-        if (!window->floating)
+        if (window->floating) continue;
+
+        velox_area_split_vertically(&master_area, master_count, index, &window_area);
+        window_set_geometry(window, &window_area);
+        arrange_window(window);
+
+        ++index;
+    }
+
+    /* Arrange the grid windows */
+    printf("arranging grid\n");
+    for (index = 0, column_index = 0; index < grid_count; ++column_index)
+    {
+        velox_area_split_horizontally(&grid_area, column_count, column_index, &grid_column_area);
+
+        if (column_index >= grid_count % column_count) row_count = grid_count / column_count;
+        else row_count = grid_count / column_count + 1;
+
+        for (row_index = 0; row_index < row_count; ++row_index, iterator = iterator->next)
         {
-            if (window_index < state->master_count) /* Arranging a master */
-            {
-                window->x = 0;
-                window->y = window_index * screen_height / MIN(state->master_count, window_count);
-                window->width = ((window_count <= state->master_count) ? screen_width : state->master_factor * screen_width) - (2 * window->border_width);
-                window->height = screen_height / MIN(state->master_count, window_count) - (2 * window->border_width);
-            }
-            else /* Arranging the rest of the windows */
-            {
-                if (row_index == row_count)
-                {
-                    row_index = 0;
-                    column_index++;
-                    if ((window_count - state->master_count) % state->column_count == 0)
-                    {
-                        row_count = (window_count - state->master_count) / state->column_count;
-                    }
-                    else
-                    {
-                        row_count = ((window_count - state->master_count) / state->column_count) + ((column_index < ((window_count - state->master_count) % state->column_count)) ? 1 : 0);
-                    }
-                }
+            window = (struct velox_window *) iterator->data;
 
-                window->x = ((state->master_count == 0) ? 0 : state->master_factor * screen_width) + column_index * column_width;
-                window->y = screen_height * row_index / row_count;
-                window->width = column_width - (2 * window->border_width);
-                window->height = screen_height / row_count - (2 * window->border_width);
+            if (window->floating) continue;
 
-                row_index++;
-            }
+            velox_area_split_vertically(&grid_column_area, row_count, row_index, &window_area);
+            window_set_geometry(window, &window_area);
+            arrange_window(window);
 
-            mask = XCB_CONFIG_WINDOW_X |
-                   XCB_CONFIG_WINDOW_Y |
-                   XCB_CONFIG_WINDOW_WIDTH |
-                   XCB_CONFIG_WINDOW_HEIGHT;
-
-            values[0] = window->x;
-            values[1] = window->y;
-            values[2] = window->width;
-            values[3] = window->height;
-
-            printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
-
-            xcb_configure_window(c, window->window_id, mask, values);
-            synthetic_configure(window);
-
-            window_index++;
+            ++index;
         }
-
-        iterator = iterator->next;
-    } while (iterator != windows);
+    }
 }
 
 static void increase_master_factor()

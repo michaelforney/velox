@@ -24,13 +24,15 @@
 #include <string.h>
 #include <assert.h>
 
+#include <libvelox/area.h>
+
 #include <velox/velox.h>
 #include <velox/window.h>
 #include <velox/layout.h>
 
 const char const name[] = "layout_grid";
 
-void grid_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state);
+void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state);
 
 void initialize()
 {
@@ -46,106 +48,65 @@ void cleanup()
     printf("<<< layout_grid module\n");
 }
 
-void grid_arrange(struct velox_loop * windows, struct velox_layout_state * generic_state)
+void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state)
 {
+    /* For looping through the window list */
     struct velox_window * window = NULL;
     struct velox_loop * iterator = NULL;
-    uint16_t mask;
-    uint32_t values[4];
+
+    /* Window counts */
     uint16_t window_count = 0;
-    uint16_t window_index = 0;
-    uint16_t rows_per_column;
     uint16_t column_count;
-    uint16_t column_width;
+
+    /* The current row count */
+    uint16_t row_count;
+
+    /* Indices */
+    uint16_t index = 0;
     uint16_t column_index = 0;
     uint16_t row_index = 0;
-    uint16_t row_count;
+
+    /* Areas */
+    struct velox_area column_area;
+    struct velox_area window_area;
 
     printf("grid_arrange\n");
 
-    printf("screen_width: %i, screen_height: %i\n", screen_width, screen_height);
-
-    if (windows == NULL)
-    {
-        return;
-    }
+    if (windows == NULL) return;
 
     /* Calculate number of windows */
     iterator = windows;
     do
     {
-        if (!((struct velox_window *) iterator->data)->floating)
-        {
-            window_count++;
-        }
+        if (!((struct velox_window *) iterator->data)->floating) window_count++;
 
         iterator = iterator->next;
     } while (iterator != windows);
 
-    printf("window_count: %i\n", window_count);
-
-    column_count = (uint16_t) floor(sqrt(window_count + 2));
-    column_width = screen_width / MIN(window_count, column_count);
-
-    if ((window_count) % column_count == 0)
-    {
-        row_count = window_count / column_count;
-    }
-    else
-    {
-        row_count = (window_count / column_count) + ((column_index < (window_count % column_count)) ? 1 : 0);
-    }
+    column_count = round(sqrt(window_count));
 
     /* Arrange the windows */
-    iterator = windows;
-    window_index = 0;
-    do
+    printf("arranging grid\n");
+    for (index = 0, column_index = 0; index < window_count; ++column_index)
     {
-        window = (struct velox_window *) iterator->data;
+        velox_area_split_horizontally(area, column_count, column_index, &column_area);
 
-        if (!window->floating)
+        if (column_index >= window_count % column_count) row_count = window_count / column_count;
+        else row_count = window_count / column_count + 1;
+
+        for (row_index = 0; row_index < row_count; ++row_index, iterator = iterator->next)
         {
-            if (row_index == row_count)
-            {
-                row_index = 0;
-                column_index++;
-                if (window_count % column_count == 0)
-                {
-                    row_count = window_count / column_count;
-                }
-                else
-                {
-                    row_count = (window_count / column_count) + ((column_index < (window_count % column_count)) ? 1 : 0);
-                }
-            }
+            window = (struct velox_window *) iterator->data;
 
-            window->x = column_index * column_width;
-            window->y = screen_height * row_index / row_count;
-            window->width = column_width - (2 * window->border_width);
-            window->height = screen_height / row_count - (2 * window->border_width);
+            if (window->floating) continue;
 
-            row_index++;
+            velox_area_split_vertically(&column_area, row_count, row_index, &window_area);
+            window_set_geometry(window, &window_area);
+            arrange_window(window);
 
-            mask = XCB_CONFIG_WINDOW_X |
-                   XCB_CONFIG_WINDOW_Y |
-                   XCB_CONFIG_WINDOW_WIDTH |
-                   XCB_CONFIG_WINDOW_HEIGHT;
-
-            values[0] = window->x;
-            values[1] = window->y;
-            values[2] = window->width;
-            values[3] = window->height;
-
-            printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n", window->window_id, window->x, window->y, window->width, window->height);
-
-            xcb_configure_window(c, window->window_id, mask, values);
-            synthetic_configure(window);
-
-            window_index++;
+            ++index;
         }
-
-        iterator = iterator->next;
-    } while (iterator != windows);
+    }
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

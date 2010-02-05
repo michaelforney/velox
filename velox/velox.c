@@ -646,13 +646,15 @@ void arrange()
     printf("arrange()\n");
     printf("tag: %i\n", (uint32_t) tag);
 
+    struct velox_area area = { 0, 0, screen_width, screen_height };
+
     if (tag->windows == NULL)
     {
         return;
     }
 
     assert(tag->layout->data != NULL);
-    ((struct velox_layout *) tag->layout->data)->arrange(tag->windows, &tag->state);
+    ((struct velox_layout *) tag->layout->data)->arrange(&area, tag->windows, &tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;
 }

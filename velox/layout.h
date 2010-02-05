@@ -24,13 +24,20 @@
 
 #include <libvelox/loop.h>
 #include <libvelox/hashtable.h>
+#include <libvelox/area.h>
+
+#include <velox/window.h>
 
 struct velox_layout_state
 {
     uint16_t pad[32];
 };
 
-typedef void (* velox_arrange_t)(struct velox_loop * list, struct velox_layout_state * state);
+typedef void (* velox_arrange_t)(
+    struct velox_area * area,
+    struct velox_loop * list,
+    struct velox_layout_state * state
+);
 
 struct velox_layout
 {
@@ -40,6 +47,8 @@ struct velox_layout
 };
 
 void add_layout(const char const * identifier, velox_arrange_t arrange, struct velox_layout_state * default_state);
+
+void arrange_window(struct velox_window * window);
 
 #endif
 

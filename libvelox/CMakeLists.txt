@@ -1,6 +1,7 @@
 # velox: libvelox/CMakeLists.txt
 
 add_library(libvelox SHARED
+    area.c
     list.c
     loop.c
     hashtable.c

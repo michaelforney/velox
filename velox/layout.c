@@ -61,5 +61,31 @@ void add_layout(const char const * identifier, velox_arrange_t arrange, struct v
     velox_hashtable_insert(layouts, layout->identifier, layout);
 }
 
+
+void arrange_window(struct velox_window * window)
+{
+    static uint16_t mask = XCB_CONFIG_WINDOW_X |
+                           XCB_CONFIG_WINDOW_Y |
+                           XCB_CONFIG_WINDOW_WIDTH |
+                           XCB_CONFIG_WINDOW_HEIGHT;
+    static uint32_t values[4];
+
+    values[0] = window->x;
+    values[1] = window->y;
+    values[2] = window->width;
+    values[3] = window->height;
+
+    printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n",
+        window->window_id,
+        window->x,
+        window->y,
+        window->width,
+        window->height
+    );
+
+    xcb_configure_window(c, window->window_id, mask, values);
+    synthetic_configure(window);
+}
+
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

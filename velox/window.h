@@ -26,6 +26,7 @@
 
 #include <libvelox/list.h>
 #include <libvelox/loop.h>
+#include <libvelox/area.h>
 
 struct velox_window
 {
@@ -50,6 +51,8 @@ struct velox_window * window_loop_lookup(struct velox_loop * loop, xcb_window_t 
 struct velox_loop * window_loop_locate(struct velox_loop * loop, xcb_window_t window_id);
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
+
+void window_set_geometry(struct velox_window * window, struct velox_area * area);
 
 #endif
 
