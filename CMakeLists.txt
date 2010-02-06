@@ -30,4 +30,5 @@ add_subdirectory(velox)
 add_subdirectory(modules)
 
 install(FILES velox.yaml keys.yaml DESTINATION /etc/velox)
+install(FILES velox.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/xsessions)
 
