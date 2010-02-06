@@ -7,14 +7,14 @@ modules:
     - layout_grid
     - spawn
 #     - wallpaper
-    - mpd
+#     - mpd
 border_width: 2
 --- !velox:layout_tile
 master_factor: 0.5
 master_count: 1
 column_count: 1
 --- !velox:spawn
-- command: [urxvtc]
+- command: [xterm]
   binding: terminal
   arguments: []
 - command: [
@@ -26,13 +26,13 @@ column_count: 1
     "-sf", "#FFFFFF"
   ]
   binding: dmenu
---- !velox:mpd
-host: localhost
-port: 6600
-timeout: 2000
---- !velox:wallpaper
-# NOTE: This path is relative to the directory in which velox was executed. If
-# you want to be more specific, include the absolute path
-path: wallpaper
+# --- !velox:mpd
+# host: localhost
+# port: 6600
+# timeout: 2000
+# --- !velox:wallpaper
+# # NOTE: This path is relative to the directory in which velox was executed. If
+# # you want to be more specific, include the absolute path
+# path: wallpaper
 ...
 
