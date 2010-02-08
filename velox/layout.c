@@ -35,7 +35,7 @@ struct velox_hashtable * layouts;
 void setup_layouts()
 {
     /* Create a new hashtable to store the layouts */
-    layouts = velox_hashtable_create(1024, &sdbm_hash);
+    layouts = velox_hashtable_create(64, &sdbm_hash);
 }
 
 void cleanup_layouts()

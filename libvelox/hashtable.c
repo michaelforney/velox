@@ -22,6 +22,45 @@
 
 #include "hashtable.h"
 
+static const uint32_t hashtable_sizes[] = {
+    89,
+    179,
+    359,
+    719,
+    1439,
+    2879,
+    5759,
+    11519,
+    23039,
+    46079,
+    92159,
+    184319,
+    368639,
+    737279,
+    1474559,
+    2949119,
+    5898239,
+    11796479,
+    23592959,
+    47185919,
+    94371839,
+    188743679,
+    377487359,
+    754974719,
+    1509949439
+};
+
+static const uint8_t hashtable_sizes_count = sizeof(hashtable_sizes) / 4;
+
+uint32_t find_optimal_size(uint32_t size)
+{
+    uint8_t index;
+
+    for (index = 0; size > hashtable_sizes[index] && index < hashtable_sizes_count; ++index);
+
+    return hashtable_sizes[index];
+}
+
 /* SDBM hashing function */
 uint32_t sdbm_hash(const char * string)
 {
@@ -44,12 +83,15 @@ uint32_t sdbm_hash(const char * string)
 struct velox_hashtable * velox_hashtable_create(uint32_t size, uint32_t (* hash_function)(const char * string))
 {
     struct velox_hashtable * hashtable;
+    uint32_t optimal_size;
+
+    optimal_size = find_optimal_size(size);
 
     hashtable = (struct velox_hashtable *) malloc(sizeof(struct velox_hashtable));
-    hashtable->data = (void **) malloc(size * sizeof(void *));
-    memset(hashtable->data, 0, size * sizeof(void *));
+    hashtable->data = (void **) malloc(optimal_size * sizeof(void *));
+    memset(hashtable->data, 0, optimal_size * sizeof(void *));
     hashtable->hash_function = hash_function;
-    hashtable->size = size;
+    hashtable->size = optimal_size;
 
     return hashtable;
 }
