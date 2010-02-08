@@ -132,10 +132,7 @@ static void enter_notify(xcb_enter_notify_event_t * event)
 
     printf("window_id: %i\n", event->event);
 
-    if (event->event == root)
-    {
-        focus(root);
-    }
+    if (event->event == root) focus(root);
     else
     {
         struct velox_loop * element;

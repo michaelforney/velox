@@ -61,7 +61,6 @@ void add_layout(const char const * identifier, velox_arrange_t arrange, struct v
     velox_hashtable_insert(layouts, layout->identifier, layout);
 }
 
-
 void arrange_window(struct velox_window * window)
 {
     static uint16_t mask = XCB_CONFIG_WINDOW_X |

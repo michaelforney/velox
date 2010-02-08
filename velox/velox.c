@@ -921,10 +921,7 @@ void spawn(char * const command[])
 {
     if (fork() == 0)
     {
-        if (c)
-        {
-            close(xcb_get_file_descriptor(c));
-        }
+        if (c) close(xcb_get_file_descriptor(c));
 
         setsid();
         printf("executing\n");
@@ -932,7 +929,6 @@ void spawn(char * const command[])
         exit(0);
     }
 }
-
 
 void run()
 {

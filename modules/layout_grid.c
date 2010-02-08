@@ -83,6 +83,7 @@ void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct 
         iterator = iterator->next;
     } while (iterator != windows);
 
+    /* FIXME: Is this the best column count to use? */
     column_count = round(sqrt(window_count));
 
     /* Arrange the windows */
