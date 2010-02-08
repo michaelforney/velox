@@ -155,10 +155,10 @@ bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol)
 
 void window_set_geometry(struct velox_window * window, struct velox_area * area)
 {
-    window->x = area->x0;
-    window->y = area->y0;
-    window->width = area->x1 - area->x0 - 2 * window->border_width;
-    window->height = area->y1 - area->y0 - 2 * window->border_width;
+    window->x = area->x;
+    window->y = area->y;
+    window->width = area->width - 2 * window->border_width;
+    window->height = area->height - 2 * window->border_width;
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

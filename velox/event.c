@@ -105,9 +105,8 @@ static void configure_notify(xcb_configure_notify_event_t * event)
 
     if (event->window == root)
     {
-        printf("!!!!!window is root\n");
-        screen_width = event->width;
-        screen_height = event->height;
+        screen_area.width = event->width;
+        screen_area.height = event->height;
     }
 }
 

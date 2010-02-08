@@ -54,9 +54,6 @@ xcb_screen_t * screen;
 xcb_window_t root;
 xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
-uint16_t screen_width = 0;
-uint16_t screen_height = 0;
-
 /* X atoms */
 const uint16_t atom_length = 3;
 xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
@@ -81,6 +78,8 @@ xcb_cursor_t cursors[3];
 bool running = true;
 uint64_t tag_mask = 0;
 struct velox_tag * tag = NULL;
+struct velox_area screen_area;
+struct velox_area work_area;
 uint16_t pending_unmaps = 0;
 uint8_t clear_event_type = 0;
 
@@ -222,8 +221,10 @@ void setup()
 
     screen = screen_iterator.data;
     root = screen->root;
-    screen_width = screen->width_in_pixels;
-    screen_height = screen->height_in_pixels;
+    screen_area.width = screen->width_in_pixels;
+    screen_area.height = screen->height_in_pixels;
+
+    work_area = screen_area;
 
     check_wm_running();
 
@@ -647,15 +648,13 @@ void arrange()
     printf("arrange()\n");
     printf("tag: %i\n", (uint32_t) tag);
 
-    struct velox_area area = { 0, 0, screen_width, screen_height };
-
     if (tag->windows == NULL)
     {
         return;
     }
 
     assert(tag->layout->data != NULL);
-    ((struct velox_layout *) tag->layout->data)->arrange(&area, tag->windows, &tag->state);
+    ((struct velox_layout *) tag->layout->data)->arrange(&work_area, tag->windows, &tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;
 }

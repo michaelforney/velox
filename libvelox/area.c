@@ -25,10 +25,10 @@ void velox_area_split_vertically(
     struct velox_area * piece
 )
 {
-    piece->x0 = area->x0;
-    piece->x1 = area->x1;
-    piece->y0 = (area->y1 - area->y0) * piece_index / pieces + area->y0;
-    piece->y1 = (area->y1 - area->y0) * (piece_index + 1) / pieces + area->y0;
+    piece->x = area->x;
+    piece->y = area->height * piece_index / pieces + area->y;
+    piece->width = area->width;
+    piece->height = area->height / pieces;
 }
 
 void velox_area_split_horizontally(
@@ -37,10 +37,10 @@ void velox_area_split_horizontally(
     struct velox_area * piece
 )
 {
-    piece->y0 = area->y0;
-    piece->y1 = area->y1;
-    piece->x0 = (area->x1 - area->x0) * piece_index / pieces + area->x0;
-    piece->x1 = (area->x1 - area->x0) * (piece_index + 1) / pieces + area->x0;
+    piece->x = area->width * piece_index / pieces + area->x;
+    piece->y = area->y;
+    piece->width = area->width / pieces;
+    piece->height = area->height;
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

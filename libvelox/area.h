@@ -24,7 +24,8 @@
 
 struct velox_area
 {
-    uint32_t x0, y0, x1, y1;
+    uint32_t x, y;
+    uint32_t width, height;
 };
 
 void velox_area_split_vertically(

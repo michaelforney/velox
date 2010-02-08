@@ -175,10 +175,11 @@ static void tile_arrange(struct velox_area * area, struct velox_loop * windows, 
     else if (state->master_count > 0)
     {
         master_area = *area;
-        master_area.x1 = state->master_factor * (area->x1 - area->x0);
+        master_area.width = state->master_factor * area->width;
 
         grid_area = *area;
-        grid_area.x0 = master_area.x1;
+        grid_area.x = master_area.x + master_area.width;
+        grid_area.width = area->width - master_area.width;
     }
     /* There is no master area */
     else grid_area = *area;

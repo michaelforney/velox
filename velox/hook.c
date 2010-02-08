@@ -80,7 +80,7 @@ void handle_floating(struct velox_window * window)
 
 void handle_fullscreen(struct velox_window * window)
 {
-    if (window->width == screen_width && window->height == screen_height)
+    if (window->width == screen_area.width && window->height == screen_area.height)
     {
         printf("fullscreen window\n");
 

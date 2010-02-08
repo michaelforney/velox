@@ -30,8 +30,8 @@
 
 extern xcb_connection_t * c;
 
-extern uint16_t screen_width;
-extern uint16_t screen_height;
+extern struct velox_area screen_area;
+extern struct velox_area work_area;
 extern uint16_t border_width;
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
