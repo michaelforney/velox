@@ -55,6 +55,11 @@ tag:
     move_focus_to_tag_7: [{mod: [*mod, mod_shift], key: 7}]
     move_focus_to_tag_8: [{mod: [*mod, mod_shift], key: 8}]
     move_focus_to_tag_9: [{mod: [*mod, mod_shift], key: 9}]
+
+alsa:
+    mute            : [{mod: [mod_any], key: XF86AudioMute}]
+    raise_volume    : [{mod: [mod_any], key: XF86AudioRaiseVolume}]
+    lower_volume    : [{mod: [mod_any], key: XF86AudioLowerVolume}]
 ...
 
 # vim: ft=yaml fo=croql et sw=4 sts=4 ts=8 tw=80

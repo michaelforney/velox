@@ -6,6 +6,7 @@ modules:
     - layout_tile
     - layout_grid
     - spawn
+    - alsa
 #     - wallpaper
 #     - mpd
 border_width: 2
@@ -26,6 +27,10 @@ column_count: 1
     "-sf", "#FFFFFF"
   ]
   binding: dmenu
+--- !velox:alsa
+card: default
+name: Master
+index: 0
 # --- !velox:mpd
 # host: localhost
 # port: 6600

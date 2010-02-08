@@ -6,6 +6,7 @@ set(VELOX_MODULES
     wallpaper
     spawn
     mpd
+    alsa
 )
 
 include_directories(${velox_SOURCE_DIR})
@@ -22,4 +23,9 @@ endforeach(module)
 if(ENABLE_MPD)
     target_link_libraries(velox_mpd ${LibMPDClient_LIBRARIES})
 endif(ENABLE_MPD)
+
+if(ENABLE_ALSA)
+    target_link_libraries(velox_alsa ${ALSA_LIBRARIES})
+    include_directories(${ALSA_INCLUDE_DIR})
+endif(ENABLE_ALSA)
 

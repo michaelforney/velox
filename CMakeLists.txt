@@ -9,6 +9,7 @@ option(ENABLE_LAYOUT_GRID   "Build the grid layout"         ON)
 option(ENABLE_MPD           "Build the MPD plugin"          ON)
 option(ENABLE_SPAWN         "Build the spawn plugin"        ON)
 option(ENABLE_WALLPAPER     "Build the wallpaper plugin"    ON)
+option(ENABLE_ALSA          "Build the alsa plugin"         ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
@@ -24,6 +25,10 @@ find_package(X11 REQUIRED) # For XStringToKeysym
 if(ENABLE_MPD)
     find_package(LibMPDClient REQUIRED)
 endif(ENABLE_MPD)
+
+if(ENABLE_ALSA)
+    find_package(ALSA REQUIRED)
+endif(ENABLE_ALSA)
 
 add_subdirectory(libvelox)
 add_subdirectory(velox)
