@@ -47,6 +47,7 @@
 #include "layout-private.h"
 #include "ewmh-private.h"
 #include "event-private.h"
+#include "work_area-private.h"
 
 /* X variables */
 xcb_connection_t * c;
@@ -648,12 +649,11 @@ void arrange()
     printf("arrange()\n");
     printf("tag: %i\n", (uint32_t) tag);
 
-    if (tag->windows == NULL)
-    {
-        return;
-    }
+    if (tag->windows == NULL) return;
 
     assert(tag->layout->data != NULL);
+
+    calculate_work_area(&screen_area, &work_area);
     ((struct velox_layout *) tag->layout->data)->arrange(&work_area, tag->windows, &tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;

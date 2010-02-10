@@ -29,6 +29,7 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 extern xcb_connection_t * c;
+extern xcb_window_t root;
 
 extern struct velox_area screen_area;
 extern struct velox_area work_area;

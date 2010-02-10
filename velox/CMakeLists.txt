@@ -11,6 +11,7 @@ add_executable(velox
     config_file.c
     module.c
     ewmh.c
+    work_area.c
 )
 
 include_directories(${velox_SOURCE_DIR})
@@ -40,6 +41,7 @@ install(FILES
     window.h
     module.h
     ewmh.h
+    work_area.h
 
     DESTINATION include/velox
 )
