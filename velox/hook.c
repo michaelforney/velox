@@ -24,6 +24,8 @@
 #include "velox.h"
 #include "hook.h"
 
+const uint16_t velox_hook_types = 5;
+
 /* Manage hooks */
 void handle_floating(struct velox_window * window);
 void handle_fullscreen(struct velox_window * window);
@@ -31,40 +33,41 @@ void handle_fullscreen(struct velox_window * window);
 struct velox_list * startup_hooks;
 struct velox_list * manage_hooks;
 
+struct velox_list ** hooks;
+
 void setup_hooks()
 {
+    hooks = (struct velox_list **) calloc(velox_hook_types, sizeof(struct velox_list *));
+
     // TODO: Should these be a part of some plugin instead?
-    add_manage_hook(&handle_floating);
-    add_manage_hook(&handle_fullscreen);
+    add_hook((velox_hook_t) &handle_floating, VELOX_HOOK_MANAGE_PRE);
+    add_hook((velox_hook_t) &handle_fullscreen, VELOX_HOOK_MANAGE_PRE);
 }
 
-void add_startup_hook(velox_startup_hook_t hook)
+void cleanup_hooks()
 {
-    startup_hooks = velox_list_insert(startup_hooks, hook);
-}
+    uint16_t index = 0;
 
-void add_manage_hook(velox_manage_hook_t hook)
-{
-    manage_hooks = velox_list_insert(manage_hooks, hook);
-}
-
-void run_startup_hooks()
-{
-    struct velox_list * iterator;
-
-    for (iterator = startup_hooks; iterator != NULL; iterator = iterator->next)
+    for (index = 0; index < velox_hook_types; ++index)
     {
-        ((velox_startup_hook_t) iterator->data)();
+        velox_list_delete(hooks[index], false);
     }
+
+    free(hooks);
 }
 
-void run_manage_hooks(struct velox_window * window)
+void add_hook(velox_hook_t hook, enum velox_hook_type type)
+{
+    hooks[type] = velox_list_insert(hooks[type], hook);
+}
+
+void run_hooks(void * arg, enum velox_hook_type type)
 {
     struct velox_list * iterator;
 
-    for (iterator = manage_hooks; iterator != NULL; iterator = iterator->next)
+    for (iterator = hooks[type]; iterator != NULL; iterator = iterator->next)
     {
-        ((velox_manage_hook_t) iterator->data)(window);
+        ((velox_hook_t) iterator->data)(arg);
     }
 }
 

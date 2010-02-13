@@ -23,9 +23,9 @@
 #include "window.h"
 
 void setup_hooks();
+void cleanup_hooks();
 
-void run_startup_hooks();
-void run_manage_hooks(struct velox_window * window);
+void run_hooks(void * arg, enum velox_hook_type type);
 
 #endif
 

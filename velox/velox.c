@@ -421,10 +421,7 @@ void set_tag(uint8_t index)
 
     printf("set_tag: %u\n", (uint32_t) new_tag);
 
-    if (tag == new_tag)
-    {
-        return; // Nothing to do...
-    }
+    if (tag == new_tag) return; // Nothing to do...
     else
     {
         struct velox_loop * iterator;
@@ -465,6 +462,8 @@ void set_tag(uint8_t index)
         }
 
         arrange();
+
+        run_hooks(tag, VELOX_HOOK_TAG_CHANGED);
     }
 }
 
@@ -744,7 +743,7 @@ void manage(xcb_window_t window_id)
 
     update_name_class(window);
 
-    run_manage_hooks(window);
+    run_hooks(window, VELOX_HOOK_MANAGE_PRE);
 
     mask = XCB_CONFIG_WINDOW_BORDER_WIDTH;
     values[0] = window->border_width;
@@ -777,6 +776,7 @@ void manage(xcb_window_t window_id)
 
         focus(window->window_id);
 
+        run_hooks(window, VELOX_HOOK_MANAGE_POST);
     }
     else
     {
@@ -830,6 +830,10 @@ void unmanage(struct velox_window * window)
 
                 arrange();
             }
+
+            run_hooks(window, VELOX_HOOK_UNMANAGE);
+
+            free(window);
 
             return;
         }
@@ -972,6 +976,7 @@ void cleanup()
     cleanup_windows();
     cleanup_tags();
     cleanup_layouts();
+    cleanup_hooks();
 
     /* X cursors */
     if (!xcb_connection_has_error(c))
@@ -1012,7 +1017,7 @@ int main(int argc, char ** argv)
 
     setup();
     manage_existing_windows();
-    run_startup_hooks();
+    run_hooks(NULL, VELOX_HOOK_STARTUP);
     run();
     cleanup();
 

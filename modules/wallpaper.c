@@ -69,11 +69,11 @@ void configure(yaml_document_t * document)
     printf("done\n\tPath: %s\n", path);
 }
 
-void initialize()
+void initialize(void * arg)
 {
     printf(">>> wallpaper module\n");
 
-    add_startup_hook(&set_wallpaper);
+    add_hook(&set_wallpaper, VELOX_HOOK_STARTUP);
 }
 
 void cleanup()
@@ -81,7 +81,7 @@ void cleanup()
     printf("<<< wallpaper module\n");
 }
 
-static void set_wallpaper()
+static void set_wallpaper(void * arg)
 {
     char * wallpaper;
     uint16_t wallpaper_count = 0;

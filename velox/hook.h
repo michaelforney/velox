@@ -22,11 +22,18 @@
 
 #include <velox/window.h>
 
-typedef void (* velox_startup_hook_t)();
-typedef void (* velox_manage_hook_t)(struct velox_window *);
+typedef void (* velox_hook_t)(void * arg);
 
-void add_startup_hook(velox_startup_hook_t hook);
-void add_manage_hook(velox_manage_hook_t hook);
+enum velox_hook_type
+{
+    VELOX_HOOK_STARTUP,
+    VELOX_HOOK_MANAGE_PRE,
+    VELOX_HOOK_MANAGE_POST,
+    VELOX_HOOK_UNMANAGE,
+    VELOX_HOOK_TAG_CHANGED
+};
+
+void add_hook(velox_hook_t hook, enum velox_hook_type type);
 
 #endif
 
