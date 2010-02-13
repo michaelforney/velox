@@ -84,6 +84,7 @@ stuff
 * Better EWMH support
 * Easily configurable and usable colors
 * Easier and more automatic allocation of atoms
+* Configurable tags
 
 [YAML]: http://www.yaml.org/
 
