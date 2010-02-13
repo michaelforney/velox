@@ -19,14 +19,97 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include <xcb/xcb_ewmh.h>
 
 #include "velox.h"
 #include "work_area.h"
+#include "hook.h"
 
 #include "ewmh-private.h"
 
 xcb_ewmh_connection_t * ewmh;
+
+void update_client_list(struct velox_loop * windows)
+{
+    uint32_t window_count, index;
+    struct velox_loop * iterator;
+
+    printf("update_client_list\n");
+
+    if (windows == NULL)
+    {
+        xcb_ewmh_set_client_list(ewmh, 0, 0, NULL);
+        return;
+    }
+
+    window_count = 0;
+    iterator = windows;
+    do
+    {
+        ++window_count;
+        iterator = iterator->next;
+    } while (iterator != windows);
+
+    printf("window_count: %i\n", window_count);
+
+    {
+        xcb_window_t client_list[window_count];
+
+        iterator = windows;
+        index = 0;
+        do
+        {
+            client_list[index++] = ((struct velox_window *) iterator->data)->window_id;
+            iterator = iterator->next;
+        } while (iterator != windows);
+
+        xcb_ewmh_set_client_list(ewmh, 0, window_count, client_list);
+    }
+}
+
+void client_list_hook(struct velox_window * window)
+{
+    update_client_list(tag->windows);
+}
+
+void supporting_wm()
+{
+    xcb_window_t child_id;
+    pid_t wm_pid;
+
+    wm_pid = getpid();
+
+    child_id = xcb_generate_id(c);
+    xcb_create_window(
+        c,
+        XCB_COPY_FROM_PARENT,
+        child_id,
+        root,
+        -1, -1, 1, 1,
+        0,
+        XCB_COPY_FROM_PARENT,
+        screen->root_visual,
+        0, NULL
+    );
+
+    /* Set _NET_SUPPORTING_WM_CHECK on the root window */
+    xcb_ewmh_set_supporting_wm_check(ewmh, 0, child_id);
+
+    /* Set _NET_SUPPORTING_WM_CHECK on the newly created window */
+    xcb_change_property(
+        c,
+        XCB_PROP_MODE_REPLACE,
+        screen->root,
+        ewmh->_NET_SUPPORTING_WM_CHECK,
+        XCB_ATOM_WINDOW,
+        32, 1, &child_id
+    );
+
+    xcb_ewmh_set_wm_name(ewmh, child_id, strlen(wm_name), wm_name);
+    xcb_ewmh_set_wm_pid(ewmh, child_id, wm_pid);
+}
 
 void avoid_struts(const struct velox_area * screen_area, struct velox_area * work_area)
 {
@@ -105,14 +188,62 @@ void setup_ewmh()
     {
         xcb_atom_t supported[] = {
             ewmh->_NET_SUPPORTED,
+            ewmh->_NET_CLIENT_LIST,
+            /* ewmh->_NET_CLIENT_LIST_STACKING, */
+            /* ewmh->_NET_NUMBER_OF_DESKTOPS, */
+            ewmh->_NET_DESKTOP_GEOMETRY,
+            /* ewmh->_NET_DESKTOP_VIEWPORT, */
+            /* ewmh->_NET_CURRENT_DESKTOP, */
+            /* ewmh->_NET_DESKTOP_NAMES, */
+            /* ewmh->_NET_ACTIVE_WINDOW, */
+            /* ewmh->_NET_WORKAREA, */
+            ewmh->_NET_SUPPORTING_WM_CHECK,
+            /* ewmh->_NET_VIRTUAL_ROOTS, */
+            /* ewmh->_NET_DESKTOP_LAYOUT, */
+            /* ewmh->_NET_SHOWING_DESKTOP, */
+            /* ewmh->_NET_CLOSE_WINDOW, */
+            /* ewmh->_NET_MOVERESIZE_WINDOW, */
+            /* ewmh->_NET_WM_MOVERESIZE, */
+            /* ewmh->_NET_RESTACK_WINDOW, */
+            /* ewmh->_NET_REQUEST_FRAME_EXTENTS, */
+            /* ewmh->_NET_WM_NAME, */
+            /* ewmh->_NET_WM_VISIBLE_NAME, */
+            /* ewmh->_NET_WM_ICON_NAME, */
+            /* ewmh->_NET_WM_VISIBLE_ICON_NAME, */
+            /* ewmh->_NET_WM_DESKTOP, */
+            /* ewmh->_NET_WM_WINDOW_TYPE, */
+            /* ewmh->_NET_WM_STATE, */
+            /* ewmh->_NET_WM_ALLOWED_ACTIONS, */
             ewmh->_NET_WM_STRUT,
-            ewmh->_NET_WM_STRUT_PARTIAL
+            ewmh->_NET_WM_STRUT_PARTIAL,
+            /* ewmh->_NET_WM_ICON_GEOMETRY, */
+            /* ewmh->_NET_WM_ICON, */
+            /* ewmh->_NET_WM_PID, */
+            /* ewmh->_NET_WM_HANDLED_ICONS, */
+            /* ewmh->_NET_WM_USER_TIME, */
+            /* ewmh->_NET_WM_USER_TIME_WINDOW, */
+            /* ewmh->_NET_FRAME_EXTENTS, */
+            /* ewmh->_NET_WM_PING, */
+            /* ewmh->_NET_WM_SYNC_REQUEST, */
+            /* ewmh->_NET_WM_SYNC_REQUEST_COUNTER, */
+            /* ewmh->_NET_WM_FULLSCREEN_MONITORS, */
+            /* ewmh->_NET_WM_FULL_PLACEMENT, */
         };
 
         xcb_ewmh_set_supported(ewmh, 0, sizeof(supported) / sizeof(xcb_atom_t), supported);
     }
 
+    supporting_wm();
+
+    /* Trivial properties */
+    xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
+
     add_work_area_modifier(avoid_struts);
+
+    /* Client list updates */
+    add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_MANAGE_POST);
+    add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_UNMANAGE);
+    add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_TAG_CHANGED);
 }
 
 void cleanup_ewmh()

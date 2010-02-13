@@ -30,10 +30,13 @@
 
 extern xcb_connection_t * c;
 extern xcb_window_t root;
+extern xcb_screen_t * screen;
 
 extern struct velox_area screen_area;
 extern struct velox_area work_area;
 extern uint16_t border_width;
+
+extern const char wm_name[];
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 
