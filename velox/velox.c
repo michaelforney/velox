@@ -134,52 +134,52 @@ struct velox_window * tags_lookup_window(xcb_window_t window_id)
 
 void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
-        xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
-        xcb_keysym_t * keysyms;
-        struct velox_list * iterator;
-        struct velox_key_binding * binding;
-        uint16_t keysym_index;
-        uint16_t extra_modifier_index;
-        uint16_t extra_modifiers[] = {
-            0,
-            mod_mask_numlock,
-            XCB_MOD_MASK_LOCK,
-            mod_mask_numlock | XCB_MOD_MASK_LOCK
-        };
-        uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
+    xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
+    xcb_keysym_t * keysyms;
+    struct velox_list * iterator;
+    struct velox_key_binding * binding;
+    uint16_t keysym_index;
+    uint16_t extra_modifier_index;
+    uint16_t extra_modifiers[] = {
+        0,
+        mod_mask_numlock,
+        XCB_MOD_MASK_LOCK,
+        mod_mask_numlock | XCB_MOD_MASK_LOCK
+    };
+    uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
 
-        DEBUG_ENTER
+    DEBUG_ENTER
 
-        keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
+    keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
 
-        xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
+    xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
 
-        free(keyboard_mapping);
-        keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
-        keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
-        for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
+    free(keyboard_mapping);
+    keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
+    keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
+    for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
+    {
+        binding = (struct velox_key_binding *) iterator->data;
+
+        for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
         {
-            binding = (struct velox_key_binding *) iterator->data;
-
-            for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
+            if (keysyms[keysym_index] == binding->key->keysym)
             {
-                if (keysyms[keysym_index] == binding->key->keysym)
-                {
-                    binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
-                    break;
-                }
-            }
-
-            for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
-            {
-                xcb_grab_key(c, true, root,
-                    binding->key->modifiers | extra_modifiers[extra_modifier_index],
-                    binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
-                );
+                binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
+                break;
             }
         }
 
-        xcb_flush(c);
+        for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
+        {
+            xcb_grab_key(c, true, root,
+                binding->key->modifiers | extra_modifiers[extra_modifier_index],
+                binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
+            );
+        }
+    }
+
+    xcb_flush(c);
 }
 
 void check_wm_running()
