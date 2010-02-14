@@ -27,6 +27,7 @@
 #include "velox.h"
 #include "window.h"
 #include "layout.h"
+#include "debug.h"
 
 #include "layout-private.h"
 
@@ -69,12 +70,14 @@ void arrange_window(struct velox_window * window)
                            XCB_CONFIG_WINDOW_HEIGHT;
     static uint32_t values[4];
 
+    DEBUG_ENTER
+
     values[0] = window->x;
     values[1] = window->y;
     values[2] = window->width;
     values[3] = window->height;
 
-    printf("arranging window: %i (x: %i, y: %i, width: %i, height: %i)\n",
+    DEBUG_PRINT("%i (x: %i, y: %i, width: %i, height: %i)\n",
         window->window_id,
         window->x,
         window->y,

@@ -29,6 +29,7 @@
 #include <velox/module.h>
 #include <velox/window.h>
 #include <velox/layout.h>
+#include <velox/debug.h>
 
 const char const name[] = "layout_tile";
 
@@ -93,7 +94,7 @@ void configure(yaml_document_t * document)
         }
     }
 
-    printf("done\n\tMaster factor: %f\n\tMaster count: %u\n\tColumn_count: %u\n",
+    printf("done\n    Master factor: %f\n    Master count: %u\n    Column_count: %u\n",
         default_state.master_factor,
         default_state.master_count,
         default_state.column_count
@@ -102,7 +103,7 @@ void configure(yaml_document_t * document)
 
 bool initialize()
 {
-    printf(">>> layout_tile module\n");
+    printf("Grid Layout: Initializing...");
 
     add_layout("tile", &tile_arrange, (struct velox_layout_state *) &default_state);
 
@@ -114,12 +115,15 @@ bool initialize()
     MODULE_KEYBINDING(increase_column_count, NULL)
     MODULE_KEYBINDING(decrease_column_count, NULL)
 
+    printf("done\n");
+
     return true;
 }
 
 void cleanup()
 {
-    printf("<<< layout_tile module\n");
+    printf("Grid Layout: Cleaning up...");
+    printf("done\n");
 }
 
 static void tile_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state)
@@ -150,7 +154,7 @@ static void tile_arrange(struct velox_area * area, struct velox_loop * windows, 
     struct velox_area grid_column_area;
     struct velox_area window_area;
 
-    printf("tile_arrange\n");
+    DEBUG_ENTER
 
     if (windows == NULL) return;
 
@@ -185,7 +189,7 @@ static void tile_arrange(struct velox_area * area, struct velox_loop * windows, 
     else grid_area = *area;
 
     /* Arrange the master windows */
-    printf("arranging masters\n");
+    DEBUG_PRINT("arranging masters\n")
     iterator = windows;
     for (index = 0; index < master_count; iterator = iterator->next)
     {
@@ -201,7 +205,7 @@ static void tile_arrange(struct velox_area * area, struct velox_loop * windows, 
     }
 
     /* Arrange the grid windows */
-    printf("arranging grid\n");
+    DEBUG_PRINT("arranging grid\n")
     for (index = 0, column_index = 0; index < grid_count; ++column_index)
     {
         velox_area_split_horizontally(&grid_area, column_count, column_index, &grid_column_area);
@@ -226,7 +230,7 @@ static void tile_arrange(struct velox_area * area, struct velox_loop * windows, 
 
 static void increase_master_factor()
 {
-    printf("increase_master_factor()\n");
+    DEBUG_ENTER
 
     if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
@@ -239,7 +243,7 @@ static void increase_master_factor()
 
 static void decrease_master_factor()
 {
-    printf("decrease_master_factor()\n");
+    DEBUG_ENTER
 
     if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
@@ -252,7 +256,7 @@ static void decrease_master_factor()
 
 static void increase_master_count()
 {
-    printf("increase_master_count()\n");
+    DEBUG_ENTER
 
     if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
@@ -265,7 +269,7 @@ static void increase_master_count()
 
 static void decrease_master_count()
 {
-    printf("decrease_master_count()\n");
+    DEBUG_ENTER
 
     if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
@@ -278,7 +282,7 @@ static void decrease_master_count()
 
 static void increase_column_count()
 {
-    printf("increase_column_count()\n");
+    DEBUG_ENTER
 
     if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {
@@ -291,7 +295,7 @@ static void increase_column_count()
 
 static void decrease_column_count()
 {
-    printf("decrease_column_count()\n");
+    DEBUG_ENTER
 
     if (strcmp(((struct velox_layout *) tag->layout->data)->identifier, "tile") == 0)
     {

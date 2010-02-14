@@ -26,6 +26,7 @@
 #include "velox.h"
 #include "window.h"
 #include "keybinding.h"
+#include "debug.h"
 
 #include "velox-private.h"
 #include "keybinding-private.h"
@@ -36,12 +37,12 @@
 /* X event handlers */
 static void button_press(xcb_button_press_event_t * event)
 {
-    printf("button_press\n");
+    DEBUG_ENTER
 }
 
 static void configure_request(xcb_configure_request_event_t * event)
 {
-    printf("configure_request\n");
+    DEBUG_ENTER
 
     struct velox_window * window = NULL;
 
@@ -50,7 +51,7 @@ static void configure_request(xcb_configure_request_event_t * event)
     /* Case 1 of the ICCCM 4.1.5 */
     if (window && !window->floating)
     {
-        printf("configure_request: case 1\n");
+        DEBUG_PRINT("configure_request: case 1\n")
         synthetic_configure(window);
     }
     /* Case 2 of the ICCCM 4.1.5 */
@@ -60,7 +61,7 @@ static void configure_request(xcb_configure_request_event_t * event)
         uint32_t values[7];
         uint8_t field = 0;
 
-        printf("configure_request: case 2\n");
+        DEBUG_PRINT("configure_request: case 2\n")
 
         if (event->value_mask & XCB_CONFIG_WINDOW_X)
         {
@@ -101,7 +102,7 @@ static void configure_request(xcb_configure_request_event_t * event)
 
 static void configure_notify(xcb_configure_notify_event_t * event)
 {
-    printf("configure_notify: %i\n", event->window);
+    DEBUG_ENTER
 
     if (event->window == root)
     {
@@ -114,9 +115,8 @@ static void destroy_notify(xcb_destroy_notify_event_t * event)
 {
     struct velox_window * window;
 
-    printf("destroy_notify\n");
-
-    printf("window_id: %i\n", event->window);
+    DEBUG_ENTER
+    DEBUG_PRINT("window_id: %i\n", event->window)
 
     window = tags_lookup_window(event->window);
 
@@ -128,9 +128,8 @@ static void destroy_notify(xcb_destroy_notify_event_t * event)
 
 static void enter_notify(xcb_enter_notify_event_t * event)
 {
-    printf("enter_notify\n");
-
-    printf("window_id: %i\n", event->event);
+    DEBUG_ENTER
+    DEBUG_PRINT("window_id: %i\n", event->event)
 
     if (event->event == root) focus(root);
     else
@@ -144,8 +143,8 @@ static void enter_notify(xcb_enter_notify_event_t * event)
             struct velox_window * window;
 
             window = (struct velox_window *) element->data;
-            printf("mode: %i\n", event->mode);
-            printf("detail: %i\n", event->detail);
+            DEBUG_PRINT("mode: %i\n", event->mode)
+            DEBUG_PRINT("detail: %i\n", event->detail)
 
             if (event->mode == XCB_NOTIFY_MODE_NORMAL && event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
             {
@@ -158,7 +157,7 @@ static void enter_notify(xcb_enter_notify_event_t * event)
 
 static void leave_notify(xcb_leave_notify_event_t * event)
 {
-    printf("leave_notify\n");
+    DEBUG_ENTER
 }
 
 static void key_press(xcb_key_press_event_t * event)
@@ -169,8 +168,8 @@ static void key_press(xcb_key_press_event_t * event)
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
-    printf("keysym: %x\n", keysym);
-    printf("modifiers: %i\n", event->state);
+    DEBUG_PRINT("keysym: %x\n", keysym)
+    DEBUG_PRINT("modifiers: %i\n", event->state)
 
     for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
     {
@@ -180,7 +179,6 @@ static void key_press(xcb_key_press_event_t * event)
             ((binding->key->modifiers == XCB_MOD_MASK_ANY) ||
             (CLEAN_MASK(event->state) == binding->key->modifiers)))
         {
-            if (CLEAN_MASK(event->state) == 0) printf("found\n");
             if (binding->function != NULL)
             {
                 binding->function(binding->arg);
@@ -191,7 +189,7 @@ static void key_press(xcb_key_press_event_t * event)
 
 static void mapping_notify(xcb_mapping_notify_event_t * event)
 {
-    printf("mapping_notify: %i\n", event->request);
+    DEBUG_ENTER
 
     if (event->request == XCB_MAPPING_KEYBOARD)
     {
@@ -205,7 +203,7 @@ static void map_request(xcb_map_request_event_t * event)
     xcb_get_window_attributes_cookie_t window_attributes_cookie;
     xcb_get_window_attributes_reply_t * window_attributes;
 
-    printf("map_request: id:%i\n", event->window);
+    DEBUG_ENTER
 
     window_attributes_cookie = xcb_get_window_attributes(c, event->window);
 
@@ -229,7 +227,7 @@ static void property_notify(xcb_property_notify_event_t * event)
     xcb_get_atom_name_cookie_t atom_name_cookie;
     xcb_get_atom_name_reply_t * atom_name_reply;
 
-    printf("property_notify: %i\n", event->window);
+    DEBUG_ENTER
 
     atom_name_cookie = xcb_get_atom_name(c, event->atom);
     atom_name_reply = xcb_get_atom_name_reply(c, atom_name_cookie, NULL);
@@ -240,7 +238,7 @@ static void property_notify(xcb_property_notify_event_t * event)
             xcb_get_atom_name_name(atom_name_reply),
             xcb_get_atom_name_name_length(atom_name_reply)
         );
-        printf("atom: %s\n", atom_name);
+        DEBUG_PRINT("atom: %s\n", atom_name)
         free(atom_name);
     }
 
@@ -251,7 +249,7 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
 {
     struct velox_window * window;
 
-    printf("unmap_notify: %i\n", event->window);
+    DEBUG_ENTER
 
     if (pending_unmaps > 0)
     {
@@ -266,7 +264,7 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
     {
         uint32_t property_values[2];
 
-        printf("setting state to withdrawn\n");
+        DEBUG_PRINT("setting state to withdrawn\n")
 
         xcb_grab_server(c);
 
@@ -321,7 +319,7 @@ void handle_event(xcb_generic_event_t * event)
             break;
 
         default:
-            printf("unhandled event type: %i\n", event->response_type & ~0x80);
+            DEBUG_PRINT("unhandled event type: %i\n", event->response_type & ~0x80)
             break;
     }
 

@@ -142,12 +142,7 @@ bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol)
 
     for (index = 0; index < protocols_length; index++)
     {
-        if (protocols[index] == protocol)
-        {
-            printf("found protocol: %i\n", index);
-            printf("protocol: %i\n", protocol);
-            return true;
-        }
+        if (protocols[index] == protocol) return true;
     }
 
     return false;

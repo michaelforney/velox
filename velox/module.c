@@ -50,6 +50,7 @@ void * open_module(const char const * name)
 
     start = search_path;
 
+    printf("Looking for module: %s...\n", name);
     while (searching)
     {
         end = strchr(start, ':');
@@ -67,7 +68,7 @@ void * open_module(const char const * name)
 
         snprintf(module_path, sizeof(module_path), "%s/velox_%s.so", directory_path, name);
 
-        printf("trying: %s...", module_path);
+        printf("    %s...", module_path);
 
         handle = dlopen(module_path, RTLD_LAZY);
 
@@ -110,7 +111,7 @@ void load_module(const char const * name)
     assert(module->initialize);
     assert(module->cleanup);
 
-    printf("loaded module: %s\n", module->name);
+    printf("Loaded module: %s\n", module->name);
 
     /* Add the module to the list of modules */
     modules = velox_list_insert(modules, module);
@@ -144,6 +145,8 @@ void initialize_modules()
 {
     struct velox_list * iterator;
 
+    printf("\n** Initializing Modules **\n");
+
     /* Call the initialize function for each module */
     for (iterator = modules; iterator != NULL; iterator = iterator->next)
     {
@@ -154,6 +157,8 @@ void initialize_modules()
 void cleanup_modules()
 {
     struct velox_module * module;
+
+    printf("\n** Cleaning Up Modules **\n");
 
     /* Call the cleanup function, then close and free each module */
     while (modules)

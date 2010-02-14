@@ -73,6 +73,8 @@ void setup_configured_keys()
 
     assert(file);
 
+    printf("\n** Loading Configured Key Bindings **\n");
+
     yaml_parser_initialize(&parser);
     yaml_parser_set_input_file(&parser, file);
     if (yaml_parser_load(&parser, &document))
@@ -168,7 +170,7 @@ void setup_configured_keys()
                         }
                     }
 
-                    printf("%s: modifiers: %i, keysym: %x\n", identifier, key->modifiers, key->keysym);
+                    printf("%s (modifiers: %i, keysym: %x)\n", identifier, key->modifiers, key->keysym);
                     keys = velox_list_insert(keys, key);
                 }
 

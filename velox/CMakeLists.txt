@@ -42,6 +42,7 @@ install(FILES
     module.h
     ewmh.h
     work_area.h
+    debug.h
 
     DESTINATION include/velox
 )

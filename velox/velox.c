@@ -39,6 +39,7 @@
 #include "hook.h"
 #include "keybinding.h"
 #include "config_file.h"
+#include "debug.h"
 
 #include "module-private.h"
 #include "config_file-private.h"
@@ -147,7 +148,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
         };
         uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
 
-        printf("grabbing keys\n");
+        DEBUG_ENTER
 
         keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
 
@@ -311,7 +312,7 @@ void show_window(xcb_window_t window_id)
 {
     uint32_t property_values[2];
 
-    printf("show_window: %i\n", window_id);
+    DEBUG_ENTER
 
     property_values[0] = XCB_WM_STATE_NORMAL;
     property_values[1] = 0;
@@ -324,7 +325,7 @@ void hide_window(xcb_window_t window_id)
 {
     uint32_t property_values[2];
 
-    printf("hide_window: %i\n", window_id);
+    DEBUG_ENTER
 
     property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
     property_values[1] = 0;
@@ -343,6 +344,8 @@ void hide_window(xcb_window_t window_id)
 void synthetic_configure(struct velox_window * window)
 {
     xcb_configure_notify_event_t event;
+
+    DEBUG_ENTER
 
     event.response_type = XCB_CONFIGURE_NOTIFY;
     event.event = window->window_id;
@@ -417,10 +420,10 @@ void set_tag(uint8_t index)
     struct velox_list * tag_iterator;
     struct velox_tag * new_tag;
 
+    DEBUG_ENTER
+
     for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
     new_tag = (struct velox_tag *) tag_iterator->data;
-
-    printf("set_tag: %u\n", (uint32_t) new_tag);
 
     if (tag == new_tag) return; // Nothing to do...
     else
@@ -473,10 +476,10 @@ void move_focus_to_tag(uint8_t index)
     struct velox_list * tag_iterator;
     struct velox_tag * new_tag;
 
+    DEBUG_ENTER
+
     for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
     new_tag = (struct velox_tag *) tag_iterator->data;
-
-    printf("move_focus_to_tag: %i\n", (uint32_t) new_tag);
 
     if (tag->windows == NULL)
     {
@@ -528,7 +531,7 @@ void move_focus_to_tag(uint8_t index)
 
 void next_layout()
 {
-    printf("next_layout()\n");
+    DEBUG_ENTER
 
     tag->layout = tag->layout->next;
     tag->state = ((struct velox_layout *) tag->layout->data)->default_state;
@@ -538,7 +541,7 @@ void next_layout()
 
 void previous_layout()
 {
-    printf("next_layout()\n");
+    DEBUG_ENTER
 
     tag->layout = tag->layout->previous;
     tag->state = ((struct velox_layout *) tag->layout->data)->default_state;
@@ -548,7 +551,7 @@ void previous_layout()
 
 void focus_next()
 {
-    printf("focus_next()\n");
+    DEBUG_ENTER
 
     if (tag->focus == NULL)
     {
@@ -562,7 +565,7 @@ void focus_next()
 
 void focus_previous()
 {
-    printf("focus_previous()\n");
+    DEBUG_ENTER
 
     if (tag->focus == NULL)
     {
@@ -576,7 +579,7 @@ void focus_previous()
 
 void move_next()
 {
-    printf("move_next()\n");
+    DEBUG_ENTER
 
     if (tag->focus == NULL)
     {
@@ -591,7 +594,7 @@ void move_next()
 
 void move_previous()
 {
-    printf("move_previous()\n");
+    DEBUG_ENTER
 
     if (tag->focus == NULL)
     {
@@ -612,18 +615,16 @@ void kill_focused_window()
     focus_cookie = xcb_get_input_focus(c);
     focus_reply = xcb_get_input_focus_reply(c, focus_cookie, NULL);
 
+    DEBUG_ENTER
+
     if (focus_reply->focus == root)
     {
         return;
     }
 
-    printf("killing focused window\n");
-
     if (window_has_protocol(focus_reply->focus, WM_DELETE_WINDOW))
     {
         xcb_client_message_event_t event;
-
-        printf("wm_delete\n");
 
         event.response_type = XCB_CLIENT_MESSAGE;
         event.format = 32;
@@ -634,20 +635,14 @@ void kill_focused_window()
 
         xcb_send_event(c, false, focus_reply->focus, XCB_EVENT_MASK_NO_EVENT, (char *) &event);
     }
-    else
-    {
-        printf("xcb_kill_client\n");
-
-        xcb_kill_client(c, focus_reply->focus);
-    }
+    else xcb_kill_client(c, focus_reply->focus);
 
     xcb_flush(c);
 }
 
 void arrange()
 {
-    printf("arrange()\n");
-    printf("tag: %i\n", (uint32_t) tag);
+    DEBUG_ENTER
 
     if (tag->windows == NULL) return;
 
@@ -670,8 +665,8 @@ void update_name_class(struct velox_window * window)
     wm_name_reply = xcb_get_property_reply(c, wm_name_cookie, NULL);
     wm_class_reply = xcb_get_property_reply(c, wm_class_cookie, NULL);
 
-    printf("wm_name: %s\n", xcb_get_property_value(wm_name_reply));
-    printf("wm_class: %s\n", xcb_get_property_value(wm_class_reply));
+    DEBUG_PRINT("wm_name: %s\n", xcb_get_property_value(wm_name_reply))
+    DEBUG_PRINT("wm_class: %s\n", xcb_get_property_value(wm_class_reply))
 
     window->name = strndup(xcb_get_property_value(wm_name_reply), xcb_get_property_value_length(wm_name_reply));
     window->class = strndup(xcb_get_property_value(wm_class_reply), xcb_get_property_value_length(wm_class_reply));
@@ -682,7 +677,7 @@ void update_name_class(struct velox_window * window)
 
 void manage(xcb_window_t window_id)
 {
-    printf("manage(%i)\n", window_id);
+    DEBUG_ENTER
 
     struct velox_window * window = NULL;
     struct velox_window * transient = NULL;
@@ -699,7 +694,7 @@ void manage(xcb_window_t window_id)
     geometry_cookie = xcb_get_geometry(c, window_id);
 
     window = (struct velox_window *) malloc(sizeof(struct velox_window));
-    printf("allocated window: %i\n", (uint32_t) window);
+    DEBUG_PRINT("allocated window: %i\n", (uint32_t) window)
 
     window->window_id = window_id;
 
@@ -708,7 +703,7 @@ void manage(xcb_window_t window_id)
 
     if (transient_for_reply->type == XCB_ATOM_WINDOW && transient_id)
     {
-        printf("transient_id: %i\n", transient_id);
+        DEBUG_PRINT("transient_id: %i\n", transient_id)
         transient = tags_lookup_window(transient_id);
 
         window->floating = true;
@@ -732,7 +727,7 @@ void manage(xcb_window_t window_id)
     /* Geometry */
     geometry = xcb_get_geometry_reply(c, geometry_cookie, NULL);
 
-    printf("x: %i, y: %i, width: %i, height: %i\n", geometry->x, geometry->y, geometry->width, geometry->height);
+    DEBUG_PRINT("x: %i, y: %i, width: %i, height: %i\n", geometry->x, geometry->y, geometry->width, geometry->height)
 
     window->x = geometry->x;
     window->y = geometry->y;
@@ -845,7 +840,7 @@ void unmanage(struct velox_window * window)
 
 void manage_existing_windows()
 {
-    printf("manage_existing_windows()\n");
+    DEBUG_ENTER
 
     xcb_query_tree_cookie_t query_cookie;
     xcb_query_tree_reply_t * query_reply;
@@ -870,7 +865,7 @@ void manage_existing_windows()
     state_cookies = (xcb_get_property_cookie_t *) malloc(child_count * sizeof(xcb_get_property_cookie_t));
     state_replies = (xcb_get_property_reply_t **) malloc(child_count * sizeof(xcb_get_property_reply_t *));
 
-    printf("child_count: %i\n", child_count);
+    DEBUG_PRINT("child_count: %i\n", child_count)
 
     for (child = 0; child < child_count; child++)
     {
@@ -886,13 +881,9 @@ void manage_existing_windows()
 
         if (window_attributes_replies[child]->override_redirect || *((xcb_window_t *) xcb_get_property_value(property_replies[child])))
         {
-            printf("override_redirect or transient\n");
+            DEBUG_PRINT("override_redirect or transient\n")
             continue;
         }
-
-        printf("map_state: %i\n", window_attributes_replies[child]->map_state);
-
-        printf("state: %i\n", ((uint32_t *) xcb_get_property_value(state_replies[child]))[0]);
 
         if (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE || ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC)
         {
@@ -924,12 +915,13 @@ void manage_existing_windows()
 
 void spawn(char * const command[])
 {
+    DEBUG_ENTER
+
     if (fork() == 0)
     {
         if (c) close(xcb_get_file_descriptor(c));
 
         setsid();
-        printf("executing\n");
         execvp(command[0], command);
         exit(0);
     }
@@ -938,6 +930,9 @@ void spawn(char * const command[])
 void run()
 {
     xcb_generic_event_t * event;
+
+    printf("\n** Main Event Loop **\n");
+
     while (running && (event = xcb_wait_for_event(c)))
     {
         handle_event(event);
@@ -951,7 +946,7 @@ void run()
                 if ((event->response_type & ~0x80) == clear_event_type)
                 {
                     free(event);
-                    printf("dropping masked event\n");
+                    DEBUG_PRINT("dropping masked event\n")
                 }
                 else
                 {
@@ -1015,6 +1010,8 @@ void die(const char const * message, ...)
 int main(int argc, char ** argv)
 {
     srand(time(NULL));
+
+    printf("Velox Window Manager\n");
 
     setup();
     manage_existing_windows();

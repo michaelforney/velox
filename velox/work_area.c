@@ -25,6 +25,7 @@
 
 #include "velox.h"
 #include "work_area.h"
+#include "debug.h"
 
 struct velox_list * work_area_modifiers = NULL;
 
@@ -38,6 +39,8 @@ void calculate_work_area(const struct velox_area * screen_area, struct velox_are
     struct velox_list * iterator;
     struct velox_area modified_area;
 
+    DEBUG_ENTER
+
     *work_area = *screen_area;
 
     for (iterator = work_area_modifiers; iterator != NULL; iterator = iterator->next)
@@ -50,7 +53,7 @@ void calculate_work_area(const struct velox_area * screen_area, struct velox_are
         work_area->height = MIN(work_area->height, modified_area.height);
     }
 
-    printf("work_area: x: %u, y: %u, width: %u, height: %u\n", work_area->x, work_area->y, work_area->width, work_area->height);
+    DEBUG_PRINT("x: %u, y: %u, width: %u, height: %u\n", work_area->x, work_area->y, work_area->width, work_area->height)
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

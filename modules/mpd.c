@@ -77,7 +77,7 @@ void configure(yaml_document_t * document)
         }
     }
 
-    printf("done\n\tHost: %s\n\tPort: %u\n\tTimeout: %u\n", host, port, timeout);
+    printf("done\n    Host: %s\n    Port: %u\n    Timeout: %u\n", host, port, timeout);
 }
 
 bool initialize()

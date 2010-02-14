@@ -93,6 +93,8 @@ void parse_config()
 
             assert(value->type == YAML_SEQUENCE_NODE);
 
+            printf("\n** Loading Modules **\n");
+
             /* For each module */
             for (module_item = value->data.sequence.items.start;
                 module_item < value->data.sequence.items.top;
@@ -113,6 +115,8 @@ void parse_config()
     }
 
     yaml_document_delete(&document);
+
+    printf("\n** Configuring Modules **\n");
 
     /* While we still have documents to parse */
     while (yaml_parser_load(&parser, &document))

@@ -27,6 +27,7 @@
 
 #include <velox/velox.h>
 #include <velox/hook.h>
+#include <velox/debug.h>
 
 const char name[] = "wallpaper";
 
@@ -66,19 +67,22 @@ void configure(yaml_document_t * document)
         }
     }
 
-    printf("done\n\tPath: %s\n", path);
+    printf("done\n    Path: %s\n", path);
 }
 
 void initialize(void * arg)
 {
-    printf(">>> wallpaper module\n");
+    printf("Wallpaper: Initializing...");
 
     add_hook(&set_wallpaper, VELOX_HOOK_STARTUP);
+
+    printf("done\n");
 }
 
 void cleanup()
 {
-    printf("<<< wallpaper module\n");
+    printf("Wallpaper: Cleaning up...");
+    printf("done\n");
 }
 
 static void set_wallpaper(void * arg)
@@ -97,11 +101,11 @@ static void set_wallpaper(void * arg)
 
     directory = opendir(path);
 
-    printf("set_wallpaper()\n");
+    DEBUG_ENTER
 
     if (directory == NULL)
     {
-        printf("could not open wallpaper directory: %s\n", path);
+        DEBUG_PRINT("could not open wallpaper directory: %s\n", path)
         return;
     }
 
@@ -135,7 +139,7 @@ static void set_wallpaper(void * arg)
             sprintf(wallpaper, "%s/%s", path, entry->d_name);
             closedir(directory);
 
-            printf("Wallpaper: Setting wallpaper to: %s\n", wallpaper);
+            DEBUG_PRINT("setting wallpaper to: %s\n", wallpaper)
             command[2] = wallpaper;
 
             /* Execute feh, the background setter */

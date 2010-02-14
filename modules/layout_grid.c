@@ -29,6 +29,7 @@
 #include <velox/velox.h>
 #include <velox/window.h>
 #include <velox/layout.h>
+#include <velox/debug.h>
 
 const char const name[] = "layout_grid";
 
@@ -38,14 +39,17 @@ void initialize()
 {
     struct velox_layout_state state;
 
-    printf(">>> layout_grid module\n");
+    printf("Grid Layout: Initializing...");
 
     add_layout("grid", &grid_arrange, &state);
+
+    printf("done\n");
 }
 
 void cleanup()
 {
-    printf("<<< layout_grid module\n");
+    printf("Grid Layout: Cleaning up...");
+    printf("done\n");
 }
 
 void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state)
@@ -70,7 +74,7 @@ void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct 
     struct velox_area column_area;
     struct velox_area window_area;
 
-    printf("grid_arrange\n");
+    DEBUG_ENTER
 
     if (windows == NULL) return;
 
@@ -87,7 +91,6 @@ void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct 
     column_count = round(sqrt(window_count));
 
     /* Arrange the windows */
-    printf("arranging grid\n");
     for (index = 0, column_index = 0; index < window_count; ++column_index)
     {
         velox_area_split_horizontally(area, column_count, column_index, &column_area);

@@ -85,8 +85,6 @@ void handle_fullscreen(struct velox_window * window)
 {
     if (window->width == screen_area.width && window->height == screen_area.height)
     {
-        printf("fullscreen window\n");
-
         window->x = 0;
         window->y = 0;
         window->border_width = 0;

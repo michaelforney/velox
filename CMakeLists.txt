@@ -12,6 +12,7 @@ option(ENABLE_WALLPAPER     "Build the wallpaper plugin"    ON)
 option(ENABLE_ALSA          "Build the alsa plugin"         ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DVELOX_DEBUG")
 
 find_package(PkgConfig REQUIRED)
 find_package(LibYAML REQUIRED)

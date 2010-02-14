@@ -26,6 +26,7 @@
 #include "velox.h"
 #include "work_area.h"
 #include "hook.h"
+#include "debug.h"
 
 #include "ewmh-private.h"
 
@@ -36,7 +37,7 @@ void update_client_list(struct velox_loop * windows)
     uint32_t window_count, index;
     struct velox_loop * iterator;
 
-    printf("update_client_list\n");
+    DEBUG_ENTER
 
     if (windows == NULL)
     {
@@ -51,8 +52,6 @@ void update_client_list(struct velox_loop * windows)
         ++window_count;
         iterator = iterator->next;
     } while (iterator != windows);
-
-    printf("window_count: %i\n", window_count);
 
     {
         xcb_window_t client_list[window_count];
