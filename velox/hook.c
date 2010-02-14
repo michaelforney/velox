@@ -48,12 +48,15 @@ void cleanup_hooks()
 {
     uint16_t index = 0;
 
-    for (index = 0; index < velox_hook_types; ++index)
+    if (hooks != NULL)
     {
-        velox_list_delete(hooks[index], false);
-    }
+        for (index = 0; index < velox_hook_types; ++index)
+        {
+            velox_list_delete(hooks[index], false);
+        }
 
-    free(hooks);
+        free(hooks);
+    }
 }
 
 void add_hook(velox_hook_t hook, enum velox_hook_type type)
