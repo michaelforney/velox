@@ -68,11 +68,6 @@ void update_client_list(struct velox_loop * windows)
     }
 }
 
-void client_list_hook(struct velox_window * window)
-{
-    update_client_list(tag->windows);
-}
-
 void supporting_wm()
 {
     xcb_window_t child_id;
@@ -175,6 +170,16 @@ void avoid_struts(const struct velox_area * screen_area, struct velox_area * wor
     free(strut_cookies);
 }
 
+void client_list_hook(struct velox_window * window)
+{
+    update_client_list(tag->windows);
+}
+
+void desktop_geometry_hook(void * arg)
+{
+    xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
+}
+
 void setup_ewmh()
 {
     xcb_intern_atom_cookie_t * ewmh_cookies;
@@ -191,7 +196,7 @@ void setup_ewmh()
             /* ewmh->_NET_CLIENT_LIST_STACKING, */
             /* ewmh->_NET_NUMBER_OF_DESKTOPS, */
             ewmh->_NET_DESKTOP_GEOMETRY,
-            /* ewmh->_NET_DESKTOP_VIEWPORT, */
+            ewmh->_NET_DESKTOP_VIEWPORT,
             /* ewmh->_NET_CURRENT_DESKTOP, */
             /* ewmh->_NET_DESKTOP_NAMES, */
             /* ewmh->_NET_ACTIVE_WINDOW, */
@@ -236,6 +241,7 @@ void setup_ewmh()
 
     /* Trivial properties */
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
+    xcb_ewmh_set_desktop_viewport(ewmh, 0, 0, 0);
 
     add_work_area_modifier(avoid_struts);
 
@@ -243,6 +249,8 @@ void setup_ewmh()
     add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_MANAGE_POST);
     add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_UNMANAGE);
     add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_TAG_CHANGED);
+
+    add_hook(desktop_geometry_hook, VELOX_HOOK_ROOT_RESIZED);
 }
 
 void cleanup_ewmh()

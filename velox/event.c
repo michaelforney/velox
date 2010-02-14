@@ -26,10 +26,12 @@
 #include "velox.h"
 #include "window.h"
 #include "keybinding.h"
+#include "hook.h"
 #include "debug.h"
 
 #include "velox-private.h"
 #include "keybinding-private.h"
+#include "hook-private.h"
 
 /* Macros */
 #define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
@@ -108,6 +110,8 @@ static void configure_notify(xcb_configure_notify_event_t * event)
     {
         screen_area.width = event->width;
         screen_area.height = event->height;
+
+        run_hooks(NULL, VELOX_HOOK_ROOT_RESIZED);
     }
 }
 

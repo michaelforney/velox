@@ -30,7 +30,8 @@ enum velox_hook_type
     VELOX_HOOK_MANAGE_PRE,
     VELOX_HOOK_MANAGE_POST,
     VELOX_HOOK_UNMANAGE,
-    VELOX_HOOK_TAG_CHANGED
+    VELOX_HOOK_TAG_CHANGED,
+    VELOX_HOOK_ROOT_RESIZED
 };
 
 void add_hook(velox_hook_t hook, enum velox_hook_type type);
