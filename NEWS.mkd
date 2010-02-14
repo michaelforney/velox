@@ -1,6 +1,19 @@
 News for velox
 ==============
 
+0.0.3 (February 14, 2010)
+-------------------------
+* Better defaults
+* Start of EWMH support.
+* Print and debug info cleaned up
+* Make layouts arrange in a specified area
+* Install an xsession file for display manager integration
+* Alsa mixer plugin that binds to XF86Audio\* keys
+* Avoid struts
+* More flexible hooks system
+* Make MPD module attempt reconnects
+* Various bug fixes and code cleanups
+
 0.0.2 (February 1, 2010)
 ------------------------
 * Fixed bug with handling configure request events
