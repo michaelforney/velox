@@ -84,6 +84,11 @@ bool initialize()
 {
     printf("MPD: Initializing module...");
 
+    MODULE_KEYBINDING(play_pause, NULL)
+    MODULE_KEYBINDING(next, NULL)
+    MODULE_KEYBINDING(previous, NULL)
+    MODULE_KEYBINDING(stop, NULL)
+
     mpd_c = mpd_connection_new(host, port, timeout);
     assert(mpd_c);
 
@@ -92,11 +97,6 @@ bool initialize()
         fprintf(stderr, "\nMPD: %s\n", mpd_connection_get_error_message(mpd_c));
         return false;
     }
-
-    MODULE_KEYBINDING(play_pause, NULL)
-    MODULE_KEYBINDING(next, NULL)
-    MODULE_KEYBINDING(previous, NULL)
-    MODULE_KEYBINDING(stop, NULL)
 
     printf("done\n");
 
@@ -112,12 +112,21 @@ void cleanup()
     printf("done\n");
 }
 
+static bool reconnect()
+{
+    mpd_connection_free(mpd_c);
+    mpd_c = mpd_connection_new(host, port, timeout);
+    assert(mpd_c);
+
+    return mpd_connection_get_error(mpd_c) == MPD_ERROR_SUCCESS;
+}
+
 static void play_pause()
 {
     /* If there is an error, and we cannot recover from it, stop */
     if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
     {
-        return;
+        if (!reconnect()) return;
     }
 
     mpd_run_toggle_pause(mpd_c);
@@ -128,7 +137,7 @@ static void next()
     /* If there is an error, and we cannot recover from it, stop */
     if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
     {
-        return;
+        if (!reconnect()) return;
     }
 
     mpd_run_next(mpd_c);
@@ -139,7 +148,7 @@ static void previous()
     /* If there is an error, and we cannot recover from it, stop */
     if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
     {
-        return;
+        if (!reconnect()) return;
     }
 
     mpd_run_previous(mpd_c);
@@ -150,7 +159,7 @@ static void stop()
     /* If there is an error, and we cannot recover from it, stop */
     if (mpd_connection_get_error(mpd_c) != MPD_ERROR_SUCCESS && !mpd_connection_clear_error(mpd_c))
     {
-        return;
+        if (!reconnect()) return;
     }
 
     mpd_run_stop(mpd_c);
