@@ -26,7 +26,7 @@
 
 #include "module-private.h"
 
-struct velox_list * modules;
+struct velox_list * modules = NULL;
 
 void * open_module(const char const * name)
 {
