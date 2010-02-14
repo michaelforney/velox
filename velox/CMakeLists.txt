@@ -25,6 +25,7 @@ target_link_libraries(velox
     ${XCB-EWMH_LIBRARIES}
     ${LibYAML_LIBRARIES}
     ${X11_LIBRARIES}
+    pthread
     dl
     m
 )
