@@ -412,6 +412,8 @@ void focus(xcb_window_t window_id)
     free(focus_reply);
 
     xcb_set_input_focus(c, XCB_INPUT_FOCUS_POINTER_ROOT, window_id, XCB_TIME_CURRENT_TIME);
+    run_hooks(&window_id, VELOX_HOOK_FOCUS_CHANGED);
+
     xcb_flush(c);
 }
 

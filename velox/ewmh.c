@@ -180,6 +180,18 @@ void desktop_geometry_hook(void * arg)
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
 }
 
+void focus_hook(xcb_window_t * window_id)
+{
+    if (*window_id == screen->root)
+    {
+        xcb_ewmh_set_active_window(ewmh, 0, XCB_WINDOW_NONE);
+    }
+    else
+    {
+        xcb_ewmh_set_active_window(ewmh, 0, *window_id);
+    }
+}
+
 void setup_ewmh()
 {
     xcb_intern_atom_cookie_t * ewmh_cookies;
@@ -199,7 +211,7 @@ void setup_ewmh()
             ewmh->_NET_DESKTOP_VIEWPORT,
             /* ewmh->_NET_CURRENT_DESKTOP, */
             /* ewmh->_NET_DESKTOP_NAMES, */
-            /* ewmh->_NET_ACTIVE_WINDOW, */
+            ewmh->_NET_ACTIVE_WINDOW,
             /* ewmh->_NET_WORKAREA, */
             ewmh->_NET_SUPPORTING_WM_CHECK,
             /* ewmh->_NET_VIRTUAL_ROOTS, */
@@ -251,6 +263,8 @@ void setup_ewmh()
     add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_TAG_CHANGED);
 
     add_hook(desktop_geometry_hook, VELOX_HOOK_ROOT_RESIZED);
+
+    add_hook((velox_hook_t) focus_hook, VELOX_HOOK_FOCUS_CHANGED);
 }
 
 void cleanup_ewmh()

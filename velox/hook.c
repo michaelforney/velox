@@ -24,7 +24,7 @@
 #include "velox.h"
 #include "hook.h"
 
-const uint16_t velox_hook_types = 6;
+const uint16_t velox_hook_types = 7;
 
 /* Manage hooks */
 void handle_floating(struct velox_window * window);
