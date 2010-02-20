@@ -85,6 +85,15 @@ void cleanup()
     printf("done\n");
 }
 
+static struct direct * next_file(DIR * directory)
+{
+    struct dirent * entry;
+    while ((entry = readdir(directory)) != NULL &&
+        (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0));
+
+    return entry;
+}
+
 static void set_wallpaper(void * arg)
 {
     char * wallpaper;
@@ -109,14 +118,7 @@ static void set_wallpaper(void * arg)
         return;
     }
 
-    readdir(directory); // .
-    readdir(directory); // ..
-
-    while ((entry = readdir(directory)) != NULL)
-    {
-        wallpaper_count++;
-
-    }
+    while ((entry = next_file(directory)) != NULL) ++wallpaper_count;
 
     if (wallpaper_count > 0)
     {
@@ -124,14 +126,11 @@ static void set_wallpaper(void * arg)
 
         rewinddir(directory);
 
-        readdir(directory); // .
-        readdir(directory); // ..
-
         wallpaper_index = rand() % wallpaper_count;
 
-        for (index = 0; index < wallpaper_index; ++index, readdir(directory));
-
-        entry = readdir(directory);
+        for (index = 0, entry = next_file(directory);
+            index < wallpaper_index;
+            ++index, entry = next_file(directory));
 
         {
             char wallpaper[strlen(entry->d_name) + strlen(path) + 2];
