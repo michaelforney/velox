@@ -52,6 +52,7 @@ void spawn_dmenu();
 
 void focus_next();
 void focus_previous();
+void focus(xcb_window_t window);
 
 void move_next();
 void move_previous();

@@ -192,6 +192,23 @@ void focus_hook(xcb_window_t * window_id)
     }
 }
 
+void ewmh_handle_client_message(xcb_client_message_event_t * event)
+{
+    DEBUG_ENTER
+
+    if (event->type == ewmh->_NET_ACTIVE_WINDOW)
+    {
+        DEBUG_PRINT("window: 0x%x\n", event->data.data32[0])
+        /* Assume the client message is valid */
+        while (((struct velox_window *) tag->focus->data)->window_id != event->window)
+        {
+            tag->focus = tag->focus->next;
+        }
+
+        focus(((struct velox_window *) tag->focus->data)->window_id);
+    }
+}
+
 void setup_ewmh()
 {
     xcb_intern_atom_cookie_t * ewmh_cookies;

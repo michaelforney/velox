@@ -23,6 +23,8 @@
 void setup_ewmh();
 void cleanup_ewmh();
 
+void ewmh_handle_client_message(xcb_client_message_event_t * event);
+
 #endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

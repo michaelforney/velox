@@ -32,6 +32,7 @@
 #include "velox-private.h"
 #include "keybinding-private.h"
 #include "hook-private.h"
+#include "ewmh-private.h"
 
 /* Macros */
 #define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
@@ -274,6 +275,11 @@ static void property_notify(xcb_property_notify_event_t * event)
     free(atom_name_reply);
 }
 
+static void client_message(xcb_client_message_event_t * event)
+{
+    ewmh_handle_client_message(event);
+}
+
 static void mapping_notify(xcb_mapping_notify_event_t * event)
 {
     DEBUG_ENTER
@@ -311,6 +317,9 @@ void handle_event(xcb_generic_event_t * event)
             break;
         case XCB_CONFIGURE_NOTIFY:
             configure_notify((xcb_configure_notify_event_t *) event);
+            break;
+        case XCB_CONFIGURE_REQUEST:
+            configure_request((xcb_configure_request_event_t *) event);
             break;
         case XCB_PROPERTY_NOTIFY:
             property_notify((xcb_property_notify_event_t *) event);
