@@ -28,12 +28,30 @@ struct velox_area
     uint32_t width, height;
 };
 
+/**
+ * Split an array vertically into the specified number of pieces, and set the
+ * destination piece to the piece at the specified index
+ *
+ * @param area The area to split
+ * @param pieces The number of pieces in which to split the area
+ * @param piece_index The index of the destination piece
+ * @param piece The destination piece
+ */
 void velox_area_split_vertically(
     const struct velox_area const * area,
     uint16_t pieces, uint16_t piece_index,
     struct velox_area * piece
 );
 
+/**
+ * Split an array horizontally into the specified number of pieces, and set the
+ * destination piece to the piece at the specified index
+ *
+ * @param area The area to split
+ * @param pieces The number of pieces in which to split the area
+ * @param piece_index The index of the destination piece
+ * @param piece The destination piece
+ */
 void velox_area_split_horizontally(
     const struct velox_area const * area,
     uint16_t pieces, uint16_t piece_index,

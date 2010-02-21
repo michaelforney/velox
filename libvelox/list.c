@@ -23,15 +23,6 @@
 
 #include "list.h"
 
-/**
- * Insert an element at the beginning of a list
- *
- * This is an O(1) operation
- *
- * @param list The list to insert the data into
- * @param data The data to insert into the list
- * @return A new pointer to the list
- */
 struct velox_list * velox_list_insert(struct velox_list * list, void * data)
 {
     struct velox_list * new_list = (struct velox_list *) malloc(sizeof(struct velox_list));
@@ -49,15 +40,6 @@ struct velox_list * velox_list_insert(struct velox_list * list, void * data)
     return new_list;
 }
 
-/**
- * Append an element to the end of a list
- *
- * This is a O(n) operation because the list must first be traversed
- *
- * @param list The list to append the data onto
- * @param data The data to append to the list
- * @return A new pointer to the list
- */
 struct velox_list * velox_list_append(struct velox_list * list, void * data)
 {
     struct velox_list * iterator;
@@ -72,15 +54,6 @@ struct velox_list * velox_list_append(struct velox_list * list, void * data)
     return velox_list_insert_after(iterator, data);
 }
 
-/**
- * Insert an element after the current element of a list
- *
- * This is an O(1) operation
- *
- * @param list The list to insert the data into. This must not be NULL
- * @param data The data to insert into the list
- * @return A new pointer to the list
- */
 struct velox_list * velox_list_insert_after(struct velox_list * list, void * data)
 {
     assert(list != NULL);
@@ -91,14 +64,6 @@ struct velox_list * velox_list_insert_after(struct velox_list * list, void * dat
     return list;
 }
 
-/**
- * Removes the first element of a list
- *
- * This is an O(1) operation
- *
- * @param list The list to remove the first element from. This must not be NULL
- * @return A new pointer to the list
- */
 struct velox_list * velox_list_remove_first(struct velox_list * list)
 {
     struct velox_list * new_list;
@@ -122,14 +87,6 @@ struct velox_list * velox_list_remove_first(struct velox_list * list)
     return new_list;
 }
 
-/**
- * Removes the last element of a list
- *
- * This is a O(n) operation because the list must first be traversed
- *
- * @param list The list to remove the last element from. This must not be NULL
- * @return A new pointer to the list
- */
 struct velox_list * velox_list_remove_last(struct velox_list * list)
 {
     struct velox_list * iterator;
@@ -141,14 +98,6 @@ struct velox_list * velox_list_remove_last(struct velox_list * list)
     return velox_list_remove_first(iterator);
 }
 
-/**
- * Reverses the elements of a list
- *
- * This is an O(n) operation
- *
- * @param list The list to be reversed
- * @return A new pointer to the list
- */
 struct velox_list * velox_list_reverse(struct velox_list * list)
 {
     struct velox_list * iterator;
@@ -167,15 +116,6 @@ struct velox_list * velox_list_reverse(struct velox_list * list)
     return next;
 }
 
-/**
- * Deletes an entire list, and optionally frees its contents
- *
- * This is an O(n) operation
- *
- * @param list The list to be removed
- * @param free_data Whether or not to free the contents
- * @return A new pointer to the list
- */
 struct velox_list * velox_list_delete(struct velox_list * list, bool free_data)
 {
     struct velox_list * iterator;
@@ -195,14 +135,6 @@ struct velox_list * velox_list_delete(struct velox_list * list, bool free_data)
     return NULL;
 }
 
-/**
- * Swap two elements of a list
- *
- * This is an O(1) operation
- *
- * @param first The first element to swap
- * @param second The second element to swap
- */
 void velox_list_swap(struct velox_list * first, struct velox_list * second)
 {
     void * data;

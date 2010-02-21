@@ -32,13 +32,64 @@ struct velox_hashtable
 
 uint32_t sdbm_hash(const char * string);
 
+/**
+ * Create a new hash table
+ *
+ * @param size The number of slots in the table
+ * @param hash_function The hashing function to use
+ * @return The newly created hash table
+ */
 struct velox_hashtable * velox_hashtable_create(uint32_t size, uint32_t (* hash_function)(const char * string));
 
+/**
+ * Looks up the value of a key in a hashtable
+ *
+ * @param hashtable The hashtable to lookup the value from
+ * @param key The key to lookup
+ * @return The value looked up
+ */
 void * velox_hashtable_lookup(struct velox_hashtable * hashtable, const char * key);
+
+/**
+ * Insert a value into a hashtable
+ *
+ * @param hashtable The hashtable to insert the value into
+ * @param key The key to insert the value
+ * @param value The value to insert into the hashtable
+ */
 void velox_hashtable_insert(struct velox_hashtable * hashtable, const char * key, void * value);
+
+/**
+ * Unset a key from a hashtable
+ *
+ * @param hashtable The hashtable to unset the key from
+ * @param key The key to unset
+ */
 void velox_hashtable_unset(struct velox_hashtable * hashtable, const char * key);
+
+/**
+ * Check if a key already exists in a hashtable
+ *
+ * @param hashtable The hashtable to check for the key
+ * @param key The key to check for
+ * @return Whether or not the key exists in the hashtable
+ */
 bool velox_hashtable_exists(struct velox_hashtable * hashtable, const char * key);
+
+/**
+ * Clear a hashtable, and optionally free the data
+ *
+ * @param hashtable The hashtable to clear
+ * @param free_data Whether or not to free the data
+ */
 void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data);
+
+/**
+ * Delete a hashtable, and optionally free the data
+ *
+ * @param hashtable The hashtable to delete
+ * @param free_data Whether or not to free the data
+ */
 void velox_hashtable_delete(struct velox_hashtable * hashtable, bool free_data);
 
 #endif
