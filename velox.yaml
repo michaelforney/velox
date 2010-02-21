@@ -17,7 +17,6 @@ column_count: 1
 --- !velox:spawn
 - command: [xterm]
   binding: terminal
-  arguments: []
 - command: [
     "dmenu_run",
     "-b",
