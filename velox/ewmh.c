@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <xcb/xcb_ewmh.h>
 
+#include <libvelox/vector.h>
+
 #include "velox.h"
 #include "work_area.h"
 #include "hook.h"
@@ -32,39 +34,16 @@
 
 xcb_ewmh_connection_t * ewmh;
 
-void update_client_list(struct velox_loop * windows)
-{
-    uint32_t window_count, index;
-    struct velox_loop * iterator;
+struct velox_vector32 * client_list;
 
+void update_client_list()
+{
     DEBUG_ENTER
 
-    if (windows == NULL)
+    if (client_list->size == 0) xcb_ewmh_set_client_list(ewmh, 0, 0, NULL);
+    else
     {
-        xcb_ewmh_set_client_list(ewmh, 0, 0, NULL);
-        return;
-    }
-
-    window_count = 0;
-    iterator = windows;
-    do
-    {
-        ++window_count;
-        iterator = iterator->next;
-    } while (iterator != windows);
-
-    {
-        xcb_window_t client_list[window_count];
-
-        iterator = windows;
-        index = 0;
-        do
-        {
-            client_list[index++] = ((struct velox_window *) iterator->data)->window_id;
-            iterator = iterator->next;
-        } while (iterator != windows);
-
-        xcb_ewmh_set_client_list(ewmh, 0, window_count, client_list);
+        xcb_ewmh_set_client_list(ewmh, 0, client_list->size, (xcb_window_t *) client_list->data);
     }
 }
 
@@ -170,9 +149,47 @@ void avoid_struts(const struct velox_area * screen_area, struct velox_area * wor
     free(strut_cookies);
 }
 
-void client_list_hook(struct velox_window * window)
+void add_client_hook(struct velox_window * window)
 {
-    update_client_list(tag->windows);
+    DEBUG_ENTER
+
+    velox_vector32_append(client_list, window->window_id);
+
+    update_client_list();
+}
+
+void remove_client_hook(struct velox_window * window)
+{
+    DEBUG_ENTER
+
+    DEBUG_PRINT("window_id: 0x%x\n", window->window_id)
+
+    velox_vector32_remove(client_list, window->window_id);
+
+    update_client_list();
+}
+
+void update_clients_hook(struct velox_tag * tag)
+{
+    DEBUG_ENTER
+
+    velox_vector32_clear(client_list);
+
+    if (tag->windows != NULL)
+    {
+        struct velox_loop * iterator;
+
+        iterator = tag->windows;
+        do
+        {
+            velox_vector32_append(client_list,
+                ((struct velox_window *) iterator->data)->window_id);
+
+            iterator = iterator->next;
+        } while (iterator != tag->windows);
+    }
+
+    update_client_list();
 }
 
 void desktop_geometry_hook(void * arg)
@@ -180,7 +197,7 @@ void desktop_geometry_hook(void * arg)
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
 }
 
-void focus_hook(xcb_window_t * window_id)
+void focus_hook(const xcb_window_t * window_id)
 {
     if (*window_id == screen->root)
     {
@@ -268,6 +285,8 @@ void setup_ewmh()
 
     supporting_wm();
 
+    client_list = velox_vector32_create(25);
+
     /* Trivial properties */
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
     xcb_ewmh_set_desktop_viewport(ewmh, 0, 0, 0);
@@ -275,9 +294,9 @@ void setup_ewmh()
     add_work_area_modifier(avoid_struts);
 
     /* Client list updates */
-    add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_MANAGE_POST);
-    add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_UNMANAGE);
-    add_hook((velox_hook_t) client_list_hook, VELOX_HOOK_TAG_CHANGED);
+    add_hook((velox_hook_t) add_client_hook, VELOX_HOOK_MANAGE_POST);
+    add_hook((velox_hook_t) remove_client_hook, VELOX_HOOK_UNMANAGE);
+    add_hook((velox_hook_t) update_clients_hook, VELOX_HOOK_TAG_CHANGED);
 
     add_hook(desktop_geometry_hook, VELOX_HOOK_ROOT_RESIZED);
 
@@ -287,5 +306,6 @@ void setup_ewmh()
 void cleanup_ewmh()
 {
     free(ewmh);
+    velox_vector32_delete(client_list);
 }
 
