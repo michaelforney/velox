@@ -85,7 +85,7 @@ void cleanup()
     printf("done\n");
 }
 
-static struct direct * next_file(DIR * directory)
+static struct dirent * next_file(DIR * directory)
 {
     struct dirent * entry;
     while ((entry = readdir(directory)) != NULL &&
