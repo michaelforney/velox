@@ -27,11 +27,15 @@
 
 struct velox_tag
 {
-    uint64_t id;
+    /* Might be needed with windows on multiple tags at once */
+    // uint64_t id;
     const char * name;
-    struct velox_loop * layout;
+
     struct velox_loop * windows;
+
     struct velox_loop * focus;
+
+    struct velox_loop * layout;
     struct velox_layout_state state;
 };
 

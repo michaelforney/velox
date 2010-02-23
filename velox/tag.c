@@ -40,7 +40,8 @@ void add_tag(const char * name, struct velox_loop * layouts)
     tag = (struct velox_tag *) malloc(sizeof(struct velox_tag));
     memset(tag, 0, sizeof(struct velox_tag));
 
-    tag->id = 1 << tag_count++;
+    /* Might be needed with windows on multiple tags at once */
+    // tag->id = 1 << tag_count++;
     tag->name = strdup(name);
     tag->layout = layouts;
     tag->state = ((struct velox_layout *) layouts->data)->default_state;
