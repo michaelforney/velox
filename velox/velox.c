@@ -560,46 +560,38 @@ void focus_previous()
 
 void move_next()
 {
-    struct velox_window_entry * first, * second;
-    struct velox_window * first_window;
+    struct list_head * next, * previous;
 
     DEBUG_ENTER
 
     if (list_empty(&tag->tiled.windows)) return;
 
-    first = list_entry(tag->tiled.focus, struct velox_window_entry, head);
-    second = list_entry(list_actual_next(tag->tiled.focus, &tag->tiled.windows),
-        struct velox_window_entry, head);
+    /* Store the previous and actual next heads */
+    next = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
+    previous = tag->tiled.focus->prev;
 
-    /* Swap the two windows */
-    first_window = first->window;
-    first->window = second->window;
-    second->window = first_window;
-
-    tag->tiled.focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
+    list_del(tag->tiled.focus);
+    list_replace(next, tag->tiled.focus);
+    list_add(next, previous);
 
     arrange();
 }
 
 void move_previous()
 {
-    struct velox_window_entry * first, * second;
-    struct velox_window * first_window;
+    struct list_head * next, * previous;
 
     DEBUG_ENTER
 
     if (list_empty(&tag->tiled.windows)) return;
 
-    first = list_entry(tag->tiled.focus, struct velox_window_entry, head);
-    second = list_entry(list_actual_prev(tag->tiled.focus, &tag->tiled.windows),
-        struct velox_window_entry, head);
+    /* Store the actual previous and next heads */
+    next = tag->tiled.focus->next;
+    previous = list_actual_prev(tag->tiled.focus, &tag->tiled.windows);
 
-    /* Swap the two windows */
-    first_window = first->window;
-    first->window = second->window;
-    second->window = first_window;
-
-    tag->tiled.focus = list_actual_prev(tag->tiled.focus, &tag->tiled.windows);
+    list_del(tag->tiled.focus);
+    list_replace(previous, tag->tiled.focus);
+    list_add_tail(previous, next);
 
     arrange();
 }
