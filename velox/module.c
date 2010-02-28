@@ -32,8 +32,8 @@ void * open_module(const char const * name)
 {
     char search_path[1024];
     char module_path[1024];
+    char directory_path[1024];
     char * start, * end;
-    char * directory_path;
     void * handle = NULL;
     bool searching = true;
 
@@ -57,12 +57,12 @@ void * open_module(const char const * name)
 
         if (end == NULL)
         {
-            directory_path = strdup(start);
+            strcpy(directory_path, start);
             searching = false;
         }
         else
         {
-            directory_path = strndup(start, end - start);
+            strncpy(directory_path, start, end - start);
             start = end + 1;
         }
 
@@ -126,9 +126,7 @@ void configure_module(const char const * name, yaml_document_t * document)
     struct velox_module_entry * entry;
 
     /* Search through the list of loaded modules and configure the first one
-     * that matches.
-     *
-     * FIXME: This could probably be more efficient */
+     * that matches. */
     list_for_each_entry(entry, &modules, head)
     {
         if (strcmp(name, entry->module->name) == 0)
