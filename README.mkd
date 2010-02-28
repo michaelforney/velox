@@ -58,7 +58,7 @@ Currently there are only three required definitions to constitute a module.
 
 1. There must be a string called `name` which should be set to an identifying
 name for the module.
-2. There must be an `initialize` function which will be called shortly after
+2. There must be an `setup` function which will be called shortly after
 velox starts
 3. There must be a `cleanup` function which can perform any necessary actions
 prior to the modules unloading.
