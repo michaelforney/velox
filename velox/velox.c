@@ -495,6 +495,12 @@ void move_focus_to_tag(uint8_t index)
 
         tag->tiled.focus = next_focus;
 
+        if (list_is_singular(&new_tag->tiled.windows))
+        {
+            /* If the tag was empty before, set its focus to the new window */
+            new_tag->tiled.focus = new_tag->tiled.windows.next;
+        }
+
         if (list_empty(&tag->tiled.windows))
         {
             focus(root);
