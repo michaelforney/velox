@@ -234,9 +234,12 @@ void setup()
     cursors[RESIZE] = xcb_generate_id(c);
     cursors[MOVE] = xcb_generate_id(c);
 
-    xcb_create_glyph_cursor(c, cursors[POINTER], cursor_font, cursor_font, POINTER_ID, POINTER_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
-    xcb_create_glyph_cursor(c, cursors[RESIZE], cursor_font, cursor_font, RESIZE_ID, RESIZE_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
-    xcb_create_glyph_cursor(c, cursors[MOVE], cursor_font, cursor_font, MOVE_ID, MOVE_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
+    xcb_create_glyph_cursor(c, cursors[POINTER], cursor_font, cursor_font,
+        POINTER_ID, POINTER_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
+    xcb_create_glyph_cursor(c, cursors[RESIZE], cursor_font, cursor_font,
+        RESIZE_ID, RESIZE_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
+    xcb_create_glyph_cursor(c, cursors[MOVE], cursor_font, cursor_font,
+        MOVE_ID, MOVE_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
 
     mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
     values[0] = XCB_EVENT_MASK_BUTTON_PRESS |
@@ -361,7 +364,9 @@ void synthetic_unmap(struct velox_window * window)
     event.window = window->window_id;
     event.from_configure = false;
 
-    xcb_send_event(c, false, root, XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY, (const char *) &event);
+    xcb_send_event(c, false, root,
+        XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+        (const char *) &event);
 }
 
 void focus(xcb_window_t window_id)
@@ -566,7 +571,8 @@ void move_next()
     if (list_empty(&tag->tiled.windows)) return;
 
     first = list_entry(tag->tiled.focus, struct velox_window_entry, head);
-    second = list_entry(list_actual_next(tag->tiled.focus, &tag->tiled.windows), struct velox_window_entry, head);
+    second = list_entry(list_actual_next(tag->tiled.focus, &tag->tiled.windows),
+        struct velox_window_entry, head);
 
     /* Swap the two windows */
     first_window = first->window;
@@ -588,7 +594,8 @@ void move_previous()
     if (list_empty(&tag->tiled.windows)) return;
 
     first = list_entry(tag->tiled.focus, struct velox_window_entry, head);
-    second = list_entry(list_actual_prev(tag->tiled.focus, &tag->tiled.windows), struct velox_window_entry, head);
+    second = list_entry(list_actual_prev(tag->tiled.focus, &tag->tiled.windows),
+        struct velox_window_entry, head);
 
     /* Swap the two windows */
     first_window = first->window;
@@ -654,8 +661,10 @@ void update_name_class(struct velox_window * window)
     xcb_get_property_cookie_t wm_name_cookie, wm_class_cookie;
     xcb_get_property_reply_t * wm_name_reply, * wm_class_reply;
 
-    wm_name_cookie = xcb_get_property(c, false, window->window_id, XCB_ATOM_WM_NAME, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
-    wm_class_cookie = xcb_get_property(c, false, window->window_id, XCB_ATOM_WM_CLASS, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
+    wm_name_cookie = xcb_get_property(c, false, window->window_id,
+        XCB_ATOM_WM_NAME, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
+    wm_class_cookie = xcb_get_property(c, false, window->window_id,
+        XCB_ATOM_WM_CLASS, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
 
     wm_name_reply = xcb_get_property_reply(c, wm_name_cookie, NULL);
     wm_class_reply = xcb_get_property_reply(c, wm_class_cookie, NULL);
@@ -663,8 +672,10 @@ void update_name_class(struct velox_window * window)
     DEBUG_PRINT("wm_name: %s\n", xcb_get_property_value(wm_name_reply))
     DEBUG_PRINT("wm_class: %s\n", xcb_get_property_value(wm_class_reply))
 
-    window->name = strndup(xcb_get_property_value(wm_name_reply), xcb_get_property_value_length(wm_name_reply));
-    window->class = strndup(xcb_get_property_value(wm_class_reply), xcb_get_property_value_length(wm_class_reply));
+    window->name = strndup(xcb_get_property_value(wm_name_reply),
+        xcb_get_property_value_length(wm_name_reply));
+    window->class = strndup(xcb_get_property_value(wm_class_reply),
+        xcb_get_property_value_length(wm_class_reply));
 
     free(wm_name_reply);
     free(wm_class_reply);
@@ -686,7 +697,8 @@ void manage(xcb_window_t window_id)
     uint32_t values[2];
     uint32_t property_values[2];
 
-    transient_for_cookie = xcb_get_property(c, false, window_id, XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
+    transient_for_cookie = xcb_get_property(c, false, window_id,
+        XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
     geometry_cookie = xcb_get_geometry(c, window_id);
 
     window = (struct velox_window *) malloc(sizeof(struct velox_window));
@@ -725,7 +737,8 @@ void manage(xcb_window_t window_id)
     /* Geometry */
     geometry = xcb_get_geometry_reply(c, geometry_cookie, NULL);
 
-    DEBUG_PRINT("x: %i, y: %i, width: %i, height: %i\n", geometry->x, geometry->y, geometry->width, geometry->height)
+    DEBUG_PRINT("x: %i, y: %i, width: %i, height: %i\n",
+        geometry->x, geometry->y, geometry->width, geometry->height)
 
     window->x = geometry->x;
     window->y = geometry->y;
@@ -766,7 +779,8 @@ void manage(xcb_window_t window_id)
 
         property_values[0] = XCB_WM_STATE_NORMAL;
         property_values[1] = 0;
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
+        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id,
+            WM_STATE, WM_STATE, 32, 2, property_values);
 
         focus(window->window_id);
 
@@ -831,34 +845,45 @@ void manage_existing_windows()
     children = xcb_query_tree_children(query_reply);
     child_count = xcb_query_tree_children_length(query_reply);
 
-    window_attributes_cookies = (xcb_get_window_attributes_cookie_t *) malloc(child_count * sizeof(xcb_get_window_attributes_cookie_t));
-    window_attributes_replies = (xcb_get_window_attributes_reply_t **) malloc(child_count * sizeof(xcb_get_window_attributes_reply_t *));
-    property_cookies = (xcb_get_property_cookie_t *) malloc(child_count * sizeof(xcb_get_property_cookie_t));
-    property_replies = (xcb_get_property_reply_t **) malloc(child_count * sizeof(xcb_get_property_reply_t *));
-    state_cookies = (xcb_get_property_cookie_t *) malloc(child_count * sizeof(xcb_get_property_cookie_t));
-    state_replies = (xcb_get_property_reply_t **) malloc(child_count * sizeof(xcb_get_property_reply_t *));
+    window_attributes_cookies = (xcb_get_window_attributes_cookie_t *)
+        malloc(child_count * sizeof(xcb_get_window_attributes_cookie_t));
+    window_attributes_replies = (xcb_get_window_attributes_reply_t **)
+        malloc(child_count * sizeof(xcb_get_window_attributes_reply_t *));
+    property_cookies = (xcb_get_property_cookie_t *)
+        malloc(child_count * sizeof(xcb_get_property_cookie_t));
+    property_replies = (xcb_get_property_reply_t **)
+        malloc(child_count * sizeof(xcb_get_property_reply_t *));
+    state_cookies = (xcb_get_property_cookie_t *)
+        malloc(child_count * sizeof(xcb_get_property_cookie_t));
+    state_replies = (xcb_get_property_reply_t **)
+        malloc(child_count * sizeof(xcb_get_property_reply_t *));
 
     DEBUG_PRINT("child_count: %i\n", child_count)
 
     for (child = 0; child < child_count; child++)
     {
         window_attributes_cookies[child] = xcb_get_window_attributes(c, children[child]);
-        property_cookies[child] = xcb_get_property(c, false, children[child], XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
-        state_cookies[child] = xcb_get_property(c, false, children[child], WM_STATE, WM_STATE, 0, 2);
+        property_cookies[child] = xcb_get_property(c, false, children[child],
+            XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
+        state_cookies[child] = xcb_get_property(c, false, children[child],
+            WM_STATE, WM_STATE, 0, 2);
     }
     for (child = 0; child < child_count; child++)
     {
-        window_attributes_replies[child] = xcb_get_window_attributes_reply(c, window_attributes_cookies[child], NULL);
+        window_attributes_replies[child] = xcb_get_window_attributes_reply(c,
+            window_attributes_cookies[child], NULL);
         property_replies[child] = xcb_get_property_reply(c, property_cookies[child], NULL);
         state_replies[child] = xcb_get_property_reply(c, state_cookies[child], NULL);
 
-        if (window_attributes_replies[child]->override_redirect || *((xcb_window_t *) xcb_get_property_value(property_replies[child])))
+        if (window_attributes_replies[child]->override_redirect ||
+            *((xcb_window_t *) xcb_get_property_value(property_replies[child])))
         {
             DEBUG_PRINT("override_redirect or transient\n")
             continue;
         }
 
-        if (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE || ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC)
+        if (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE ||
+            ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC)
         {
             manage(children[child]);
         }
