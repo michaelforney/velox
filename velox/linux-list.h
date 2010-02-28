@@ -359,6 +359,13 @@ static inline void list_splice_tail_init(struct list_head *list,
 	}
 }
 
+#undef offsetof
+#ifdef __compiler_offsetof
+#	define offsetof(TYPE, MEMBER) __compiler_offset_of(TYPE, MEMBER)
+#else
+#	define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#endif
+
 /**
  * container_of - cast a member of a structure out to the containing structure
  * @ptr:	the pointer to the member.
