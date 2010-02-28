@@ -17,7 +17,7 @@ add_executable(velox
 include_directories(${velox_SOURCE_DIR})
 
 target_link_libraries(velox
-    libvelox
+    -Wl,--whole-archive libvelox -Wl,--no-whole-archive
     ${XCB_LIBRARIES}
     ${XCB-Atom_LIBRARIES}
     ${XCB-ICCCM_LIBRARIES}

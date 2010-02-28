@@ -1,6 +1,6 @@
 # velox: libvelox/CMakeLists.txt
 
-add_library(libvelox SHARED
+add_library(libvelox STATIC
     area.c
     list.c
     loop.c
@@ -10,9 +10,8 @@ add_library(libvelox SHARED
 
 set_target_properties(libvelox PROPERTIES OUTPUT_NAME velox)
 
-install(TARGETS libvelox DESTINATION lib${LIB_SUFFIX})
-
 install(FILES
+    area.h
     list.h
     loop.h
     hashtable.h
