@@ -81,7 +81,7 @@ void configure(yaml_document_t * document)
     printf("done\n");
 }
 
-bool initialize()
+bool setup()
 {
     snd_mixer_selem_id_t * sid;
 

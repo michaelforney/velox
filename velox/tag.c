@@ -27,9 +27,8 @@
 
 #include "layout-private.h"
 
-struct list_head tags;
-
-uint8_t tag_count;
+LIST_HEAD(tags);
+uint8_t tag_count = 0;
 
 void add_tag(const char * name, const char * layout_names[])
 {
@@ -73,9 +72,6 @@ void setup_tags()
         NULL
     };
     struct velox_layout_entry * entry;
-
-    INIT_LIST_HEAD(&tags);
-    tag_count = 0;
 
     /* TODO: Make this configurable */
 

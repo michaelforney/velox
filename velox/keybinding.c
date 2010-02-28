@@ -45,7 +45,7 @@ struct key_list
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
 struct velox_hashtable * configured_keys = NULL;
-struct list_head key_bindings;
+LIST_HEAD(key_bindings);
 
 uint16_t modifier_value(const char * name)
 {
@@ -206,8 +206,6 @@ void setup_configured_keys()
 
 void setup_key_bindings()
 {
-    INIT_LIST_HEAD(&key_bindings);
-
     setup_configured_keys();
 
     /* Window focus */

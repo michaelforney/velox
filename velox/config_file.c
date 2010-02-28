@@ -42,7 +42,7 @@ FILE * open_config_file(const char * name)
     return NULL;
 }
 
-void parse_config()
+void load_config()
 {
     FILE * file;
 

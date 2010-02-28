@@ -277,15 +277,12 @@ void setup()
     free(atom_cookies);
 
     setup_key_bindings();
-    setup_modules();
-
-    parse_config();
-
     setup_layouts();
     setup_hooks();
-    setup_work_area_modifiers();
 
-    initialize_modules();
+    load_config();
+
+    setup_modules();
 
     setup_tags();
     setup_ewmh();

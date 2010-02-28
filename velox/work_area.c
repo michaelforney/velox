@@ -31,7 +31,7 @@ struct modifier_entry
     struct list_head head;
 };
 
-struct list_head work_area_modifiers;
+LIST_HEAD(work_area_modifiers);
 
 void add_work_area_modifier(velox_work_area_modifier_t modifier)
 {
@@ -63,11 +63,6 @@ void calculate_work_area(const struct velox_area * screen_area, struct velox_are
     }
 
     DEBUG_PRINT("x: %u, y: %u, width: %u, height: %u\n", work_area->x, work_area->y, work_area->width, work_area->height)
-}
-
-void setup_work_area_modifiers()
-{
-    INIT_LIST_HEAD(&work_area_modifiers);
 }
 
 void cleanup_work_area_modifiers()

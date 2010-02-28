@@ -70,7 +70,7 @@ void configure(yaml_document_t * document)
     printf("done\n    Path: %s\n", path);
 }
 
-void initialize(void * arg)
+void setup()
 {
     printf("Wallpaper: Initializing...");
 

@@ -26,7 +26,7 @@
 
 #include "module-private.h"
 
-struct list_head modules;
+LIST_HEAD(modules);
 
 void * open_module(const char const * name)
 {
@@ -103,13 +103,13 @@ void load_module(const char const * name)
     /* Lookup the appropriate symbols */
     module->handle = module_handle;
     module->name = dlsym(module_handle, "name");
-    module->initialize = dlsym(module_handle, "initialize");
-    module->cleanup = dlsym(module_handle, "cleanup");
     module->configure = dlsym(module_handle, "configure");
+    module->setup = dlsym(module_handle, "setup");
+    module->cleanup = dlsym(module_handle, "cleanup");
 
     /* Make sure these symbols exist */
     assert(module->name);
-    assert(module->initialize);
+    assert(module->setup);
     assert(module->cleanup);
 
     printf("Loaded module: %s\n", module->name);
@@ -142,7 +142,7 @@ void configure_module(const char const * name, yaml_document_t * document)
     }
 }
 
-void initialize_modules()
+void setup_modules()
 {
     struct velox_module_entry * entry;
 
@@ -151,13 +151,8 @@ void initialize_modules()
     /* Call the initialize function for each module */
     list_for_each_entry(entry, &modules, head)
     {
-        entry->module->initialize();
+        entry->module->setup();
     }
-}
-
-void setup_modules()
-{
-    INIT_LIST_HEAD(&modules);
 }
 
 void cleanup_modules()

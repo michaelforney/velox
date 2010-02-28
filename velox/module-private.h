@@ -28,9 +28,9 @@ struct velox_module
 {
     void * handle;
     const char * name;
-    void (* initialize)();
-    void (* cleanup)();
     void (* configure)(yaml_document_t * document);
+    void (* setup)();
+    void (* cleanup)();
 };
 
 struct velox_module_entry
@@ -43,7 +43,6 @@ extern struct list_head modules;
 
 void load_module(const char * path);
 void configure_module(const char const * name, yaml_document_t * document);
-void initialize_modules();
 void setup_modules();
 void cleanup_modules();
 

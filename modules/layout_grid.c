@@ -35,7 +35,7 @@ const char const name[] = "layout_grid";
 
 void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
 
-void initialize()
+void setup()
 {
     struct velox_layout_state state;
 

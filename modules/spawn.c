@@ -112,7 +112,7 @@ void configure(yaml_document_t * document)
     printf("done\n");
 }
 
-bool initialize()
+bool setup()
 {
     printf("Spawn: Initializing...");
     printf("done\n");

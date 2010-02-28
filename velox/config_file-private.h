@@ -20,7 +20,7 @@
 #ifndef VELOX_CONFIG_FILE_PRIVATE_H
 #define VELOX_CONFIG_FILE_PRIVATE_H
 
-void parse_config();
+void load_config();
 
 #endif
 

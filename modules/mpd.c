@@ -80,7 +80,7 @@ void configure(yaml_document_t * document)
     printf("done\n    Host: %s\n    Port: %u\n    Timeout: %u\n", host, port, timeout);
 }
 
-bool initialize()
+bool setup()
 {
     printf("MPD: Initializing module...");
 

@@ -101,7 +101,7 @@ void configure(yaml_document_t * document)
     );
 }
 
-bool initialize()
+bool setup()
 {
     printf("Grid Layout: Initializing...");
 
