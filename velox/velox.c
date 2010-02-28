@@ -985,7 +985,7 @@ void cleanup()
     }
 }
 
-void die(const char const * message, ...)
+void __attribute__ ((noreturn)) die(const char const * message, ...)
 {
     va_list args;
 
@@ -1012,7 +1012,7 @@ int main(int argc, char ** argv)
     run();
     cleanup();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
