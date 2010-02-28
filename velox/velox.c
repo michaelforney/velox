@@ -690,7 +690,7 @@ void manage(xcb_window_t window_id)
 
     struct velox_window * window = NULL;
     struct velox_window_entry * window_entry;
-    struct velox_window * transient = NULL;
+    struct velox_window_entry * transient_entry = NULL;
     xcb_get_property_cookie_t transient_for_cookie;
     xcb_get_property_reply_t * transient_for_reply = NULL;
     xcb_get_geometry_cookie_t geometry_cookie;
@@ -717,7 +717,7 @@ void manage(xcb_window_t window_id)
     if (transient_for_reply->type == XCB_ATOM_WINDOW && transient_id)
     {
         DEBUG_PRINT("transient_id: %i\n", transient_id)
-        transient = lookup_window_entry(transient_id)->window;
+        transient_entry = lookup_window_entry(transient_id);
 
         window->floating = true;
     }
@@ -726,9 +726,9 @@ void manage(xcb_window_t window_id)
         window->floating = false;
     }
 
-    if (transient != NULL)
+    if (transient_entry != NULL)
     {
-        window->tag = transient->tag;
+        window->tag = transient_entry->window->tag;
     }
     else
     {
