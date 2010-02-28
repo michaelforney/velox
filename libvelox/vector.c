@@ -113,8 +113,11 @@ void velox_vector32_reverse(struct velox_vector32 * vector)
 
 void velox_vector32_delete(struct velox_vector32 * vector)
 {
-    free(vector->data);
-    free(vector);
+    if (vector != NULL)
+    {
+        free(vector->data);
+        free(vector);
+    }
 }
 
 void velox_vector32_clear(struct velox_vector32 * vector)
