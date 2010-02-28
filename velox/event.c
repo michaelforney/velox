@@ -208,17 +208,17 @@ static void configure_notify(xcb_configure_notify_event_t * event)
 
 static void configure_request(xcb_configure_request_event_t * event)
 {
+    struct velox_window_entry * entry;
+
     DEBUG_ENTER
 
-    struct velox_window * window = NULL;
-
-    window = lookup_window_entry(event->window)->window;
+    entry = lookup_window_entry(event->window);
 
     /* Case 1 of the ICCCM 4.1.5 */
-    if (window && !window->floating)
+    if (entry && !entry->window->floating)
     {
         DEBUG_PRINT("configure_request: case 1\n")
-        synthetic_configure(window);
+        synthetic_configure(entry->window);
     }
     /* Case 2 of the ICCCM 4.1.5 */
     else
