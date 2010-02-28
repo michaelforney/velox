@@ -33,7 +33,7 @@
 
 const char const name[] = "layout_grid";
 
-void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
+static void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
 
 void setup()
 {
@@ -52,7 +52,7 @@ void cleanup()
     printf("done\n");
 }
 
-void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state)
+static void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state)
 {
     /* For looping through the window list */
     struct velox_window_entry * entry;
