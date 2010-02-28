@@ -22,6 +22,8 @@
 
 #include <xcb/xcb.h>
 
+#include <velox/linux-list.h>
+
 struct velox_key
 {
     uint16_t modifiers;
@@ -30,10 +32,16 @@ struct velox_key
 
 struct velox_key_binding
 {
-    struct velox_key * key;
+    struct velox_key key;
     xcb_keycode_t keycode;
     void (* function)(void * arg);
     void * arg;
+};
+
+struct velox_key_binding_entry
+{
+    struct velox_key_binding * key_binding;
+    struct list_head head;
 };
 
 void add_key_binding(struct velox_key * key, void (* function)(void * arg), void * arg);

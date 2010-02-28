@@ -22,6 +22,9 @@
 
 void calculate_work_area(const struct velox_area * screen_area, struct velox_area * work_area);
 
+void setup_work_area_modifiers();
+void cleanup_work_area_modifiers();
+
 #endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

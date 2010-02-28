@@ -21,8 +21,15 @@
 #define VELOX_HOOK_H
 
 #include <velox/window.h>
+#include <velox/linux-list.h>
 
 typedef void (* velox_hook_t)(void * arg);
+
+struct velox_hook_entry
+{
+    velox_hook_t hook;
+    struct list_head head;
+};
 
 enum velox_hook_type
 {

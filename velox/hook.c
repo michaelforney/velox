@@ -30,14 +30,21 @@ const uint16_t velox_hook_types = 7;
 void handle_floating(struct velox_window * window);
 void handle_fullscreen(struct velox_window * window);
 
-struct velox_list * startup_hooks;
-struct velox_list * manage_hooks;
+struct list_head startup_hooks;
+struct list_head manage_hooks;
 
-struct velox_list ** hooks;
+struct list_head * hooks;
 
 void setup_hooks()
 {
-    hooks = (struct velox_list **) calloc(velox_hook_types, sizeof(struct velox_list *));
+    uint32_t index;
+
+    hooks = (struct list_head *) malloc(velox_hook_types * sizeof(struct list_head));
+
+    for (index = 0; index < velox_hook_types; ++index)
+    {
+        INIT_LIST_HEAD(&hooks[index]);
+    }
 
     // TODO: Should these be a part of some plugin instead?
     add_hook((velox_hook_t) &handle_floating, VELOX_HOOK_MANAGE_PRE);
@@ -50,9 +57,14 @@ void cleanup_hooks()
 
     if (hooks != NULL)
     {
+        struct list_head * pos, * n;
+
         for (index = 0; index < velox_hook_types; ++index)
         {
-            velox_list_delete(hooks[index], false);
+            list_for_each_safe(pos, n, &hooks[index])
+            {
+                free(list_entry(pos, struct velox_hook_entry, head));
+            }
         }
 
         free(hooks);
@@ -61,16 +73,20 @@ void cleanup_hooks()
 
 void add_hook(velox_hook_t hook, enum velox_hook_type type)
 {
-    hooks[type] = velox_list_insert(hooks[type], hook);
+    struct velox_hook_entry * entry;
+
+    entry = (struct velox_hook_entry *) malloc(sizeof(struct velox_hook_entry));
+    entry->hook = hook;
+    list_add(&entry->head, &hooks[type]);
 }
 
 void run_hooks(void * arg, enum velox_hook_type type)
 {
-    struct velox_list * iterator;
+    struct velox_hook_entry * entry;
 
-    for (iterator = hooks[type]; iterator != NULL; iterator = iterator->next)
+    list_for_each_entry(entry, &hooks[type], head)
     {
-        ((velox_hook_t) iterator->data)(arg);
+        entry->hook(arg);
     }
 }
 

@@ -26,7 +26,7 @@
 
 #include "module-private.h"
 
-struct velox_list * modules = NULL;
+struct list_head modules;
 
 void * open_module(const char const * name)
 {
@@ -90,6 +90,7 @@ void load_module(const char const * name)
 {
     void * module_handle;
     struct velox_module * module;
+    struct velox_module_entry * entry;
 
     /* Find and open a module from the search path for velox modules */
     module_handle = open_module(name);
@@ -113,28 +114,28 @@ void load_module(const char const * name)
 
     printf("Loaded module: %s\n", module->name);
 
+    entry = (struct velox_module_entry *) malloc(sizeof(struct velox_module_entry));
+    entry->module = module;
+
     /* Add the module to the list of modules */
-    modules = velox_list_insert(modules, module);
+    list_add(&entry->head, &modules);
 }
 
 void configure_module(const char const * name, yaml_document_t * document)
 {
-    struct velox_list * iterator = modules;
-    struct velox_module * module;
+    struct velox_module_entry * entry;
 
     /* Search through the list of loaded modules and configure the first one
      * that matches.
      *
      * FIXME: This could probably be more efficient */
-    for (iterator = modules; iterator != NULL; iterator = iterator->next)
+    list_for_each_entry(entry, &modules, head)
     {
-        module = (struct velox_module *) iterator->data;
-
-        if (strcmp(name, module->name) == 0)
+        if (strcmp(name, entry->module->name) == 0)
         {
-            if (module->configure)
+            if (entry->module->configure != NULL)
             {
-                module->configure(document);
+                entry->module->configure(document);
                 return;
             }
         }
@@ -143,34 +144,37 @@ void configure_module(const char const * name, yaml_document_t * document)
 
 void initialize_modules()
 {
-    struct velox_list * iterator;
+    struct velox_module_entry * entry;
 
     printf("\n** Initializing Modules **\n");
 
     /* Call the initialize function for each module */
-    for (iterator = modules; iterator != NULL; iterator = iterator->next)
+    list_for_each_entry(entry, &modules, head)
     {
-        ((struct velox_module *) iterator->data)->initialize();
+        entry->module->initialize();
     }
+}
+
+void setup_modules()
+{
+    INIT_LIST_HEAD(&modules);
 }
 
 void cleanup_modules()
 {
-    struct velox_module * module;
+    struct velox_module_entry * entry, * n;
 
     printf("\n** Cleaning Up Modules **\n");
 
     /* Call the cleanup function, then close and free each module */
-    while (modules)
+    list_for_each_entry_safe(entry, n, &modules, head)
     {
-        module = (struct velox_module *) modules->data;
-        module->cleanup();
+        entry->module->cleanup();
 
-        dlclose(module->handle);
+        dlclose(entry->module->handle);
 
-        free(module);
-
-        modules = velox_list_remove_first(modules);
+        free(entry->module);
+        free(entry);
     }
 }
 

@@ -40,6 +40,7 @@
 #include "keybinding.h"
 #include "config_file.h"
 #include "debug.h"
+#include "linux-list.h"
 
 #include "module-private.h"
 #include "config_file-private.h"
@@ -96,37 +97,22 @@ const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
 const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 
-void cleanup_windows()
+struct velox_window_entry * lookup_window_entry(xcb_window_t window_id)
 {
-    struct velox_tag * tag;
+    struct velox_tag_entry * tag_entry;
+    struct velox_window_entry * window_entry;
 
-    while (tags != NULL)
+    list_for_each_entry(tag_entry, &tags, head)
     {
-        tag = (struct velox_tag *) tags->data;
-        velox_loop_delete(tag->windows, true);
-        free(tag);
-
-        tags = velox_list_remove_first(tags);
-    }
-
-}
-
-struct velox_window * tags_lookup_window(xcb_window_t window_id)
-{
-    struct velox_list * iterator;
-    struct velox_tag * tag;
-    struct velox_window * window;
-
-    for (iterator = tags; iterator != NULL; iterator = iterator->next)
-    {
-        tag = (struct velox_tag *) iterator->data;
-        window = window_loop_lookup(tag->windows, window_id);
-
-        if (window != NULL)
+        list_for_each_entry(window_entry, &tag_entry->tag->tiled.windows, head)
         {
-            assert(window->tag == tag);
-            return window;
+            if (window_entry->window->window_id == window_id)
+            {
+                return window_entry;
+            }
         }
+
+        /* TODO: look through floated windows */
     }
 
     return NULL;
@@ -136,8 +122,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
     xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
     xcb_keysym_t * keysyms;
-    struct velox_list * iterator;
-    struct velox_key_binding * binding;
+    struct velox_key_binding_entry * entry;
     uint16_t keysym_index;
     uint16_t extra_modifier_index;
     uint16_t extra_modifiers[] = {
@@ -157,15 +142,13 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
     free(keyboard_mapping);
     keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
     keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
-    for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
+    list_for_each_entry(entry, &key_bindings, head)
     {
-        binding = (struct velox_key_binding *) iterator->data;
-
         for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
         {
-            if (keysyms[keysym_index] == binding->key->keysym)
+            if (keysyms[keysym_index] == entry->key_binding->key.keysym)
             {
-                binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
+                entry->key_binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
                 break;
             }
         }
@@ -173,8 +156,8 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
         for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
         {
             xcb_grab_key(c, true, root,
-                binding->key->modifiers | extra_modifiers[extra_modifier_index],
-                binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
+                entry->key_binding->key.modifiers | extra_modifiers[extra_modifier_index],
+                entry->key_binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
             );
         }
     }
@@ -290,13 +273,14 @@ void setup()
 
     free(atom_cookies);
 
-    setup_configured_keys();
+    setup_key_bindings();
+    setup_modules();
 
     parse_config();
 
     setup_layouts();
-    setup_key_bindings();
     setup_hooks();
+    setup_work_area_modifiers();
 
     initialize_modules();
 
@@ -305,7 +289,7 @@ void setup()
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
-    tag = (struct velox_tag *) tags->data;
+    tag = list_first_entry(&tags, struct velox_tag_entry, head)->tag;
 }
 
 void show_window(xcb_window_t window_id)
@@ -419,52 +403,49 @@ void focus(xcb_window_t window_id)
 
 void set_tag(uint8_t index)
 {
-    struct velox_list * tag_iterator;
+    struct velox_tag_entry * tag_entry;
     struct velox_tag * new_tag;
 
     DEBUG_ENTER
 
-    for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
-    new_tag = (struct velox_tag *) tag_iterator->data;
+    for (tag_entry = list_first_entry(&tags, struct velox_tag_entry, head);
+        &tag_entry->head != &tags && index > 1;
+        tag_entry = list_entry(tag_entry->head.next, struct velox_tag_entry, head), --index);
+
+    new_tag = tag_entry->tag;
 
     if (tag == new_tag) return; // Nothing to do...
     else
     {
+        struct velox_window_entry * window_entry;
         struct velox_loop * iterator;
         struct velox_window * window;
 
-        if (new_tag->windows)
+        /* Show the windows now visible */
+        list_for_each_entry(window_entry, &new_tag->tiled.windows, head)
         {
-            /* Show the windows now visible */
-            iterator = new_tag->windows;
-            do
-            {
-                show_window(((struct velox_window *) iterator->data)->window_id);
-                iterator = iterator->next;
-            } while (iterator != new_tag->windows);
+            show_window(window_entry->window->window_id);
         }
 
-        if (tag->windows)
+        /* Hide windows no longer visible */
+        list_for_each_entry(window_entry, &tag->tiled.windows, head)
         {
-            /* Hide windows no longer visible */
-            iterator = tag->windows;
-            do
-            {
-                hide_window(((struct velox_window *) iterator->data)->window_id);
-                iterator = iterator->next;
-            } while (iterator != tag->windows);
+            hide_window(window_entry->window->window_id);
         }
 
         tag = new_tag;
 
-        if (tag->windows)
+        /* TODO: check if tag has floating focus and behave accordingly */
+
+        if (list_empty(&tag->tiled.windows))
         {
-            assert(new_tag->focus != NULL);
-            focus(((struct velox_window *) new_tag->focus->data)->window_id);
+            focus(root);
         }
         else
         {
-            focus(root);
+            focus(list_entry(
+                    tag->tiled.focus, struct velox_window_entry, head
+                )->window->window_id);
         }
 
         arrange();
@@ -475,52 +456,50 @@ void set_tag(uint8_t index)
 
 void move_focus_to_tag(uint8_t index)
 {
-    struct velox_list * tag_iterator;
-    struct velox_tag * new_tag;
-
     DEBUG_ENTER
 
-    for (tag_iterator = tags; tag_iterator != NULL && index > 1; tag_iterator = tag_iterator->next, --index);
-    new_tag = (struct velox_tag *) tag_iterator->data;
-
-    if (tag->windows == NULL)
-    {
-        return;
-    }
+    if (list_empty(&tag->tiled.windows)) return;
     else
     {
-        struct velox_loop * next_focus;
+        struct velox_tag_entry * tag_entry;
+        struct velox_tag * new_tag;
+
+        struct list_head * next_focus;
         struct velox_window * window;
 
-        window = (struct velox_window *) tag->focus->data;
+        for (tag_entry = list_first_entry(&tags, struct velox_tag_entry, head);
+            &tag_entry->head != &tags && index > 1;
+            tag_entry = list_entry(tag_entry->head.next, struct velox_tag_entry, head), --index);
 
+        new_tag = tag_entry->tag;
+
+        window = list_entry(tag->tiled.focus, struct velox_window_entry, head)->window;
         window->tag = new_tag;
 
-        new_tag->windows = velox_loop_insert(new_tag->windows, tag->focus->data);
-
-        if (velox_loop_is_singleton(new_tag->windows))
+        /* Deal with special cases */
+        if (list_is_singular(&tag->tiled.windows))
         {
-            new_tag->focus = new_tag->windows;
-        }
-
-        /* If we removed the first element */
-        if (tag->focus == tag->windows)
-        {
-            tag->focus = velox_loop_remove(tag->focus);
-            tag->windows = tag->focus;
+            /* Set focus to the list head (no focus) */
+            next_focus = &tag->tiled.windows;
         }
         else
         {
-            tag->focus = velox_loop_remove(tag->focus);
+            next_focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
         }
 
-        if (tag->focus)
-        {
-            focus(((struct velox_window *) tag->focus->data)->window_id);
-        }
-        else
+        /* Remove the focus from the old list, and add it to the new list */
+        list_del(tag->tiled.focus);
+        list_add(tag->tiled.focus, &new_tag->tiled.windows);
+
+        tag->tiled.focus = next_focus;
+
+        if (list_empty(&tag->tiled.windows))
         {
             focus(root);
+        }
+        else
+        {
+            focus(list_entry(tag->tiled.focus, struct velox_window_entry, head)->window->window_id);
         }
 
         hide_window(window->window_id);
@@ -535,8 +514,8 @@ void next_layout()
 {
     DEBUG_ENTER
 
-    tag->layout = tag->layout->next;
-    tag->state = ((struct velox_layout *) tag->layout->data)->default_state;
+    tag->layout = list_actual_next(tag->layout, &tag->layouts);
+    tag->state = list_entry(tag->layout, struct velox_layout_entry, head)->layout->default_state;
 
     arrange();
 }
@@ -545,8 +524,8 @@ void previous_layout()
 {
     DEBUG_ENTER
 
-    tag->layout = tag->layout->previous;
-    tag->state = ((struct velox_layout *) tag->layout->data)->default_state;
+    tag->layout = list_actual_prev(tag->layout, &tag->layouts);
+    tag->state = list_entry(tag->layout, struct velox_layout_entry, head)->layout->default_state;
 
     arrange();
 }
@@ -555,56 +534,68 @@ void focus_next()
 {
     DEBUG_ENTER
 
-    if (tag->focus == NULL)
-    {
-        return;
-    }
+    if (list_empty(&tag->tiled.windows)) return;
 
-    tag->focus = tag->focus->next;
+    tag->tiled.focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
 
-    focus(((struct velox_window *) tag->focus->data)->window_id);
+    focus(list_entry(
+            tag->tiled.focus, struct velox_window_entry, head
+        )->window->window_id);
 }
 
 void focus_previous()
 {
     DEBUG_ENTER
 
-    if (tag->focus == NULL)
-    {
-        return;
-    }
+    if (list_empty(&tag->tiled.windows)) return;
 
-    tag->focus = tag->focus->previous;
+    tag->tiled.focus = list_actual_prev(tag->tiled.focus, &tag->tiled.windows);
 
-    focus(((struct velox_window *) tag->focus->data)->window_id);
+    focus(list_entry(
+            tag->tiled.focus, struct velox_window_entry, head
+        )->window->window_id);
 }
 
 void move_next()
 {
+    struct velox_window_entry * first, * second;
+    struct velox_window * first_window;
+
     DEBUG_ENTER
 
-    if (tag->focus == NULL)
-    {
-        return;
-    }
+    if (list_empty(&tag->tiled.windows)) return;
 
-    velox_loop_swap(tag->focus, tag->focus->next);
-    tag->focus = tag->focus->next;
+    first = list_entry(tag->tiled.focus, struct velox_window_entry, head);
+    second = list_entry(list_actual_next(tag->tiled.focus, &tag->tiled.windows), struct velox_window_entry, head);
+
+    /* Swap the two windows */
+    first_window = first->window;
+    first->window = second->window;
+    second->window = first_window;
+
+    tag->tiled.focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
 
     arrange();
 }
 
 void move_previous()
 {
+    struct velox_window_entry * first, * second;
+    struct velox_window * first_window;
+
     DEBUG_ENTER
 
-    if (tag->focus == NULL)
-    {
-        return;
-    }
+    if (list_empty(&tag->tiled.windows)) return;
 
-    velox_loop_swap(tag->focus, tag->focus->previous);
-    tag->focus = tag->focus->previous;
+    first = list_entry(tag->tiled.focus, struct velox_window_entry, head);
+    second = list_entry(list_actual_prev(tag->tiled.focus, &tag->tiled.windows), struct velox_window_entry, head);
+
+    /* Swap the two windows */
+    first_window = first->window;
+    first->window = second->window;
+    second->window = first_window;
+
+    tag->tiled.focus = list_actual_prev(tag->tiled.focus, &tag->tiled.windows);
 
     arrange();
 }
@@ -646,12 +637,14 @@ void arrange()
 {
     DEBUG_ENTER
 
-    if (tag->windows == NULL) return;
+    if (list_empty(&tag->tiled.windows)) return;
 
-    assert(tag->layout->data != NULL);
+    assert(!list_empty(&tag->layouts));
 
     calculate_work_area(&screen_area, &work_area);
-    ((struct velox_layout *) tag->layout->data)->arrange(&work_area, tag->windows, &tag->state);
+    list_entry(
+        tag->layout, struct velox_layout_entry, head
+    )->layout->arrange(&work_area, &tag->tiled.windows, &tag->state);
 
     clear_event_type = XCB_ENTER_NOTIFY;
 }
@@ -682,6 +675,7 @@ void manage(xcb_window_t window_id)
     DEBUG_ENTER
 
     struct velox_window * window = NULL;
+    struct velox_window_entry * window_entry;
     struct velox_window * transient = NULL;
     xcb_get_property_cookie_t transient_for_cookie;
     xcb_get_property_reply_t * transient_for_reply = NULL;
@@ -697,8 +691,10 @@ void manage(xcb_window_t window_id)
 
     window = (struct velox_window *) malloc(sizeof(struct velox_window));
     DEBUG_PRINT("allocated window: %i\n", (uint32_t) window)
-
     window->window_id = window_id;
+
+    window_entry = (struct velox_window_entry *) malloc(sizeof(struct velox_window_entry));
+    window_entry->window = window;
 
     transient_for_reply = xcb_get_property_reply(c, transient_for_cookie, NULL);
     transient_id = *((xcb_window_t *) xcb_get_property_value(transient_for_reply));
@@ -706,7 +702,7 @@ void manage(xcb_window_t window_id)
     if (transient_for_reply->type == XCB_ATOM_WINDOW && transient_id)
     {
         DEBUG_PRINT("transient_id: %i\n", transient_id)
-        transient = tags_lookup_window(transient_id);
+        transient = lookup_window_entry(transient_id)->window;
 
         window->floating = true;
     }
@@ -759,11 +755,11 @@ void manage(xcb_window_t window_id)
 
     synthetic_configure(window);
 
+    list_add(&window_entry->head, &window->tag->tiled.windows);
+    window->tag->tiled.focus = window->tag->tiled.windows.next;
+
     if (tag == window->tag)
     {
-        tag->windows = velox_loop_insert(tag->windows, window)->previous;
-        tag->focus = tag->windows;
-
         arrange();
 
         xcb_map_window(c, window->window_id);
@@ -776,68 +772,43 @@ void manage(xcb_window_t window_id)
 
         run_hooks(window, VELOX_HOOK_MANAGE_POST);
     }
-    else
-    {
-        window->tag->windows = velox_loop_insert(window->tag->windows, window)->previous;
-        window->tag->focus = window->tag->windows;
-    }
 }
 
-void unmanage(struct velox_window * window)
+void unmanage(struct velox_window_entry * entry)
 {
-    struct velox_loop * iterator;
-
-    iterator = window->tag->windows;
-    if (iterator == NULL) return;
-    do
+    /* Deal with special cases */
+    if (list_is_singular(&entry->window->tag->tiled.windows))
     {
-        if (iterator->data == window)
+        /* Set focus to the list head (no focus) */
+        entry->window->tag->tiled.focus = &entry->window->tag->tiled.windows;
+    }
+    else if (&entry->head == entry->window->tag->tiled.focus)
+    {
+        entry->window->tag->tiled.focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
+    }
+
+    list_del(&entry->head);
+
+    if (tag == entry->window->tag)
+    {
+        if (list_empty(&tag->tiled.windows))
         {
-            if (iterator == window->tag->focus)
-            {
-                if (velox_loop_is_singleton(window->tag->windows))
-                {
-                    window->tag->focus = NULL;
-                }
-                else
-                {
-                    window->tag->focus = window->tag->focus->next;
-                }
-            }
-
-            if (iterator == window->tag->windows)
-            {
-                iterator = velox_loop_remove(iterator);
-                window->tag->windows = iterator;
-            }
-            else
-            {
-                iterator = velox_loop_remove(iterator);
-            }
-
-            if (tag == window->tag)
-            {
-                if (tag->focus)
-                {
-                    focus(((struct velox_window *) tag->focus->data)->window_id);
-                }
-                else
-                {
-                    focus(root);
-                }
-
-                arrange();
-            }
-
-            run_hooks(window, VELOX_HOOK_UNMANAGE);
-
-            free(window);
-
-            return;
+            focus(root);
+        }
+        else
+        {
+            focus(list_entry(
+                    entry->window->tag->tiled.focus, struct velox_window_entry, head
+                )->window->window_id);
         }
 
-        iterator = iterator->next;
-    } while (iterator != window->tag->windows);
+        arrange();
+    }
+
+    run_hooks(entry->window, VELOX_HOOK_UNMANAGE);
+
+    free(entry->window);
+    free(entry);
 }
 
 void manage_existing_windows()
@@ -971,9 +942,9 @@ void cleanup()
     cleanup_ewmh();
     cleanup_modules();
     cleanup_key_bindings();
-    cleanup_windows();
     cleanup_tags();
     cleanup_layouts();
+    cleanup_work_area_modifiers();
     cleanup_hooks();
 
     /* X cursors */

@@ -22,9 +22,9 @@
 
 #include <xcb/xcb.h>
 
-#include <libvelox/list.h>
+#include "linux-list.h"
 
-extern struct velox_list * key_bindings;
+extern struct list_head key_bindings;
 
 void setup_configured_keys();
 

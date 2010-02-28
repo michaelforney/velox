@@ -22,7 +22,7 @@
 
 #include <yaml.h>
 
-#include <libvelox/list.h>
+#include "linux-list.h"
 
 struct velox_module
 {
@@ -33,11 +33,18 @@ struct velox_module
     void (* configure)(yaml_document_t * document);
 };
 
-extern struct velox_list * modules;
+struct velox_module_entry
+{
+    struct velox_module * module;
+    struct list_head head;
+};
+
+extern struct list_head modules;
 
 void load_module(const char * path);
 void configure_module(const char const * name, yaml_document_t * document);
 void initialize_modules();
+void setup_modules();
 void cleanup_modules();
 
 #endif

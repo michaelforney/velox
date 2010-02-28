@@ -41,25 +41,22 @@
 static void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
-    struct velox_list * iterator;
-    struct velox_key_binding * binding;
+    struct velox_key_binding_entry * entry;
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
     DEBUG_PRINT("keysym: %x\n", keysym)
     DEBUG_PRINT("modifiers: %i\n", event->state)
 
-    for (iterator = key_bindings; iterator != NULL; iterator = iterator->next)
+    list_for_each_entry(entry, &key_bindings, head)
     {
-        binding = (struct velox_key_binding *) iterator->data;
-
-        if (keysym == binding->key->keysym &&
-            ((binding->key->modifiers == XCB_MOD_MASK_ANY) ||
-            (CLEAN_MASK(event->state) == binding->key->modifiers)))
+        if (keysym == entry->key_binding->key.keysym &&
+            ((entry->key_binding->key.modifiers == XCB_MOD_MASK_ANY) ||
+            (CLEAN_MASK(event->state) == entry->key_binding->key.modifiers)))
         {
-            if (binding->function != NULL)
+            if (entry->key_binding->function != NULL)
             {
-                binding->function(binding->arg);
+                entry->key_binding->function(entry->key_binding->arg);
             }
         }
     }
@@ -78,22 +75,29 @@ static void enter_notify(xcb_enter_notify_event_t * event)
     if (event->event == root) focus(root);
     else
     {
-        struct velox_loop * element;
+        struct velox_window_entry * entry;
+        struct velox_window * window;
 
-        element = window_loop_locate(tag->windows, event->event);
+        window = NULL;
 
-        if (element != NULL)
+        list_for_each_entry(entry, &tag->tiled.windows, head)
         {
-            struct velox_window * window;
+            if (entry->window->window_id == event->event)
+            {
+                window = entry->window;
+                break;
+            }
+        }
 
-            window = (struct velox_window *) element->data;
+        if (window != NULL)
+        {
             DEBUG_PRINT("mode: %i\n", event->mode)
             DEBUG_PRINT("detail: %i\n", event->detail)
 
             if (event->mode == XCB_NOTIFY_MODE_NORMAL && event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
             {
                 focus(window->window_id);
-                window->tag->focus = element;
+                window->tag->tiled.focus = &entry->head;
             }
         }
     }
@@ -106,21 +110,22 @@ static void leave_notify(xcb_leave_notify_event_t * event)
 
 static void destroy_notify(xcb_destroy_notify_event_t * event)
 {
-    struct velox_window * window;
+    struct velox_window_entry * entry;
 
     DEBUG_ENTER
     DEBUG_PRINT("window_id: %i\n", event->window)
 
-    window = tags_lookup_window(event->window);
+    entry = lookup_window_entry(event->window);
 
-    if (window != NULL)
+    if (entry != NULL)
     {
-        unmanage(window);
+        unmanage(entry);
     }
 }
 
 static void unmap_notify(xcb_unmap_notify_event_t * event)
 {
+    struct velox_window_entry * entry;
     struct velox_window * window;
 
     DEBUG_ENTER
@@ -132,7 +137,16 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
         return;
     }
 
-    window = window_loop_lookup(tag->windows, event->window);
+    window = NULL;
+
+    list_for_each_entry(entry, &tag->tiled.windows, head)
+    {
+        if (entry->window->window_id == event->window)
+        {
+            window = entry->window;
+            break;
+        }
+    }
 
     if (window != NULL)
     {
@@ -146,7 +160,7 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
         property_values[1] = 0;
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
-        unmanage(window);
+        unmanage(entry);
 
         xcb_flush(c);
 
@@ -156,7 +170,7 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
 
 static void map_request(xcb_map_request_event_t * event)
 {
-    struct velox_window * maybe_window;
+    struct velox_window_entry * maybe_entry;
     xcb_get_window_attributes_cookie_t window_attributes_cookie;
     xcb_get_window_attributes_reply_t * window_attributes;
 
@@ -164,13 +178,13 @@ static void map_request(xcb_map_request_event_t * event)
 
     window_attributes_cookie = xcb_get_window_attributes(c, event->window);
 
-    maybe_window = tags_lookup_window(event->window);
+    maybe_entry = lookup_window_entry(event->window);
 
     window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
 
     if (window_attributes)
     {
-        if (!maybe_window && !window_attributes->override_redirect)
+        if (!maybe_entry && !window_attributes->override_redirect)
         {
             manage(event->window);
         }
@@ -198,7 +212,7 @@ static void configure_request(xcb_configure_request_event_t * event)
 
     struct velox_window * window = NULL;
 
-    window = tags_lookup_window(event->window);
+    window = lookup_window_entry(event->window)->window;
 
     /* Case 1 of the ICCCM 4.1.5 */
     if (window && !window->floating)

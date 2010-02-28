@@ -171,22 +171,15 @@ void remove_client_hook(struct velox_window * window)
 
 void update_clients_hook(struct velox_tag * tag)
 {
+    struct velox_window_entry * entry;
+
     DEBUG_ENTER
 
     velox_vector32_clear(client_list);
 
-    if (tag->windows != NULL)
+    list_for_each_entry(entry, &tag->tiled.windows, head)
     {
-        struct velox_loop * iterator;
-
-        iterator = tag->windows;
-        do
-        {
-            velox_vector32_append(client_list,
-                ((struct velox_window *) iterator->data)->window_id);
-
-            iterator = iterator->next;
-        } while (iterator != tag->windows);
+        velox_vector32_append(client_list, entry->window->window_id);
     }
 
     update_client_list();
@@ -215,14 +208,26 @@ void ewmh_handle_client_message(xcb_client_message_event_t * event)
 
     if (event->type == ewmh->_NET_ACTIVE_WINDOW)
     {
+        struct list_head * old_focus;
+
         DEBUG_PRINT("window: 0x%x\n", event->data.data32[0])
+
+        old_focus = tag->tiled.focus;
+
         /* Assume the client message is valid */
-        while (((struct velox_window *) tag->focus->data)->window_id != event->window)
+        for (tag->tiled.focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
+            tag->tiled.focus != old_focus;
+            tag->tiled.focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows))
         {
-            tag->focus = tag->focus->next;
+            if (list_entry(
+                    tag->tiled.focus, struct velox_window_entry, head
+                )->window->window_id == event->window)
+            {
+                break;
+            }
         }
 
-        focus(((struct velox_window *) tag->focus->data)->window_id);
+        focus(list_entry(tag->tiled.focus, struct velox_window_entry, head)->window->window_id);
     }
 }
 

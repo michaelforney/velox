@@ -29,10 +29,10 @@ extern uint16_t pending_unmaps;
 extern const uint16_t mod_mask_numlock;
 
 void manage(xcb_window_t window_id);
-void unmanage(struct velox_window * window);
+void unmanage(struct velox_window_entry * entry);
 void focus(xcb_window_t window_id);
 void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
-struct velox_window * tags_lookup_window(xcb_window_t window_id);
+struct velox_window_entry * lookup_window_entry(xcb_window_t window_id);
 
 #endif
 

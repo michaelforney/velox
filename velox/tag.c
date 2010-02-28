@@ -21,75 +21,87 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libvelox/list.h>
-
 #include "tag.h"
 #include "velox.h"
+#include "linux-list.h"
 
 #include "layout-private.h"
 
-struct velox_list * tags;
+struct list_head tags;
 
 uint8_t tag_count;
 
-void add_tag(const char * name, struct velox_loop * layouts)
+void add_tag(const char * name, const char * layout_names[])
 {
     struct velox_tag * tag;
+    struct velox_tag_entry * entry;
+    struct velox_layout_entry * layout_entry;
 
     /* Allocate a new tag, then set its attributes */
     tag = (struct velox_tag *) malloc(sizeof(struct velox_tag));
-    memset(tag, 0, sizeof(struct velox_tag));
 
     /* Might be needed with windows on multiple tags at once */
     // tag->id = 1 << tag_count++;
     tag->name = strdup(name);
-    tag->layout = layouts;
-    tag->state = ((struct velox_layout *) layouts->data)->default_state;
+    INIT_LIST_HEAD(&tag->tiled.windows);
+    tag->tiled.focus = &tag->tiled.windows;
+
+    INIT_LIST_HEAD(&tag->layouts);
+    for (; *layout_names != NULL; ++layout_names)
+    {
+        layout_entry = (struct velox_layout_entry *) malloc(sizeof(struct velox_layout_entry));
+        layout_entry->layout = velox_hashtable_lookup(layouts, *layout_names);
+        list_add_tail(&layout_entry->head, &tag->layouts);
+    }
+
+    tag->layout = tag->layouts.next;
+    tag->state = list_entry(tag->layout, struct velox_layout_entry, head)->layout->default_state;
 
     /* Add the tag to the list of tags */
-    tags = velox_list_insert(tags, tag);
+    entry = (struct velox_tag_entry *) malloc(sizeof(struct velox_tag));
+    entry->tag = tag;
+
+    list_add_tail(&entry->head, &tags);
 }
 
 void setup_tags()
 {
     struct velox_tag * tag;
-    struct velox_loop * default_layouts;
+    const char * default_layouts[] = {
+        "tile",
+        "grid",
+        NULL
+    };
+    struct velox_layout_entry * entry;
 
-    tags = NULL;
+    INIT_LIST_HEAD(&tags);
     tag_count = 0;
 
     /* TODO: Make this configurable */
 
-    default_layouts = NULL;
-    default_layouts = velox_loop_insert(default_layouts, velox_hashtable_lookup(layouts, "tile"));
-    default_layouts = velox_loop_insert(default_layouts, velox_hashtable_lookup(layouts, "grid"));
-
-    add_tag("term",     velox_loop_copy(default_layouts));
-    add_tag("www",      velox_loop_copy(default_layouts));
-    add_tag("irc",      velox_loop_copy(default_layouts));
-    add_tag("im",       velox_loop_copy(default_layouts));
-    add_tag("code",     velox_loop_copy(default_layouts));
-    add_tag("mail",     velox_loop_copy(default_layouts));
-    add_tag("gfx",      velox_loop_copy(default_layouts));
-    add_tag("music",    velox_loop_copy(default_layouts));
-    add_tag("misc",     velox_loop_copy(default_layouts));
-
-    velox_loop_delete(default_layouts, false);
-
-    tags = velox_list_reverse(tags);
+    add_tag("term",     default_layouts);
+    add_tag("www",      default_layouts);
+    add_tag("irc",      default_layouts);
+    add_tag("im",       default_layouts);
+    add_tag("code",     default_layouts);
+    add_tag("mail",     default_layouts);
+    add_tag("gfx",      default_layouts);
+    add_tag("music",    default_layouts);
+    add_tag("misc",     default_layouts);
 }
 
 void cleanup_tags()
 {
-    while (tags != NULL)
-    {
-        /* Delete the layout loop structure, without freeing the data. We let
-         * the layout cleanup function do this */
-        velox_loop_delete(((struct velox_tag *) tags->data)->layout, false);
+    struct velox_tag_entry * tag_entry;
+    struct velox_window_entry * window_entry, * n;
 
-        /* Free the tag, then remove it from the list */
-        free(tags->data);
-        tags = velox_list_remove_first(tags);
+    list_for_each_entry(tag_entry, &tags, head)
+    {
+        list_for_each_entry_safe(window_entry, n, &tag_entry->tag->tiled.windows, head)
+        {
+            free(window_entry->window);
+            free(window_entry);
+        }
     }
 }
 

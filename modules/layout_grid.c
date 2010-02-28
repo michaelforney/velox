@@ -33,7 +33,7 @@
 
 const char const name[] = "layout_grid";
 
-void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state);
+void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
 
 void initialize()
 {
@@ -52,11 +52,10 @@ void cleanup()
     printf("done\n");
 }
 
-void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct velox_layout_state * generic_state)
+void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state)
 {
     /* For looping through the window list */
-    struct velox_window * window = NULL;
-    struct velox_loop * iterator = NULL;
+    struct velox_window_entry * entry;
 
     /* Window counts */
     uint16_t window_count = 0;
@@ -76,21 +75,19 @@ void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct 
 
     DEBUG_ENTER
 
-    if (windows == NULL) return;
+    if (list_empty(windows)) return;
 
     /* Calculate number of windows */
-    iterator = windows;
-    do
+    list_for_each_entry(entry, windows, head)
     {
-        if (!((struct velox_window *) iterator->data)->floating) window_count++;
-
-        iterator = iterator->next;
-    } while (iterator != windows);
+        if (!entry->window->floating) window_count++;
+    }
 
     /* FIXME: Is this the best column count to use? */
     column_count = round(sqrt(window_count));
 
     /* Arrange the windows */
+    entry = list_entry(windows->next, struct velox_window_entry, head);
     for (index = 0, column_index = 0; index < window_count; ++column_index)
     {
         velox_area_split_horizontally(area, column_count, column_index, &column_area);
@@ -98,15 +95,14 @@ void grid_arrange(struct velox_area * area, struct velox_loop * windows, struct 
         if (column_index >= window_count % column_count) row_count = window_count / column_count;
         else row_count = window_count / column_count + 1;
 
-        for (row_index = 0; row_index < row_count; ++row_index, iterator = iterator->next)
+        for (row_index = 0; row_index < row_count;
+            ++row_index, entry = list_entry(entry->head.next, struct velox_window_entry, head))
         {
-            window = (struct velox_window *) iterator->data;
-
-            if (window->floating) continue;
+            if (entry->window->floating) continue;
 
             velox_area_split_vertically(&column_area, row_count, row_index, &window_area);
-            window_set_geometry(window, &window_area);
-            arrange_window(window);
+            window_set_geometry(entry->window, &window_area);
+            arrange_window(entry->window);
 
             ++index;
         }

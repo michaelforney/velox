@@ -36,10 +36,16 @@
 
 #define STRING_SYMBOL(name) #name, &name
 
+struct key_list
+{
+    struct velox_key * keys;
+    uint32_t length;
+};
+
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
 struct velox_hashtable * configured_keys = NULL;
-struct velox_list * key_bindings = NULL;
+struct list_head key_bindings;
 
 uint16_t modifier_value(const char * name)
 {
@@ -60,8 +66,7 @@ void setup_configured_keys()
 {
     FILE * file;
     char identifier[256];
-    struct velox_key * key;
-    struct velox_list * keys;
+    struct key_list * key_list;
 
     yaml_parser_t parser;
     yaml_document_t document;
@@ -109,22 +114,31 @@ void setup_configured_keys()
                 yaml_node_item_t * mapping_item;
                 yaml_node_t * mapping_node;
 
+                uint32_t key_index;
+
                 set_key = yaml_document_get_node(&document, set_pair->key);
                 set_value = yaml_document_get_node(&document, set_pair->value);
 
                 assert(set_key->type == YAML_SCALAR_NODE);
                 assert(set_value->type == YAML_SEQUENCE_NODE);
 
-                keys = NULL;
+                key_list = (struct key_list *) malloc(sizeof(struct key_list));
+                key_list->keys = (struct velox_key *) malloc(
+                    (set_value->data.sequence.items.top -
+                        set_value->data.sequence.items.start)
+                    * sizeof(struct velox_key));
+                key_list->length = set_value->data.sequence.items.top -
+                    set_value->data.sequence.items.start;
+
                 snprintf(identifier, sizeof(identifier), "%s:%s",
                     root_key->data.scalar.value,
                     set_key->data.scalar.value
                 );
 
                 /* For each key mapping */
-                for (mapping_item = set_value->data.sequence.items.start;
+                for (mapping_item = set_value->data.sequence.items.start, key_index = 0;
                     mapping_item < set_value->data.sequence.items.top;
-                    ++mapping_item)
+                    ++mapping_item, ++key_index)
                 {
                     yaml_node_pair_t * key_pair;
                     yaml_node_t * key_key, * key_value;
@@ -132,8 +146,6 @@ void setup_configured_keys()
                     mapping_node = yaml_document_get_node(&document, *mapping_item);
 
                     assert(mapping_node->type == YAML_MAPPING_NODE);
-
-                    key = (struct velox_key *) malloc(sizeof(struct velox_key));
 
                     /* Identify key */
                     for (key_pair = mapping_node->data.mapping.pairs.start;
@@ -150,7 +162,7 @@ void setup_configured_keys()
                             yaml_node_item_t * mod_item;
                             yaml_node_t * mod_node;
 
-                            key->modifiers = 0;
+                            key_list->keys[key_index].modifiers = 0;
 
                             assert(key_value->type == YAML_SEQUENCE_NODE);
 
@@ -160,22 +172,24 @@ void setup_configured_keys()
                             {
                                 mod_node = yaml_document_get_node(&document, *mod_item);
                                 assert(mod_node->type == YAML_SCALAR_NODE);
-                                key->modifiers |= modifier_value((const char const *) mod_node->data.scalar.value);
+                                key_list->keys[key_index].modifiers |= modifier_value(
+                                    (const char const *) mod_node->data.scalar.value);
                             }
                         }
                         else if (strcmp((const char const *) key_key->data.scalar.value, "key") == 0)
                         {
                             assert(key_value->type == YAML_SCALAR_NODE);
-                            key->keysym = XStringToKeysym((const char const *) key_value->data.scalar.value);
+                            key_list->keys[key_index].keysym = XStringToKeysym((const char const *) key_value->data.scalar.value);
                         }
                     }
 
-                    printf("%s (modifiers: %i, keysym: %x)\n", identifier, key->modifiers, key->keysym);
-                    keys = velox_list_insert(keys, key);
+                    printf("%s (modifiers: %i, keysym: %x)\n",
+                        identifier, key_list->keys[key_index].modifiers,
+                        key_list->keys[key_index].keysym);
                 }
 
                 assert(!velox_hashtable_exists(configured_keys, identifier));
-                velox_hashtable_insert(configured_keys, identifier, keys);
+                velox_hashtable_insert(configured_keys, identifier, key_list);
             }
         }
 
@@ -192,6 +206,10 @@ void setup_configured_keys()
 
 void setup_key_bindings()
 {
+    INIT_LIST_HEAD(&key_bindings);
+
+    setup_configured_keys();
+
     /* Window focus */
     add_configured_key_binding("velox", STRING_SYMBOL(focus_next), NULL);
     add_configured_key_binding("velox", STRING_SYMBOL(focus_previous), NULL);
@@ -222,27 +240,37 @@ void setup_key_bindings()
 
 void cleanup_key_bindings()
 {
-    key_bindings = velox_list_delete(key_bindings, true);
+    struct velox_key_binding_entry * entry, * n;
+
+    list_for_each_entry_safe(entry, n, &key_bindings, head)
+    {
+        free(entry->key_binding);
+        free(entry);
+    }
 }
 
 void add_key_binding(struct velox_key * key, void (* function)(void * arg), void * arg)
 {
     struct velox_key_binding * binding;
+    struct velox_key_binding_entry * entry;
 
     /* Allocate a new key binding and set its values */
     binding = (struct velox_key_binding *) malloc(sizeof(struct velox_key_binding));
-    binding->key = key;
+    binding->key = *key;
     binding->keycode = 0;
     binding->function = function;
     binding->arg = arg;
 
-    key_bindings = velox_list_insert(key_bindings, binding);
+    entry = (struct velox_key_binding_entry *) malloc(sizeof(struct velox_key_binding_entry));
+    entry->key_binding = binding;
+
+    list_add(&entry->head, &key_bindings);
 }
 
 void add_configured_key_binding(const char * group, const char * name, void (* function)(void * arg), void * arg)
 {
-    struct velox_list * keys;
-    struct velox_list * iterator;
+    struct key_list * key_list;
+    uint32_t key_index;
     char identifier[strlen(group) + strlen(name) + 1];
 
     if (configured_keys == NULL)
@@ -254,13 +282,13 @@ void add_configured_key_binding(const char * group, const char * name, void (* f
 
     /* Lookup the list of keys associated with that binding in the
      * configured_keys table */
-    keys = velox_hashtable_lookup(configured_keys, identifier);
+    key_list = velox_hashtable_lookup(configured_keys, identifier);
 
-    assert(keys);
+    assert(key_list);
 
-    for (iterator = keys; iterator != NULL; iterator = iterator->next)
+    for (key_index = 0; key_index < key_list->length; ++key_index)
     {
-        add_key_binding((struct velox_key *) iterator->data, function, arg);
+        add_key_binding(&key_list->keys[key_index], function, arg);
     }
 }
 

@@ -22,7 +22,6 @@
 
 #include <stdint.h>
 
-#include <libvelox/loop.h>
 #include <libvelox/hashtable.h>
 #include <libvelox/area.h>
 
@@ -35,7 +34,7 @@ struct velox_layout_state
 
 typedef void (* velox_arrange_t)(
     struct velox_area * area,
-    struct velox_loop * list,
+    struct list_head * windows,
     struct velox_layout_state * state
 );
 
@@ -44,6 +43,12 @@ struct velox_layout
     const char * identifier;
     velox_arrange_t arrange;
     struct velox_layout_state default_state;
+};
+
+struct velox_layout_entry
+{
+    struct velox_layout * layout;
+    struct list_head head;
 };
 
 void add_layout(const char const * identifier, velox_arrange_t arrange, struct velox_layout_state * default_state);

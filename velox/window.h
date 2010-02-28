@@ -24,9 +24,9 @@
 
 #include <xcb/xcb.h>
 
-#include <libvelox/list.h>
-#include <libvelox/loop.h>
 #include <libvelox/area.h>
+
+#include <velox/linux-list.h>
 
 struct velox_window
 {
@@ -44,11 +44,11 @@ struct velox_window
     bool floating;
 };
 
-struct velox_window * window_list_lookup(struct velox_list * list, xcb_window_t window_id);
-struct velox_list * window_list_delete(struct velox_list * list, xcb_window_t window_id);
-
-struct velox_window * window_loop_lookup(struct velox_loop * loop, xcb_window_t window_id);
-struct velox_loop * window_loop_locate(struct velox_loop * loop, xcb_window_t window_id);
+struct velox_window_entry
+{
+    struct velox_window * window;
+    struct list_head head;
+};
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
 

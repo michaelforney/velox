@@ -22,8 +22,9 @@
 
 #include <xcb/xcb.h>
 
-#include <libvelox/loop.h>
 #include <velox/layout.h>
+
+#include "linux-list.h"
 
 struct velox_tag
 {
@@ -31,15 +32,33 @@ struct velox_tag
     // uint64_t id;
     const char * name;
 
-    struct velox_loop * windows;
+    struct
+    {
+        struct list_head windows;
+        struct list_head * focus;
+    } tiled;
 
-    struct velox_loop * focus;
+    struct
+    {
+        struct velox_window * top;
+        struct list_head windows;
+        struct list_head * next_focus;
+    } floated;
 
-    struct velox_loop * layout;
+    bool floater_focus;
+
+    struct list_head layouts;
+    struct list_head * layout;
     struct velox_layout_state state;
 };
 
-extern struct velox_list * tags;
+struct velox_tag_entry
+{
+    struct velox_tag * tag;
+    struct list_head head;
+};
+
+extern struct list_head tags;
 
 void setup_tags();
 void cleanup_tags();
