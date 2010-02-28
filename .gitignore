@@ -1,3 +1,5 @@
-build/*
+build
+dist
 .*.swp
 tags
+velox.session
