@@ -23,27 +23,27 @@
 #include <unistd.h>
 #include <xcb/xcb_ewmh.h>
 
-#include <libvelox/vector.h>
-
 #include "velox.h"
 #include "work_area.h"
 #include "hook.h"
 #include "debug.h"
+#include "vector.h"
 
 #include "ewmh-private.h"
 
 xcb_ewmh_connection_t * ewmh;
 
-struct velox_vector32 * client_list;
+DEFINE_VECTOR(window_vector, xcb_window_t);
+VECTOR(window_vector, client_list);
 
 void update_client_list()
 {
     DEBUG_ENTER
 
-    if (client_list->size == 0) xcb_ewmh_set_client_list(ewmh, 0, 0, NULL);
+    if (client_list.size == 0) xcb_ewmh_set_client_list(ewmh, 0, 0, NULL);
     else
     {
-        xcb_ewmh_set_client_list(ewmh, 0, client_list->size, (xcb_window_t *) client_list->data);
+        xcb_ewmh_set_client_list(ewmh, 0, client_list.size, client_list.data);
     }
 }
 
@@ -154,18 +154,27 @@ void add_client_hook(struct velox_window * window)
 {
     DEBUG_ENTER
 
-    velox_vector32_append(client_list, window->window_id);
+    vector_append(&client_list, window->window_id);
 
     update_client_list();
 }
 
 void remove_client_hook(struct velox_window * window)
 {
+    xcb_window_t * window_id;
+
     DEBUG_ENTER
 
     DEBUG_PRINT("window_id: 0x%x\n", window->window_id)
 
-    velox_vector32_remove(client_list, window->window_id);
+    vector_for_each(&client_list, window_id)
+    {
+        if (*window_id == window->window_id)
+        {
+            vector_remove_at(&client_list, window_id);
+            break;
+        }
+    }
 
     update_client_list();
 }
@@ -176,11 +185,11 @@ void update_clients_hook(struct velox_tag * tag)
 
     DEBUG_ENTER
 
-    velox_vector32_clear(client_list);
+    vector_clear(&client_list);
 
     list_for_each_entry(entry, &tag->tiled.windows, head)
     {
-        velox_vector32_append(client_list, entry->window->window_id);
+        vector_append(&client_list, entry->window->window_id);
     }
 
     update_client_list();
@@ -291,7 +300,7 @@ void setup_ewmh()
 
     supporting_wm();
 
-    client_list = velox_vector32_create(25);
+    vector_initialize(&client_list, 32);
 
     /* Trivial properties */
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
@@ -312,6 +321,6 @@ void setup_ewmh()
 void cleanup_ewmh()
 {
     free(ewmh);
-    velox_vector32_delete(client_list);
+    vector_free(&client_list);
 }
 

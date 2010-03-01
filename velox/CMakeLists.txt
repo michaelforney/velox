@@ -45,6 +45,9 @@ install(FILES
     work_area.h
     debug.h
 
+    vector.h
+    linux-list.h
+
     DESTINATION include/velox
 )
 
