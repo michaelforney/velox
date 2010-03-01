@@ -39,10 +39,16 @@ void setup_layouts()
     layouts = velox_hashtable_create(64, &sdbm_hash);
 }
 
+void cleanup_layout(void * layout)
+{
+    free(((struct velox_layout *) layout)->identifier);
+    free(layout);
+}
+
 void cleanup_layouts()
 {
     /* Delete the hashtable, and free all of the layouts */
-    velox_hashtable_delete(layouts, true);
+    velox_hashtable_delete(layouts, &cleanup_layout);
 }
 
 void add_layout(const char const * identifier, velox_arrange_t arrange, struct velox_layout_state * default_state)

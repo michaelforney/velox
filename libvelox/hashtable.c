@@ -109,9 +109,9 @@ bool velox_hashtable_exists(struct velox_hashtable * hashtable, const char * key
     return hashtable->data[hashtable->hash_function(key) % hashtable->size] != NULL;
 }
 
-void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data)
+void velox_hashtable_clear(struct velox_hashtable * hashtable, void (* free_function)())
 {
-    if (free_data)
+    if (free_function != NULL)
     {
         uint32_t index;
 
@@ -119,7 +119,7 @@ void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data)
         {
             if (hashtable->data[index] != NULL)
             {
-                free(hashtable->data[index]);
+                free_function(hashtable->data[index]);
             }
         }
     }
@@ -127,12 +127,13 @@ void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data)
     memset(hashtable->data, 0, hashtable->size * sizeof(void *));
 }
 
-void velox_hashtable_delete(struct velox_hashtable * hashtable, bool free_data)
+void velox_hashtable_delete(struct velox_hashtable * hashtable, void (* free_function)())
 {
     if (hashtable == NULL) return;
 
-    velox_hashtable_clear(hashtable, free_data);
+    velox_hashtable_clear(hashtable, free_function);
 
+    free(hashtable->data);
     free(hashtable);
 }
 

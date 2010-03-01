@@ -40,7 +40,7 @@ typedef void (* velox_arrange_t)(
 
 struct velox_layout
 {
-    const char * identifier;
+    char * identifier;
     velox_arrange_t arrange;
     struct velox_layout_state default_state;
 };

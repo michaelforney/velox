@@ -30,7 +30,7 @@ struct velox_tag
 {
     /* Might be needed with windows on multiple tags at once */
     // uint64_t id;
-    const char * name;
+    char * name;
 
     struct
     {

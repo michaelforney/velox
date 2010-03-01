@@ -147,6 +147,7 @@ void avoid_struts(const struct velox_area * screen_area, struct velox_area * wor
     work_area->height = y1 - y0;
 
     free(strut_cookies);
+    free(query_reply);
 }
 
 void add_client_hook(struct velox_window * window)

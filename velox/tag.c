@@ -88,16 +88,30 @@ void setup_tags()
 
 void cleanup_tags()
 {
-    struct velox_tag_entry * tag_entry;
-    struct velox_window_entry * window_entry, * n;
+    struct velox_tag_entry * tag_entry, * tag_temp;
+    struct velox_window_entry * window_entry, * window_temp;
+    struct velox_layout_entry * layout_entry, * layout_temp;
 
-    list_for_each_entry(tag_entry, &tags, head)
+    list_for_each_entry_safe(tag_entry, tag_temp, &tags, head)
     {
-        list_for_each_entry_safe(window_entry, n, &tag_entry->tag->tiled.windows, head)
+        /* Free the tag's windows */
+        list_for_each_entry_safe(window_entry, window_temp, &tag_entry->tag->tiled.windows, head)
         {
+            free(window_entry->window->name);
+            free(window_entry->window->class);
             free(window_entry->window);
             free(window_entry);
         }
+
+        /* Free the tag's layouts */
+        list_for_each_entry_safe(layout_entry, layout_temp, &tag_entry->tag->layouts, head)
+        {
+            free(layout_entry);
+        }
+
+        free(tag_entry->tag->name);
+        free(tag_entry->tag);
+        free(tag_entry);
     }
 }
 

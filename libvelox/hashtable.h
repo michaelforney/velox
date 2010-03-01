@@ -82,7 +82,7 @@ bool velox_hashtable_exists(struct velox_hashtable * hashtable, const char * key
  * @param hashtable The hashtable to clear
  * @param free_data Whether or not to free the data
  */
-void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data);
+void velox_hashtable_clear(struct velox_hashtable * hashtable, void (* free_function)());
 
 /**
  * Delete a hashtable, and optionally free the data
@@ -90,7 +90,7 @@ void velox_hashtable_clear(struct velox_hashtable * hashtable, bool free_data);
  * @param hashtable The hashtable to delete
  * @param free_data Whether or not to free the data
  */
-void velox_hashtable_delete(struct velox_hashtable * hashtable, bool free_data);
+void velox_hashtable_delete(struct velox_hashtable * hashtable, void (* free_function)());
 
 #endif
 
