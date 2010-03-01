@@ -20,7 +20,7 @@
 #ifndef VELOX_WORK_AREA_H
 #define VELOX_WORK_AREA_H
 
-#include <libvelox/area.h>
+#include <velox/area.h>
 
 typedef void (* velox_work_area_modifier_t)(
     const struct velox_area * screen_area,

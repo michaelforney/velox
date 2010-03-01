@@ -24,7 +24,7 @@
 
 #include <xcb/xcb.h>
 
-#include <libvelox/area.h>
+#include <velox/area.h>
 
 #include <velox/linux-list.h>
 

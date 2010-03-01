@@ -45,6 +45,8 @@ install(FILES
     work_area.h
     debug.h
 
+    # Utility headers
+    area.h
     vector.h
     linux-list.h
 

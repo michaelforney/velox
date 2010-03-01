@@ -1,4 +1,4 @@
-/* velox: libvelox/area.c
+/* velox: velox/area.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -17,9 +17,27 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "area.h"
+#ifndef VELOX_AREA_H
+#define VELOX_AREA_H
 
-void velox_area_split_vertically(
+#include <stdint.h>
+
+struct velox_area
+{
+    uint32_t x, y;
+    uint32_t width, height;
+};
+
+/**
+ * Split an array vertically into the specified number of pieces, and set the
+ * destination piece to the piece at the specified index
+ *
+ * @param area The area to split
+ * @param pieces The number of pieces in which to split the area
+ * @param piece_index The index of the destination piece
+ * @param piece The destination piece
+ */
+static inline void velox_area_split_vertically(
     const struct velox_area const * area,
     uint16_t pieces, uint16_t piece_index,
     struct velox_area * piece
@@ -31,7 +49,16 @@ void velox_area_split_vertically(
     piece->height = area->height / pieces;
 }
 
-void velox_area_split_horizontally(
+/**
+ * Split an array horizontally into the specified number of pieces, and set the
+ * destination piece to the piece at the specified index
+ *
+ * @param area The area to split
+ * @param pieces The number of pieces in which to split the area
+ * @param piece_index The index of the destination piece
+ * @param piece The destination piece
+ */
+static inline void velox_area_split_horizontally(
     const struct velox_area const * area,
     uint16_t pieces, uint16_t piece_index,
     struct velox_area * piece
@@ -42,6 +69,8 @@ void velox_area_split_horizontally(
     piece->width = area->width / pieces;
     piece->height = area->height;
 }
+
+#endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

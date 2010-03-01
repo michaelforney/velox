@@ -30,6 +30,7 @@
 #include <velox/window.h>
 #include <velox/layout.h>
 #include <velox/debug.h>
+#include <velox/area.h>
 
 const char const name[] = "layout_tile";
 

@@ -24,12 +24,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libvelox/area.h>
-
 #include <velox/velox.h>
 #include <velox/window.h>
 #include <velox/layout.h>
 #include <velox/debug.h>
+#include <velox/area.h>
 
 const char const name[] = "layout_grid";
 
