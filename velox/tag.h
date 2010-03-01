@@ -23,8 +23,8 @@
 #include <xcb/xcb.h>
 
 #include <velox/layout.h>
-
-#include "linux-list.h"
+#include <velox/linux-list.h>
+#include <velox/vector.h>
 
 struct velox_tag
 {
@@ -52,13 +52,9 @@ struct velox_tag
     struct velox_layout_state state;
 };
 
-struct velox_tag_entry
-{
-    struct velox_tag * tag;
-    struct list_head head;
-};
+DEFINE_VECTOR(velox_tag_vector, struct velox_tag *);
 
-extern struct list_head tags;
+extern struct velox_tag_vector tags;
 
 void setup_tags();
 void cleanup_tags();
