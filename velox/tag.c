@@ -27,13 +27,21 @@
 
 #include "layout-private.h"
 
-LIST_HEAD(tags);
-uint8_t tag_count = 0;
+struct velox_tag_vector tags;
+
+static void __attribute__((constructor)) initialize_tags()
+{
+    vector_initialize(&tags, 32);
+}
+
+static void __attribute__((destructor)) free_tags()
+{
+    vector_free(&tags);
+}
 
 void add_tag(const char * name, const char * layout_names[])
 {
     struct velox_tag * tag;
-    struct velox_tag_entry * entry;
     struct velox_layout_entry * layout_entry;
 
     /* Allocate a new tag, then set its attributes */
@@ -57,10 +65,7 @@ void add_tag(const char * name, const char * layout_names[])
     tag->state = list_entry(tag->layout, struct velox_layout_entry, head)->layout->default_state;
 
     /* Add the tag to the list of tags */
-    entry = (struct velox_tag_entry *) malloc(sizeof(struct velox_tag));
-    entry->tag = tag;
-
-    list_add_tail(&entry->head, &tags);
+    vector_append(&tags, tag);
 }
 
 void setup_tags()
@@ -88,14 +93,15 @@ void setup_tags()
 
 void cleanup_tags()
 {
+    struct velox_tag ** tag;
     struct velox_tag_entry * tag_entry, * tag_temp;
     struct velox_window_entry * window_entry, * window_temp;
     struct velox_layout_entry * layout_entry, * layout_temp;
 
-    list_for_each_entry_safe(tag_entry, tag_temp, &tags, head)
+    vector_for_each(&tags, tag)
     {
         /* Free the tag's windows */
-        list_for_each_entry_safe(window_entry, window_temp, &tag_entry->tag->tiled.windows, head)
+        list_for_each_entry_safe(window_entry, window_temp, &(*tag)->tiled.windows, head)
         {
             free(window_entry->window->name);
             free(window_entry->window->class);
@@ -104,26 +110,25 @@ void cleanup_tags()
         }
 
         /* Free the tag's layouts */
-        list_for_each_entry_safe(layout_entry, layout_temp, &tag_entry->tag->layouts, head)
+        list_for_each_entry_safe(layout_entry, layout_temp, &(*tag)->layouts, head)
         {
             free(layout_entry);
         }
 
-        free(tag_entry->tag->name);
-        free(tag_entry->tag);
-        free(tag_entry);
+        free((*tag)->name);
+        free(*tag);
     }
 }
 
 #define TAG_FUNCTIONS(N) \
     void set_tag_ ## N() \
     { \
-        set_tag(N); \
+        set_tag(N - 1); \
     } \
     \
     void move_focus_to_tag_ ## N() \
     { \
-        move_focus_to_tag(N); \
+        move_focus_to_tag(N - 1); \
     }
 
 /* TODO: These can now all be a single function thanks to arguments to

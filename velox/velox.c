@@ -99,12 +99,12 @@ const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 
 struct velox_window_entry * lookup_window_entry(xcb_window_t window_id)
 {
-    struct velox_tag_entry * tag_entry;
+    struct velox_tag ** tag;
     struct velox_window_entry * window_entry;
 
-    list_for_each_entry(tag_entry, &tags, head)
+    vector_for_each(&tags, tag)
     {
-        list_for_each_entry(window_entry, &tag_entry->tag->tiled.windows, head)
+        list_for_each_entry(window_entry, &(*tag)->tiled.windows, head)
         {
             if (window_entry->window->window_id == window_id)
             {
@@ -289,7 +289,8 @@ void setup()
 
     grab_keys(setup->min_keycode, setup->max_keycode);
 
-    tag = list_first_entry(&tags, struct velox_tag_entry, head)->tag;
+    assert(tags.size > 0);
+    tag = tags.data[0];
 }
 
 void show_window(xcb_window_t window_id)
@@ -405,18 +406,11 @@ void focus(xcb_window_t window_id)
 
 void set_tag(uint8_t index)
 {
-    struct velox_tag_entry * tag_entry;
-    struct velox_tag * new_tag;
-
     DEBUG_ENTER
 
-    for (tag_entry = list_first_entry(&tags, struct velox_tag_entry, head);
-        &tag_entry->head != &tags && index > 1;
-        tag_entry = list_entry(tag_entry->head.next, struct velox_tag_entry, head), --index);
+    assert(index < tags.size);
 
-    new_tag = tag_entry->tag;
-
-    if (tag == new_tag) return; // Nothing to do...
+    if (tag == tags.data[index]) return; // Nothing to do...
     else
     {
         struct velox_window_entry * window_entry;
@@ -424,7 +418,7 @@ void set_tag(uint8_t index)
         struct velox_window * window;
 
         /* Show the windows now visible */
-        list_for_each_entry(window_entry, &new_tag->tiled.windows, head)
+        list_for_each_entry(window_entry, &tags.data[index]->tiled.windows, head)
         {
             show_window(window_entry->window->window_id);
         }
@@ -435,7 +429,7 @@ void set_tag(uint8_t index)
             hide_window(window_entry->window->window_id);
         }
 
-        tag = new_tag;
+        tag = tags.data[index];
 
         /* TODO: check if tag has floating focus and behave accordingly */
 
@@ -463,20 +457,11 @@ void move_focus_to_tag(uint8_t index)
     if (list_empty(&tag->tiled.windows)) return;
     else
     {
-        struct velox_tag_entry * tag_entry;
-        struct velox_tag * new_tag;
-
         struct list_head * next_focus;
         struct velox_window * window;
 
-        for (tag_entry = list_first_entry(&tags, struct velox_tag_entry, head);
-            &tag_entry->head != &tags && index > 1;
-            tag_entry = list_entry(tag_entry->head.next, struct velox_tag_entry, head), --index);
-
-        new_tag = tag_entry->tag;
-
         window = list_entry(tag->tiled.focus, struct velox_window_entry, head)->window;
-        window->tag = new_tag;
+        window->tag = tags.data[index];
 
         /* Deal with special cases */
         if (list_is_singular(&tag->tiled.windows))
@@ -491,14 +476,14 @@ void move_focus_to_tag(uint8_t index)
 
         /* Remove the focus from the old list, and add it to the new list */
         list_del(tag->tiled.focus);
-        list_add(tag->tiled.focus, &new_tag->tiled.windows);
+        list_add(tag->tiled.focus, &tags.data[index]->tiled.windows);
 
         tag->tiled.focus = next_focus;
 
-        if (list_is_singular(&new_tag->tiled.windows))
+        if (list_is_singular(&tags.data[index]->tiled.windows))
         {
             /* If the tag was empty before, set its focus to the new window */
-            new_tag->tiled.focus = new_tag->tiled.windows.next;
+            tags.data[index]->tiled.focus = tags.data[index]->tiled.windows.next;
         }
 
         if (list_empty(&tag->tiled.windows))
