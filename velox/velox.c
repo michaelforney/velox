@@ -978,7 +978,7 @@ void cleanup()
     }
 }
 
-void __attribute__ ((noreturn)) die(const char const * message, ...)
+void __attribute__((noreturn)) die(const char const * message, ...)
 {
     va_list args;
 
