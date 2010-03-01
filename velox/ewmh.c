@@ -34,7 +34,17 @@
 xcb_ewmh_connection_t * ewmh;
 
 DEFINE_VECTOR(window_vector, xcb_window_t);
-VECTOR(window_vector, client_list);
+struct window_vector client_list;
+
+static void __attribute__((constructor)) initialize_client_list()
+{
+    vector_initialize(&client_list, 32);
+}
+
+static void __attribute__((destructor)) free_client_list()
+{
+    vector_free(&client_list);
+}
 
 void update_client_list()
 {
@@ -300,8 +310,6 @@ void setup_ewmh()
 
     supporting_wm();
 
-    vector_initialize(&client_list, 32);
-
     /* Trivial properties */
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
     xcb_ewmh_set_desktop_viewport(ewmh, 0, 0, 0);
@@ -321,6 +329,5 @@ void setup_ewmh()
 void cleanup_ewmh()
 {
     free(ewmh);
-    vector_free(&client_list);
 }
 
