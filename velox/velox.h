@@ -65,8 +65,8 @@ void previous_layout();
 void die(const char const * message, ...);
 void quit();
 
-void set_tag(uint8_t index);
-void move_focus_to_tag(uint8_t index);
+void set_tag(void * generic_index);
+void move_focus_to_tag(void * generic_index);
 
 #endif
 

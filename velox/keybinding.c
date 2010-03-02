@@ -226,17 +226,6 @@ void setup_key_bindings()
 
     /* Quit */
     add_configured_key_binding("velox", STRING_SYMBOL(quit), NULL);
-
-    /* Tags */
-    ADD_TAG_KEY_BINDINGS(1)
-    ADD_TAG_KEY_BINDINGS(2)
-    ADD_TAG_KEY_BINDINGS(3)
-    ADD_TAG_KEY_BINDINGS(4)
-    ADD_TAG_KEY_BINDINGS(5)
-    ADD_TAG_KEY_BINDINGS(6)
-    ADD_TAG_KEY_BINDINGS(7)
-    ADD_TAG_KEY_BINDINGS(8)
-    ADD_TAG_KEY_BINDINGS(9)
 }
 
 void cleanup_key_bindings()

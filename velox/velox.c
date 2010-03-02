@@ -403,8 +403,10 @@ void focus(xcb_window_t window_id)
     xcb_flush(c);
 }
 
-void set_tag(uint8_t index)
+void set_tag(void * generic_index)
 {
+    uint8_t index = (uint8_t) generic_index;
+
     DEBUG_ENTER
 
     assert(index < tags.size);
@@ -449,8 +451,10 @@ void set_tag(uint8_t index)
     }
 }
 
-void move_focus_to_tag(uint8_t index)
+void move_focus_to_tag(void * generic_index)
 {
+    uint8_t index = (uint8_t) generic_index;
+
     DEBUG_ENTER
 
     if (list_empty(&tag->tiled.windows)) return;

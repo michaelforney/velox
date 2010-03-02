@@ -24,6 +24,7 @@
 #include "tag.h"
 #include "velox.h"
 #include "linux-list.h"
+#include "keybinding.h"
 
 #include "layout-private.h"
 
@@ -43,6 +44,7 @@ void add_tag(const char * name, const char * layout_names[])
 {
     struct velox_tag * tag;
     struct velox_layout_entry * layout_entry;
+    char binding_name[128];
 
     /* Allocate a new tag, then set its attributes */
     tag = (struct velox_tag *) malloc(sizeof(struct velox_tag));
@@ -66,6 +68,11 @@ void add_tag(const char * name, const char * layout_names[])
 
     /* Add the tag to the list of tags */
     vector_append(&tags, tag);
+
+    sprintf(binding_name, "set_tag_%u", tags.size);
+    add_configured_key_binding("tag", binding_name, &set_tag, (void *) tags.size - 1);
+    sprintf(binding_name, "move_focus_to_tag_%u", tags.size);
+    add_configured_key_binding("tag", binding_name, &move_focus_to_tag, (void *) tags.size - 1);
 }
 
 void setup_tags()
@@ -119,29 +126,6 @@ void cleanup_tags()
         free(*tag);
     }
 }
-
-#define TAG_FUNCTIONS(N) \
-    void set_tag_ ## N() \
-    { \
-        set_tag(N - 1); \
-    } \
-    \
-    void move_focus_to_tag_ ## N() \
-    { \
-        move_focus_to_tag(N - 1); \
-    }
-
-/* TODO: These can now all be a single function thanks to arguments to
- * keybindings */
-TAG_FUNCTIONS(1)
-TAG_FUNCTIONS(2)
-TAG_FUNCTIONS(3)
-TAG_FUNCTIONS(4)
-TAG_FUNCTIONS(5)
-TAG_FUNCTIONS(6)
-TAG_FUNCTIONS(7)
-TAG_FUNCTIONS(8)
-TAG_FUNCTIONS(9)
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 
