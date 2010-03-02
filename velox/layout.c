@@ -31,12 +31,12 @@
 
 #include "layout-private.h"
 
-struct velox_hashtable * layouts;
+struct velox_layout_hashtable layouts;
 
-void setup_layouts()
+void __attribute__((constructor)) initialize_layouts()
 {
     /* Create a new hashtable to store the layouts */
-    layouts = velox_hashtable_create(64, &sdbm_hash);
+    hashtable_initialize(&layouts, 32, &sdbm_hash);
 }
 
 void cleanup_layout(void * layout)
@@ -48,7 +48,6 @@ void cleanup_layout(void * layout)
 void cleanup_layouts()
 {
     /* Delete the hashtable, and free all of the layouts */
-    velox_hashtable_delete(layouts, &cleanup_layout);
 }
 
 void add_layout(const char const * identifier, velox_arrange_t arrange, struct velox_layout_state * default_state)
@@ -62,10 +61,7 @@ void add_layout(const char const * identifier, velox_arrange_t arrange, struct v
     layout->arrange = arrange;
     layout->default_state = *default_state;
 
-    /* Make sure the layout doesn't already exist in the table
-     * TODO: Handle collisions */
-    assert(!velox_hashtable_exists(layouts, layout->identifier));
-    velox_hashtable_insert(layouts, layout->identifier, layout);
+    hashtable_insert(&layouts, layout->identifier, layout);
 }
 
 void arrange_window(struct velox_window * window)

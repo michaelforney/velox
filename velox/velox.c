@@ -277,7 +277,6 @@ void setup()
     free(atom_cookies);
 
     setup_key_bindings();
-    setup_layouts();
     setup_hooks();
 
     load_config();

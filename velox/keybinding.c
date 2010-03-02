@@ -23,16 +23,11 @@
 #include <assert.h>
 #include <X11/Xlib.h> // For XStringToKeysym
 
-#include <libvelox/hashtable.h>
-
 #include "keybinding.h"
 #include "tag.h"
 #include "config_file.h"
 #include "velox.h"
-
-#define ADD_TAG_KEY_BINDINGS(N) \
-    add_configured_key_binding("tag", STRING_SYMBOL(set_tag_ ## N), NULL); \
-    add_configured_key_binding("tag", STRING_SYMBOL(move_focus_to_tag_ ## N), NULL);
+#include "hashtable.h"
 
 #define STRING_SYMBOL(name) #name, &name
 
@@ -41,11 +36,22 @@ struct key_list
     struct velox_key * keys;
     uint32_t length;
 };
+DEFINE_HASHTABLE(key_hashtable, const char *, struct key_list *);
+
+LIST_HEAD(key_bindings);
+struct key_hashtable configured_keys;
 
 static const uint32_t mod_mask = XCB_MOD_MASK_4;
 
-struct velox_hashtable * configured_keys = NULL;
-LIST_HEAD(key_bindings);
+void __attribute__((constructor)) initialize_keys()
+{
+    hashtable_initialize(&configured_keys, 512, &sdbm_hash);
+}
+
+void __attribute__((destructor)) free_keys()
+{
+    hashtable_free(&configured_keys);
+}
 
 uint16_t modifier_value(const char * name)
 {
@@ -70,8 +76,6 @@ void setup_configured_keys()
 
     yaml_parser_t parser;
     yaml_document_t document;
-
-    configured_keys = velox_hashtable_create(1024, &sdbm_hash);
 
     /* Look for and open keys.yaml in the standard configuration directories */
     file = open_config_file("keys.yaml");
@@ -188,8 +192,7 @@ void setup_configured_keys()
                         key_list->keys[key_index].keysym);
                 }
 
-                assert(!velox_hashtable_exists(configured_keys, identifier));
-                velox_hashtable_insert(configured_keys, identifier, key_list);
+                hashtable_insert(&configured_keys, identifier, key_list);
             }
         }
 
@@ -271,16 +274,11 @@ void add_configured_key_binding(const char * group, const char * name, void (* f
     uint32_t key_index;
     char identifier[strlen(group) + strlen(name) + 1];
 
-    if (configured_keys == NULL)
-    {
-        return;
-    }
-
     sprintf(identifier, "%s:%s", group, name);
 
     /* Lookup the list of keys associated with that binding in the
      * configured_keys table */
-    key_list = velox_hashtable_lookup(configured_keys, identifier);
+    key_list = hashtable_lookup(&configured_keys, identifier);
 
     assert(key_list);
 

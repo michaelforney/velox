@@ -31,7 +31,6 @@ if(ENABLE_ALSA)
     find_package(ALSA REQUIRED)
 endif(ENABLE_ALSA)
 
-add_subdirectory(libvelox)
 add_subdirectory(velox)
 add_subdirectory(modules)
 

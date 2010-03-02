@@ -57,7 +57,7 @@ void add_tag(const char * name, const char * layout_names[])
     for (; *layout_names != NULL; ++layout_names)
     {
         layout_entry = (struct velox_layout_entry *) malloc(sizeof(struct velox_layout_entry));
-        layout_entry->layout = velox_hashtable_lookup(layouts, *layout_names);
+        layout_entry->layout = hashtable_lookup(&layouts, *layout_names);
         list_add_tail(&layout_entry->head, &tag->layouts);
     }
 

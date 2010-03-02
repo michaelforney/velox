@@ -12,12 +12,13 @@ add_executable(velox
     module.c
     ewmh.c
     work_area.c
+
+    hashtable.c
 )
 
 include_directories(${velox_SOURCE_DIR})
 
 target_link_libraries(velox
-    -Wl,--whole-archive libvelox -Wl,--no-whole-archive
     ${XCB_LIBRARIES}
     ${XCB-Atom_LIBRARIES}
     ${XCB-ICCCM_LIBRARIES}
@@ -47,6 +48,7 @@ install(FILES
     # Utility headers
     area.h
     vector.h
+    hashtable.h
     linux-list.h
 
     DESTINATION include/velox
