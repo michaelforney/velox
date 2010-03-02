@@ -31,12 +31,7 @@
         uint32_t capacity;                                                  \
     }
 
-#define VECTOR_INIT() { NULL, 0, 0 }                                        \
-
-#define VECTOR(type, name)                                                  \
-    struct type name = VECTOR_INIT()
-
-static uint32_t next_power_of_two(uint32_t n)
+static inline uint32_t next_power_of_two(uint32_t n)
 {
     uint8_t bit;
 
