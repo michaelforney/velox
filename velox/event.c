@@ -34,9 +34,6 @@
 #include "hook-private.h"
 #include "ewmh-private.h"
 
-/* Macros */
-#define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
-
 /* X event handlers */
 static void key_press(xcb_key_press_event_t * event)
 {

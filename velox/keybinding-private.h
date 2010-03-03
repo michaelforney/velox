@@ -24,12 +24,18 @@
 
 #include "list.h"
 
+/* Macros */
+#define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
+
+/* Private variables */
 extern struct list_head key_bindings;
 
-void setup_configured_keys();
-
+/* Setup and cleanup functions */
 void setup_key_bindings();
 void cleanup_key_bindings();
+
+/* Private functions */
+void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
 
 #endif
 

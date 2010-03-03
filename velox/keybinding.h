@@ -24,6 +24,7 @@
 
 #include <velox/list.h>
 
+/* Structures */
 struct velox_key
 {
     uint16_t modifiers;
@@ -44,8 +45,14 @@ struct velox_key_binding_entry
     struct list_head head;
 };
 
+/* Public variables */
+extern xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
+extern const uint16_t mod_mask_numlock;
+
+/* Public functions */
 void add_key_binding(struct velox_key * key, void (* function)(void * arg), void * arg);
-void add_configured_key_binding(const char * group, const char * name, void (* function)(void * arg), void * arg);
+void add_configured_key_binding(const char * group, const char * name,
+    void (* function)(void * arg), void * arg);
 
 #endif
 

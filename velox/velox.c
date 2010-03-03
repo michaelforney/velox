@@ -55,7 +55,6 @@
 xcb_connection_t * c;
 xcb_screen_t * screen;
 xcb_window_t root;
-xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 /* X atoms */
 const uint16_t atom_length = 3;
@@ -95,7 +94,6 @@ uint16_t border_width = 2;
 const char wm_name[] = "velox";
 const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
-const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
 
 struct velox_window_entry * lookup_window_entry(xcb_window_t window_id)
 {
@@ -116,53 +114,6 @@ struct velox_window_entry * lookup_window_entry(xcb_window_t window_id)
     }
 
     return NULL;
-}
-
-void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
-{
-    xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
-    xcb_keysym_t * keysyms;
-    struct velox_key_binding_entry * entry;
-    uint16_t keysym_index;
-    uint16_t extra_modifier_index;
-    uint16_t extra_modifiers[] = {
-        0,
-        mod_mask_numlock,
-        XCB_MOD_MASK_LOCK,
-        mod_mask_numlock | XCB_MOD_MASK_LOCK
-    };
-    uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
-
-    DEBUG_ENTER
-
-    keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
-
-    xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
-
-    free(keyboard_mapping);
-    keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
-    keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
-    list_for_each_entry(entry, &key_bindings, head)
-    {
-        for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
-        {
-            if (keysyms[keysym_index] == entry->key_binding->key.keysym)
-            {
-                entry->key_binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
-                break;
-            }
-        }
-
-        for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
-        {
-            xcb_grab_key(c, true, root,
-                entry->key_binding->key.modifiers | extra_modifiers[extra_modifier_index],
-                entry->key_binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
-            );
-        }
-    }
-
-    xcb_flush(c);
 }
 
 void check_wm_running()

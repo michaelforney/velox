@@ -28,21 +28,31 @@
 #include "config_file.h"
 #include "velox.h"
 #include "hashtable.h"
+#include "debug.h"
 
+/* Helper macros */
 #define STRING_SYMBOL(name) #name, &name
 
+/* Define container structures */
 struct key_list
 {
     struct velox_key * keys;
     uint32_t length;
 };
+
 DEFINE_HASHTABLE(key_hashtable, const char *, struct key_list *);
 
+/* Containers */
 LIST_HEAD(key_bindings);
 struct key_hashtable configured_keys;
 
-static const uint32_t mod_mask = XCB_MOD_MASK_4;
+/* X variables */
+xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
+/* Key binding constants */
+const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
+
+/* Constructors and destructors */
 void __attribute__((constructor)) initialize_keys()
 {
     hashtable_initialize(&configured_keys, 512, &sdbm_hash);
@@ -53,7 +63,8 @@ void __attribute__((destructor)) free_keys()
     hashtable_free(&configured_keys);
 }
 
-uint16_t modifier_value(const char * name)
+/* Static functions */
+static inline uint16_t modifier_value(const char * name)
 {
     if (strcmp(name, "mod_shift") == 0)         return XCB_MOD_MASK_SHIFT;
     else if (strcmp(name, "mod_lock") == 0)     return XCB_MOD_MASK_LOCK;
@@ -68,7 +79,7 @@ uint16_t modifier_value(const char * name)
     return 0;
 }
 
-void setup_configured_keys()
+static void setup_configured_keys()
 {
     FILE * file;
     char identifier[256];
@@ -199,14 +210,12 @@ void setup_configured_keys()
         yaml_document_delete(&document);
         yaml_parser_delete(&parser);
     }
-    else
-    {
-        printf("YAML error: %s\n", parser.problem);
-    }
+    else fprintf(stderr, "YAML error: %s\n", parser.problem);
 
     fclose(file);
 }
 
+/* Setup and cleanup functions */
 void setup_key_bindings()
 {
     setup_configured_keys();
@@ -239,6 +248,55 @@ void cleanup_key_bindings()
     }
 }
 
+/* Private functions */
+void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
+{
+    xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
+    xcb_keysym_t * keysyms;
+    struct velox_key_binding_entry * entry;
+    uint16_t keysym_index;
+    uint16_t extra_modifier_index;
+    uint16_t extra_modifiers[] = {
+        0,
+        mod_mask_numlock,
+        XCB_MOD_MASK_LOCK,
+        mod_mask_numlock | XCB_MOD_MASK_LOCK
+    };
+    uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
+
+    DEBUG_ENTER
+
+    keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
+
+    xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
+
+    free(keyboard_mapping);
+    keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
+    keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
+    list_for_each_entry(entry, &key_bindings, head)
+    {
+        for (keysym_index = 0; keysym_index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); keysym_index++)
+        {
+            if (keysyms[keysym_index] == entry->key_binding->key.keysym)
+            {
+                entry->key_binding->keycode = min_keycode + (keysym_index / keyboard_mapping->keysyms_per_keycode);
+                break;
+            }
+        }
+
+        for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
+        {
+            xcb_grab_key(c, true, root,
+                entry->key_binding->key.modifiers | extra_modifiers[extra_modifier_index],
+                entry->key_binding->keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
+            );
+        }
+    }
+
+    xcb_flush(c);
+}
+
+/* Public functions */
 void add_key_binding(struct velox_key * key, void (* function)(void * arg), void * arg)
 {
     struct velox_key_binding * binding;
@@ -257,7 +315,8 @@ void add_key_binding(struct velox_key * key, void (* function)(void * arg), void
     list_add(&entry->head, &key_bindings);
 }
 
-void add_configured_key_binding(const char * group, const char * name, void (* function)(void * arg), void * arg)
+void add_configured_key_binding(const char * group, const char * name,
+    void (* function)(void * arg), void * arg)
 {
     struct key_list * key_list;
     uint32_t key_index;

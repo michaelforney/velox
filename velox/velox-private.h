@@ -23,15 +23,12 @@
 #include <stdint.h>
 
 extern xcb_window_t root;
-extern xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 extern uint16_t pending_unmaps;
-extern const uint16_t mod_mask_numlock;
 
 void manage(xcb_window_t window_id);
 void unmanage(struct velox_window_entry * entry);
 void focus(xcb_window_t window_id);
-void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
 struct velox_window_entry * lookup_window_entry(xcb_window_t window_id);
 
 #endif
