@@ -40,7 +40,7 @@
 #include "keybinding.h"
 #include "config_file.h"
 #include "debug.h"
-#include "linux-list.h"
+#include "list.h"
 
 #include "module-private.h"
 #include "config_file-private.h"

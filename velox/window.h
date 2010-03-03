@@ -25,8 +25,7 @@
 #include <xcb/xcb.h>
 
 #include <velox/area.h>
-
-#include <velox/linux-list.h>
+#include <velox/list.h>
 
 struct velox_window
 {

@@ -22,7 +22,7 @@
 
 #include <yaml.h>
 
-#include "linux-list.h"
+#include "list.h"
 
 struct velox_module
 {

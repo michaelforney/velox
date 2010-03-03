@@ -22,7 +22,7 @@
 
 #include <xcb/xcb.h>
 
-#include <velox/linux-list.h>
+#include <velox/list.h>
 
 struct velox_key
 {

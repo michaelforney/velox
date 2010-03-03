@@ -22,7 +22,7 @@
 
 #include <xcb/xcb.h>
 
-#include "linux-list.h"
+#include "list.h"
 
 extern struct list_head key_bindings;
 

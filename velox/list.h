@@ -1,4 +1,4 @@
-/* velox: velox/linux-list.h
+/* velox: velox/list.h
  *
  * Linked list implementation from the linux kernel
  *
@@ -17,8 +17,8 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_LINUX_LIST_H
-#define VELOX_LINUX_LIST_H
+#ifndef VELOX_LIST_H
+#define VELOX_LIST_H
 
 /*
  * Simple doubly linked list implementation.

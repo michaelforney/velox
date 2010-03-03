@@ -23,7 +23,6 @@
 
 #include "tag.h"
 #include "velox.h"
-#include "linux-list.h"
 #include "keybinding.h"
 
 #include "layout-private.h"

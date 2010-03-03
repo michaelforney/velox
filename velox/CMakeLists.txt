@@ -49,7 +49,7 @@ install(FILES
     area.h
     vector.h
     hashtable.h
-    linux-list.h
+    list.h
 
     DESTINATION include/velox
 )

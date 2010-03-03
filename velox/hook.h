@@ -21,7 +21,7 @@
 #define VELOX_HOOK_H
 
 #include <velox/window.h>
-#include <velox/linux-list.h>
+#include <velox/list.h>
 
 typedef void (* velox_hook_t)(void * arg);
 

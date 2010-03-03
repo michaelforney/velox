@@ -23,7 +23,7 @@
 #include <xcb/xcb.h>
 
 #include <velox/layout.h>
-#include <velox/linux-list.h>
+#include <velox/list.h>
 #include <velox/vector.h>
 
 struct velox_tag
