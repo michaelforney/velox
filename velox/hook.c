@@ -98,6 +98,10 @@ void handle_floating(struct velox_window * window)
     {
         window->floating = true;
     }
+    else if (strcmp(window->name, "xclock") == 0)
+    {
+        window->floating = true;
+    }
 }
 
 void handle_fullscreen(struct velox_window * window)
