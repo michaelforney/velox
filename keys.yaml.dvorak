@@ -5,6 +5,7 @@
 velox:
     focus_next          : [{mod: [&mod mod_4],      key: h}]
     focus_previous      : [{mod: [*mod],            key: t}]
+    toggle_focus_type   : [{mod: [*mod],            key: g}]
     move_next           : [{mod: [*mod, mod_shift], key: h}]
     move_previous       : [{mod: [*mod, mod_shift], key: t}]
     kill_focused_window : [{mod: [*mod, mod_shift], key: c}]

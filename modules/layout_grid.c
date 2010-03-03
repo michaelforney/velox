@@ -77,10 +77,7 @@ static void grid_arrange(struct velox_area * area, struct list_head * windows, s
     if (list_empty(windows)) return;
 
     /* Calculate number of windows */
-    list_for_each_entry(entry, windows, head)
-    {
-        if (!entry->window->floating) window_count++;
-    }
+    list_for_each_entry(entry, windows, head) ++window_count;
 
     /* FIXME: Is this the best column count to use? */
     column_count = round(sqrt(window_count));
@@ -97,8 +94,6 @@ static void grid_arrange(struct velox_area * area, struct list_head * windows, s
         for (row_index = 0; row_index < row_count;
             ++row_index, entry = list_entry(entry->head.next, struct velox_window_entry, head))
         {
-            if (entry->window->floating) continue;
-
             velox_area_split_vertically(&column_area, row_count, row_index, &window_area);
             window_set_geometry(entry->window, &window_area);
             arrange_window(entry->window);

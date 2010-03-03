@@ -45,6 +45,7 @@ extern struct velox_tag * tag;
 void synthetic_configure(struct velox_window * window);
 
 void arrange();
+void restack();
 
 void spawn(char * const cmd[]);
 void spawn_terminal();
@@ -67,6 +68,9 @@ void quit();
 
 void set_tag(void * generic_index);
 void move_focus_to_tag(void * generic_index);
+
+void set_focus_type(enum velox_tag_focus_type focus_type);
+void toggle_focus_type();
 
 #endif
 

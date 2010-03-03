@@ -226,6 +226,8 @@ void setup_key_bindings()
     add_configured_key_binding("velox", STRING_SYMBOL(move_next), NULL);
     add_configured_key_binding("velox", STRING_SYMBOL(move_previous), NULL);
 
+    add_configured_key_binding("velox", STRING_SYMBOL(toggle_focus_type), NULL);
+
     /* Window operations */
     add_configured_key_binding("velox", STRING_SYMBOL(kill_focused_window), NULL);
 

@@ -159,10 +159,7 @@ static void tile_arrange(struct velox_area * area, struct list_head * windows, s
     if (list_empty(windows)) return;
 
     /* Calculate number of windows */
-    list_for_each_entry(entry, windows, head)
-    {
-        if (!entry->window->floating) window_count++;
-    }
+    list_for_each_entry(entry, windows, head) ++window_count;
 
     master_count = MIN(window_count, state->master_count);
     grid_count = window_count - state->master_count;
@@ -191,8 +188,6 @@ static void tile_arrange(struct velox_area * area, struct list_head * windows, s
     for (index = 0; index < master_count;
         entry = list_entry(entry->head.next, struct velox_window_entry, head))
     {
-        if (entry->window->floating) continue;
-
         velox_area_split_vertically(&master_area, master_count, index, &window_area);
         window_set_geometry(entry->window, &window_area);
         arrange_window(entry->window);
@@ -212,8 +207,6 @@ static void tile_arrange(struct velox_area * area, struct list_head * windows, s
         for (row_index = 0; row_index < row_count;
             ++row_index, entry = list_entry(entry->head.next, struct velox_window_entry, head))
         {
-            if (entry->window->floating) continue;
-
             velox_area_split_vertically(&grid_column_area, row_count, row_index, &window_area);
             window_set_geometry(entry->window, &window_area);
             arrange_window(entry->window);

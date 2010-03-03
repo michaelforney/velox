@@ -51,8 +51,15 @@ void add_tag(const char * name, const char * layout_names[])
     /* Might be needed with windows on multiple tags at once */
     // tag->id = 1 << tag_count++;
     tag->name = strdup(name);
+
     INIT_LIST_HEAD(&tag->tiled.windows);
     tag->tiled.focus = &tag->tiled.windows;
+
+    tag->floated.top = NULL;
+    INIT_LIST_HEAD(&tag->floated.windows);
+    tag->floated.next_focus = &tag->floated.windows;
+
+    tag->focus_type = TILE;
 
     INIT_LIST_HEAD(&tag->layouts);
     for (; *layout_names != NULL; ++layout_names)

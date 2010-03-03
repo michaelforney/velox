@@ -27,6 +27,7 @@
 #include "window.h"
 #include "keybinding.h"
 #include "hook.h"
+#include "modifier.h"
 #include "debug.h"
 
 #include "velox-private.h"
@@ -69,6 +70,8 @@ static void enter_notify(xcb_enter_notify_event_t * event)
     DEBUG_ENTER
     DEBUG_PRINT("window_id: %i\n", event->event)
 
+    if (tag->focus_type == FLOAT) return;
+
     if (event->event == root) focus(root);
     else
     {
@@ -77,11 +80,13 @@ static void enter_notify(xcb_enter_notify_event_t * event)
 
         window = NULL;
 
+        /* Look through tiled windows */
         list_for_each_entry(entry, &tag->tiled.windows, head)
         {
             if (entry->window->window_id == event->event)
             {
                 window = entry->window;
+                window->tag->tiled.focus = &entry->head;
                 break;
             }
         }
@@ -94,7 +99,6 @@ static void enter_notify(xcb_enter_notify_event_t * event)
             if (event->mode == XCB_NOTIFY_MODE_NORMAL && event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
             {
                 focus(window->window_id);
-                window->tag->tiled.focus = &entry->head;
             }
         }
     }
@@ -110,14 +114,11 @@ static void destroy_notify(xcb_destroy_notify_event_t * event)
     struct velox_window_entry * entry;
 
     DEBUG_ENTER
-    DEBUG_PRINT("window_id: %i\n", event->window)
+    DEBUG_PRINT("window_id: 0x%x\n", event->event)
 
-    entry = lookup_window_entry(event->window);
+    if (event->event == root) return;
 
-    if (entry != NULL)
-    {
-        unmanage(entry);
-    }
+    unmanage(event->event);
 }
 
 static void unmap_notify(xcb_unmap_notify_event_t * event)
@@ -126,43 +127,32 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
     struct velox_window * window;
 
     DEBUG_ENTER
+    DEBUG_PRINT("window_id: 0x%x\n", event->event);
+
+    if (event->event == root) return;
 
     if (pending_unmaps > 0)
     {
         /* If we are expecting an unmap due to hiding a window, ignore it */
-        pending_unmaps--;
+        --pending_unmaps;
         return;
     }
 
-    window = NULL;
+    uint32_t property_values[2];
 
-    list_for_each_entry(entry, &tag->tiled.windows, head)
-    {
-        if (entry->window->window_id == event->window)
-        {
-            window = entry->window;
-            break;
-        }
-    }
+    DEBUG_PRINT("setting state to withdrawn\n")
 
-    if (window != NULL)
-    {
-        uint32_t property_values[2];
+    xcb_grab_server(c);
 
-        DEBUG_PRINT("setting state to withdrawn\n")
+    property_values[0] = XCB_WM_STATE_WITHDRAWN;
+    property_values[1] = 0;
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, event->window, WM_STATE, WM_STATE, 32, 2, property_values);
 
-        xcb_grab_server(c);
+    unmanage(event->event);
 
-        property_values[0] = XCB_WM_STATE_WITHDRAWN;
-        property_values[1] = 0;
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id, WM_STATE, WM_STATE, 32, 2, property_values);
+    xcb_flush(c);
 
-        unmanage(entry);
-
-        xcb_flush(c);
-
-        xcb_ungrab_server(c);
-    }
+    xcb_ungrab_server(c);
 }
 
 static void map_request(xcb_map_request_event_t * event)

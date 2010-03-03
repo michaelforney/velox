@@ -26,6 +26,12 @@
 #include <velox/list.h>
 #include <velox/vector.h>
 
+enum velox_tag_focus_type
+{
+    TILE,
+    FLOAT
+};
+
 struct velox_tag
 {
     /* Might be needed with windows on multiple tags at once */
@@ -45,7 +51,7 @@ struct velox_tag
         struct list_head * next_focus;
     } floated;
 
-    bool floater_focus;
+    enum velox_tag_focus_type focus_type;
 
     struct list_head layouts;
     struct list_head * layout;

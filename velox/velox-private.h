@@ -27,7 +27,7 @@ extern xcb_window_t root;
 extern uint16_t pending_unmaps;
 
 void manage(xcb_window_t window_id);
-void unmanage(struct velox_window_entry * entry);
+void unmanage(xcb_window_t window);
 void focus(xcb_window_t window_id);
 struct velox_window_entry * lookup_window_entry(xcb_window_t window_id);
 
