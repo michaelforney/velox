@@ -24,8 +24,20 @@
 
 #include "list.h"
 
-/* Macros */
-#define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
+/* Structures */
+struct velox_key_binding
+{
+    struct velox_key key;
+    xcb_keycode_t keycode;
+    void (* function)(void * arg);
+    void * arg;
+};
+
+struct velox_key_binding_entry
+{
+    struct velox_key_binding * key_binding;
+    struct list_head head;
+};
 
 /* Private variables */
 extern struct list_head key_bindings;

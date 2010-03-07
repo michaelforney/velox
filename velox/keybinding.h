@@ -31,23 +31,8 @@ struct velox_key
     xcb_keysym_t keysym;
 };
 
-struct velox_key_binding
-{
-    struct velox_key key;
-    xcb_keycode_t keycode;
-    void (* function)(void * arg);
-    void * arg;
-};
-
-struct velox_key_binding_entry
-{
-    struct velox_key_binding * key_binding;
-    struct list_head head;
-};
-
 /* Public variables */
 extern xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
-extern const uint16_t mod_mask_numlock;
 
 /* Public functions */
 void add_key_binding(struct velox_key * key, void (* function)(void * arg), void * arg);

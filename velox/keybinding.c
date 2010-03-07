@@ -28,7 +28,10 @@
 #include "config_file.h"
 #include "velox.h"
 #include "hashtable.h"
+#include "modifier.h"
 #include "debug.h"
+
+#include "keybinding-private.h"
 
 /* Helper macros */
 #define STRING_SYMBOL(name) #name, &name
@@ -49,9 +52,6 @@ struct key_hashtable configured_keys;
 /* X variables */
 xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
-/* Key binding constants */
-const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
-
 /* Constructors and destructors */
 void __attribute__((constructor)) initialize_keys()
 {
@@ -64,21 +64,6 @@ void __attribute__((destructor)) free_keys()
 }
 
 /* Static functions */
-static inline uint16_t modifier_value(const char * name)
-{
-    if (strcmp(name, "mod_shift") == 0)         return XCB_MOD_MASK_SHIFT;
-    else if (strcmp(name, "mod_lock") == 0)     return XCB_MOD_MASK_LOCK;
-    else if (strcmp(name, "mod_control") == 0)  return XCB_MOD_MASK_CONTROL;
-    else if (strcmp(name, "mod_1") == 0)        return XCB_MOD_MASK_1;
-    else if (strcmp(name, "mod_2") == 0)        return XCB_MOD_MASK_2;
-    else if (strcmp(name, "mod_3") == 0)        return XCB_MOD_MASK_3;
-    else if (strcmp(name, "mod_4") == 0)        return XCB_MOD_MASK_4;
-    else if (strcmp(name, "mod_5") == 0)        return XCB_MOD_MASK_5;
-    else if (strcmp(name, "mod_any") == 0)      return XCB_MOD_MASK_ANY;
-
-    return 0;
-}
-
 static void setup_configured_keys()
 {
     FILE * file;

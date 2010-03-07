@@ -37,6 +37,7 @@ install(FILES
     config_file.h
     hook.h
     keybinding.h
+    modifier.h
     layout.h
     velox.h
     tag.h
