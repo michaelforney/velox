@@ -340,3 +340,5 @@ void handle_event(xcb_generic_event_t * event)
     free(event);
 }
 
+// vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
+
