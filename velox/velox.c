@@ -756,6 +756,64 @@ void kill_focused_window()
     xcb_flush(c);
 }
 
+void move_float()
+{
+    xcb_grab_pointer_cookie_t grab_cookie;
+    xcb_grab_pointer_reply_t * grab_reply;
+    if (tag->floated.top == NULL) return;
+
+    grab_cookie = xcb_grab_pointer(c, false, root, XCB_EVENT_MASK_BUTTON_PRESS |
+            XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION,
+        XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE,
+        cursors[MOVE], XCB_CURRENT_TIME);
+
+    grab_reply = xcb_grab_pointer_reply(c, grab_cookie, NULL);
+
+    if (grab_reply->status == XCB_GRAB_STATUS_SUCCESS)
+    {
+        xcb_generic_event_t * event;
+        uint32_t original_x, original_y;
+        xcb_query_pointer_cookie_t pointer_cookie;
+        xcb_query_pointer_reply_t * pointer_reply;
+
+        pointer_cookie = xcb_query_pointer(c, root);
+        pointer_reply = xcb_query_pointer_reply(c, pointer_cookie, NULL);
+
+        original_x = tag->floated.top->x;
+        original_y = tag->floated.top->y;
+
+        while ((event = xcb_wait_for_event(c)))
+        {
+            if ((event->response_type & ~0x80) == XCB_BUTTON_PRESS) break;
+            else if ((event->response_type & ~0x80) == XCB_MOTION_NOTIFY)
+            {
+                tag->floated.top->x = original_x +
+                    ((xcb_motion_notify_event_t *) event)->event_x -
+                    pointer_reply->root_x;
+
+                tag->floated.top->y = original_y +
+                    ((xcb_motion_notify_event_t *) event)->event_y -
+                    pointer_reply->root_y;
+
+                arrange_window(tag->floated.top);
+
+                xcb_flush(c);
+            }
+            else
+            {
+                handle_event(event);
+            }
+        }
+
+
+        free(pointer_reply);
+
+        xcb_ungrab_pointer(c, XCB_CURRENT_TIME);
+    }
+
+    free(grab_reply);
+}
+
 void arrange()
 {
     DEBUG_ENTER

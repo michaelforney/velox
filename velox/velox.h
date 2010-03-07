@@ -60,6 +60,8 @@ void move_previous();
 
 void kill_focused_window();
 
+void move_float();
+
 void next_layout();
 void previous_layout();
 
