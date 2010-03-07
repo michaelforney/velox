@@ -95,22 +95,36 @@ const char wm_name[] = "velox";
 const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
 
-struct velox_window_entry * lookup_window_entry(xcb_window_t window_id)
+struct velox_window * lookup_window(xcb_window_t window_id)
 {
-    struct velox_tag ** tag;
+    struct velox_tag ** tag_pointer;
     struct velox_window_entry * window_entry;
 
-    vector_for_each(&tags, tag)
+    vector_for_each(&tags, tag_pointer)
     {
-        list_for_each_entry(window_entry, &(*tag)->tiled.windows, head)
+        list_for_each_entry(window_entry, &(*tag_pointer)->tiled.windows, head)
         {
             if (window_entry->window->window_id == window_id)
             {
-                return window_entry;
+                return window_entry->window;
             }
         }
 
-        /* TODO: look through floated windows */
+        if ((*tag_pointer)->floated.top != NULL)
+        {
+            if ((*tag_pointer)->floated.top->window_id == window_id)
+            {
+                return (*tag_pointer)->floated.top;
+            }
+        }
+
+        list_for_each_entry(window_entry, &(*tag_pointer)->floated.windows, head)
+        {
+            if (window_entry->window->window_id == window_id)
+            {
+                return window_entry->window;
+            }
+        }
     }
 
     return NULL;
@@ -296,27 +310,6 @@ void synthetic_configure(struct velox_window * window)
     xcb_send_event(c, false, window->window_id, XCB_EVENT_MASK_STRUCTURE_NOTIFY, (const char *) &event);
 }
 
-/**
- * Sends a synthetic unmap request to the window
- *
- * See section 4.1.4 of the ICCCM
- *
- * @param wnidow The window to send the request to
- */
-void synthetic_unmap(struct velox_window * window)
-{
-    xcb_unmap_notify_event_t event;
-
-    event.response_type = XCB_UNMAP_NOTIFY;
-    event.event = root;
-    event.window = window->window_id;
-    event.from_configure = false;
-
-    xcb_send_event(c, false, root,
-        XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
-        (const char *) &event);
-}
-
 void focus(xcb_window_t window_id)
 {
     uint16_t mask = XCB_CW_BORDER_PIXEL;
@@ -352,6 +345,27 @@ void focus(xcb_window_t window_id)
     run_hooks(&window_id, VELOX_HOOK_FOCUS_CHANGED);
 
     xcb_flush(c);
+}
+
+static void update_focus()
+{
+    if (tag->focus_type == TILE)
+    {
+        if (list_empty(&tag->tiled.windows)) focus(root);
+        else
+        {
+            focus(list_entry(tag->tiled.focus, struct velox_window_entry,
+                head)->window->window_id);
+        }
+    }
+    else
+    {
+        if (tag->floated.top == NULL) focus(root);
+        else
+        {
+            focus(tag->floated.top->window_id);
+        }
+    }
 }
 
 void set_tag(void * generic_index)
@@ -474,18 +488,19 @@ void move_focus_to_tag(void * generic_index)
                 tags.data[index]->tiled.focus = tags.data[index]->tiled.windows.next;
             }
 
-            if (list_empty(&tag->tiled.windows))
+            if (list_empty(&tag->tiled.windows) && tag->floated.top != NULL)
             {
-                focus(root);
-            }
-            else
-            {
-                focus(list_entry(tag->tiled.focus, struct velox_window_entry, head)->window->window_id);
+                tag->focus_type = FLOAT;
             }
 
+            update_focus();
             hide_window(window->window_id);
-
             arrange();
+
+            if (tags.data[index]->floated.top == NULL)
+            {
+                tags.data[index]->focus_type = TILE;
+            }
         }
     }
     else if (tag->focus_type == FLOAT)
@@ -533,14 +548,10 @@ void move_focus_to_tag(void * generic_index)
 
             if (tag->floated.top == NULL)
             {
-                focus(root);
                 tag->focus_type = TILE;
             }
-            else
-            {
-                focus(tag->floated.top->window_id);
-            }
 
+            update_focus();
             hide_window(tags.data[index]->floated.top->window_id);
 
             if (list_empty(&tags.data[index]->tiled.windows))
@@ -557,16 +568,18 @@ void set_focus_type(enum velox_tag_focus_type focus_type)
 {
     if (tag->focus_type == focus_type) return;
 
-    tag->focus_type = focus_type;
-
-    if (tag->focus_type == TILE && !list_empty(&tag->tiled.windows))
+    if (focus_type == TILE && !list_empty(&tag->tiled.windows))
     {
+        tag->focus_type = focus_type;
+
         focus(list_entry(
                 tag->tiled.focus, struct velox_window_entry, head
             )->window->window_id);
     }
-    else if (tag->focus_type == FLOAT && tag->floated.top != NULL)
+    else if (focus_type == FLOAT && tag->floated.top != NULL)
     {
+        tag->focus_type = focus_type;
+
         focus(tag->floated.top->window_id);
     }
 }
@@ -857,12 +870,12 @@ void manage(xcb_window_t window_id)
 
     struct velox_window * window = NULL;
     struct velox_window_entry * window_entry;
-    struct velox_window_entry * transient_entry = NULL;
     xcb_get_property_cookie_t transient_for_cookie;
     xcb_get_property_reply_t * transient_for_reply = NULL;
     xcb_get_geometry_cookie_t geometry_cookie;
     xcb_get_geometry_reply_t * geometry = NULL;
     xcb_window_t transient_id = 0;
+    struct velox_window * transient = NULL;
     uint32_t mask;
     uint32_t values[2];
     uint32_t property_values[2];
@@ -882,7 +895,7 @@ void manage(xcb_window_t window_id)
     if (transient_for_reply->type == XCB_ATOM_WINDOW && transient_id)
     {
         DEBUG_PRINT("transient_id: %i\n", transient_id)
-        transient_entry = lookup_window_entry(transient_id);
+        transient = lookup_window(transient_id);
 
         window->floating = true;
     }
@@ -891,9 +904,9 @@ void manage(xcb_window_t window_id)
         window->floating = false;
     }
 
-    if (transient_entry != NULL)
+    if (transient != NULL)
     {
-        window->tag = transient_entry->window->tag;
+        window->tag = transient->tag;
     }
     else
     {
@@ -954,7 +967,6 @@ void manage(xcb_window_t window_id)
         }
 
         window->tag->floated.top = window;
-
         window->tag->focus_type = FLOAT;
     }
     else
@@ -998,6 +1010,7 @@ void unmanage(xcb_window_t window_id)
     struct velox_window * window = NULL;
 
     DEBUG_ENTER
+    DEBUG_PRINT("window_id: 0x%x\n", window_id);
 
     vector_for_each(&tags, tag_pos)
     {
@@ -1009,12 +1022,7 @@ void unmanage(xcb_window_t window_id)
                 window = window_entry->window;
 
                 /* Deal with special cases */
-                if (list_is_singular(&(*tag_pos)->tiled.windows))
-                {
-                    /* Set focus to the list head (no focus) */
-                    window->tag->tiled.focus = &(*tag_pos)->tiled.windows;
-                }
-                else if (&window_entry->head == (*tag_pos)->tiled.focus)
+                if (&window_entry->head == (*tag_pos)->tiled.focus)
                 {
                     (*tag_pos)->tiled.focus = list_actual_next((*tag_pos)->tiled.focus,
                         &(*tag_pos)->tiled.windows);
@@ -1023,15 +1031,11 @@ void unmanage(xcb_window_t window_id)
                 list_del(&window_entry->head);
                 free(window_entry);
 
-                if (tag == (*tag_pos) && tag->focus_type == TILE)
+                /* If there are no more tiled windows, but floated windows
+                 * still exist, switch the focus type to FLOAT */
+                if (list_empty(&(*tag_pos)->tiled.windows) && (*tag_pos)->floated.top != NULL)
                 {
-                    if (list_empty(&tag->tiled.windows))    focus(root);
-                    else
-                    {
-                        focus(list_entry(
-                                tag->tiled.focus, struct velox_window_entry, head
-                            )->window->window_id);
-                    }
+                    (*tag_pos)->focus_type = FLOAT;
                 }
 
                 arrange();
@@ -1046,9 +1050,18 @@ void unmanage(xcb_window_t window_id)
         {
             if ((*tag_pos)->floated.top->window_id == window_id)
             {
+                window = (*tag_pos)->floated.top;
+
                 if (list_empty(&(*tag_pos)->floated.windows))
                 {
                     (*tag_pos)->floated.top = NULL;
+
+                    /* If there are no more floated windows, but tiled windows
+                     * still exist, switch the focus type to TILE */
+                    if (!list_empty(&(*tag_pos)->tiled.windows))
+                    {
+                        (*tag_pos)->focus_type = TILE;
+                    }
                 }
                 else
                 {
@@ -1056,7 +1069,6 @@ void unmanage(xcb_window_t window_id)
 
                     head = (*tag_pos)->floated.windows.next;
 
-                    window = (*tag_pos)->floated.top;
                     (*tag_pos)->floated.top = list_entry(head,
                         struct velox_window_entry, head)->window;
 
@@ -1101,6 +1113,13 @@ void unmanage(xcb_window_t window_id)
 
     if (window != NULL)
     {
+        DEBUG_PRINT("found\n")
+
+        if (tag == (*tag_pos))
+        {
+            update_focus();
+        }
+
         run_hooks(window, VELOX_HOOK_UNMANAGE);
         free(window);
     }

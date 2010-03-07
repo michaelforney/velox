@@ -157,7 +157,7 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
 
 static void map_request(xcb_map_request_event_t * event)
 {
-    struct velox_window_entry * maybe_entry;
+    struct velox_window * window;
     xcb_get_window_attributes_cookie_t window_attributes_cookie;
     xcb_get_window_attributes_reply_t * window_attributes;
 
@@ -165,13 +165,13 @@ static void map_request(xcb_map_request_event_t * event)
 
     window_attributes_cookie = xcb_get_window_attributes(c, event->window);
 
-    maybe_entry = lookup_window_entry(event->window);
+    window = lookup_window(event->window);
 
     window_attributes = xcb_get_window_attributes_reply(c, window_attributes_cookie, NULL);
 
     if (window_attributes)
     {
-        if (!maybe_entry && !window_attributes->override_redirect)
+        if (window == NULL && !window_attributes->override_redirect)
         {
             manage(event->window);
         }
@@ -195,17 +195,17 @@ static void configure_notify(xcb_configure_notify_event_t * event)
 
 static void configure_request(xcb_configure_request_event_t * event)
 {
-    struct velox_window_entry * entry;
+    struct velox_window * window;
 
     DEBUG_ENTER
 
-    entry = lookup_window_entry(event->window);
+    window = lookup_window(event->window);
 
     /* Case 1 of the ICCCM 4.1.5 */
-    if (entry && !entry->window->floating)
+    if (window != NULL && !window->floating)
     {
         DEBUG_PRINT("configure_request: case 1\n")
-        synthetic_configure(entry->window);
+        synthetic_configure(window);
     }
     /* Case 2 of the ICCCM 4.1.5 */
     else
