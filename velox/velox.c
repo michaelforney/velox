@@ -262,11 +262,11 @@ void hide_window(xcb_window_t window_id)
 
     DEBUG_ENTER
 
-    property_values[0] = XCB_WM_STATE_WITHDRAWN; // FIXME: Maybe this should be iconic?
+    property_values[0] = XCB_WM_STATE_WITHDRAWN;
     property_values[1] = 0;
     xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
-    pending_unmaps++;
+    ++pending_unmaps;
 
     xcb_unmap_window(c, window_id);
 }
@@ -839,7 +839,8 @@ void manage(xcb_window_t window_id)
     geometry_cookie = xcb_get_geometry(c, window_id);
 
     window = (struct velox_window *) malloc(sizeof(struct velox_window));
-    DEBUG_PRINT("allocated window: %i\n", (uint32_t) window)
+    DEBUG_PRINT("allocated window: %p\n", window)
+    DEBUG_PRINT("window_id: 0x%x\n", window_id);
     window->window_id = window_id;
 
     transient_for_reply = xcb_get_property_reply(c, transient_for_cookie, NULL);
