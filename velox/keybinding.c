@@ -243,13 +243,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
     struct velox_key_binding_entry * entry;
     uint16_t keysym_index;
     uint16_t extra_modifier_index;
-    uint16_t extra_modifiers[] = {
-        0,
-        mod_mask_numlock,
-        XCB_MOD_MASK_LOCK,
-        mod_mask_numlock | XCB_MOD_MASK_LOCK
-    };
-    uint16_t extra_modifiers_count = sizeof(extra_modifiers) / sizeof(uint16_t);
+    uint16_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
 
     DEBUG_ENTER
 
@@ -271,7 +265,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
             }
         }
 
-        for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_count; extra_modifier_index++)
+        for (extra_modifier_index = 0; extra_modifier_index < extra_modifiers_length; extra_modifier_index++)
         {
             xcb_grab_key(c, true, root,
                 entry->key_binding->key.modifiers | extra_modifiers[extra_modifier_index],

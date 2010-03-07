@@ -21,7 +21,7 @@
 #define VELOX_MODIFIER_H
 
 /* Macros */
-#define CLEAN_MASK(mask) (mask & ~(mod_mask_numlock | XCB_MOD_MASK_LOCK))
+#define CLEAN_MASK(mask) (mask & ~(MOD_MASK_NUMLOCK | XCB_MOD_MASK_LOCK))
 
 /* Static functions */
 static inline uint16_t modifier_value(const char * name)
@@ -40,12 +40,12 @@ static inline uint16_t modifier_value(const char * name)
 }
 
 /* Key binding constants */
-static const uint16_t mod_mask_numlock = XCB_MOD_MASK_2;
+#define MOD_MASK_NUMLOCK XCB_MOD_MASK_2
 static const uint16_t extra_modifiers[] = {
     0,
-    mod_mask_numlock,
+    MOD_MASK_NUMLOCK,
     XCB_MOD_MASK_LOCK,
-    mod_mask_numlock | XCB_MOD_MASK_LOCK
+    MOD_MASK_NUMLOCK | XCB_MOD_MASK_LOCK
 };
 
 #endif
