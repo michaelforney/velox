@@ -45,7 +45,7 @@ The format for `keys.yaml` is as follows:
               # for the key binding.
               #
               # Keysyms can be obtained from the "keysymdef.h' header from
-              # X.Org. NOTE: The "Xk_" should be excluded
+              # X.Org. NOTE: The "XK_" should be excluded
               key: keysym
 
 Modules
