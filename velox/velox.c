@@ -851,31 +851,6 @@ void restack()
     clear_event_type = XCB_ENTER_NOTIFY;
 }
 
-void update_name_class(struct velox_window * window)
-{
-    xcb_get_property_cookie_t wm_name_cookie, wm_class_cookie;
-    xcb_get_property_reply_t * wm_name_reply, * wm_class_reply;
-
-    wm_name_cookie = xcb_get_property(c, false, window->window_id,
-        XCB_ATOM_WM_NAME, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
-    wm_class_cookie = xcb_get_property(c, false, window->window_id,
-        XCB_ATOM_WM_CLASS, XCB_GET_PROPERTY_TYPE_ANY, 0, UINT_MAX);
-
-    wm_name_reply = xcb_get_property_reply(c, wm_name_cookie, NULL);
-    wm_class_reply = xcb_get_property_reply(c, wm_class_cookie, NULL);
-
-    DEBUG_PRINT("wm_name: %s\n", xcb_get_property_value(wm_name_reply))
-    DEBUG_PRINT("wm_class: %s\n", xcb_get_property_value(wm_class_reply))
-
-    window->name = strndup(xcb_get_property_value(wm_name_reply),
-        xcb_get_property_value_length(wm_name_reply));
-    window->class = strndup(xcb_get_property_value(wm_class_reply),
-        xcb_get_property_value_length(wm_class_reply));
-
-    free(wm_name_reply);
-    free(wm_class_reply);
-}
-
 void manage(xcb_window_t window_id)
 {
     DEBUG_ENTER

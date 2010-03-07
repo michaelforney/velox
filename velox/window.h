@@ -53,6 +53,8 @@ bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
 
 void window_set_geometry(struct velox_window * window, struct velox_area * area);
 
+void update_name_class(struct velox_window * window);
+
 #endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
