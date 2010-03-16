@@ -84,6 +84,7 @@ stuff
 * Easily configurable and usable colors
 * Easier and more automatic allocation of atoms
 * Configurable tags
+* Cleanup some of the more messy code to reduce code redundancy
 
 [YAML]: http://www.yaml.org/
 
