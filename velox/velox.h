@@ -31,6 +31,7 @@
 extern xcb_connection_t * c;
 extern xcb_window_t root;
 extern xcb_screen_t * screen;
+extern xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 extern struct velox_area screen_area;
 extern struct velox_area work_area;
@@ -60,7 +61,8 @@ void move_previous();
 
 void kill_focused_window();
 
-void move_float();
+void move_float(void * generic_window_id);
+void resize_float(void * generic_window_id);
 
 void next_layout();
 void previous_layout();
@@ -70,6 +72,8 @@ void quit();
 
 void set_tag(void * generic_index);
 void move_focus_to_tag(void * generic_index);
+void next_tag();
+void previous_tag();
 
 void set_focus_type(enum velox_tag_focus_type focus_type);
 void toggle_focus_type();

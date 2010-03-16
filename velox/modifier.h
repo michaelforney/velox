@@ -20,6 +20,9 @@
 #ifndef VELOX_MODIFIER_H
 #define VELOX_MODIFIER_H
 
+#include <yaml.h>
+#include <assert.h>
+
 /* Macros */
 #define CLEAN_MASK(mask) (mask & ~(MOD_MASK_NUMLOCK | XCB_MOD_MASK_LOCK))
 
@@ -37,6 +40,27 @@ static inline uint16_t modifier_value(const char * name)
     else if (strcmp(name, "mod_any") == 0)      return XCB_MOD_MASK_ANY;
 
     return 0;
+}
+
+static uint16_t parse_modifiers(yaml_document_t * document, yaml_node_t * node)
+{
+    yaml_node_item_t * item;
+    yaml_node_t * mod_node;
+
+    uint16_t modifiers = 0;
+
+    assert(node->type == YAML_SEQUENCE_NODE);
+
+    for (item = node->data.sequence.items.start;
+        item < node->data.sequence.items.top;
+        ++item)
+    {
+        mod_node = yaml_document_get_node(document, *item);
+        assert(mod_node->type == YAML_SCALAR_NODE);
+        modifiers |= modifier_value((const char const *) mod_node->data.scalar.value);
+    }
+
+    return modifiers;
 }
 
 /* Key binding constants */

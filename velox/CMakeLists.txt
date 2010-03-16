@@ -7,7 +7,7 @@ add_executable(velox
     layout.c
     hook.c
     tag.c
-    keybinding.c
+    binding.c
     config_file.c
     module.c
     ewmh.c
@@ -36,7 +36,7 @@ install(TARGETS velox DESTINATION bin)
 install(FILES
     config_file.h
     hook.h
-    keybinding.h
+    binding.h
     modifier.h
     layout.h
     velox.h

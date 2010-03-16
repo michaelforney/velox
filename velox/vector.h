@@ -98,6 +98,19 @@ static inline uint32_t next_power_of_two(uint32_t n)
 }
 
 /**
+ * Append a new value at the end of a vector and return its address
+ *
+ * @param vector The vector to append
+ * @return The location of the new element
+ */
+#define vector_append_address(vector)                                       \
+({                                                                          \
+    if ((vector)->size == (vector)->capacity)                               \
+        vector_increase_capacity(vector);                                   \
+    &(vector)->data[(vector)->size++];                                      \
+})
+
+/**
  * Remove a value at the specified position in a vector
  *
  * @param vector The vector from which to remove the value

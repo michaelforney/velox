@@ -1,4 +1,4 @@
-/* velox: velox/keybinding-private.h
+/* velox: velox/binding-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -17,37 +17,27 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_KEYBINDING_PRIVATE_H
-#define VELOX_KEYBINDING_PRIVATE_H
+#ifndef VELOX_BINDING_PRIVATE
+#define VELOX_BINDING_PRIVATE
 
-#include <xcb/xcb.h>
+#include "binding.h"
+#include "vector.h"
 
-#include "list.h"
-
-/* Structures */
-struct velox_key_binding
+struct velox_binding
 {
-    struct velox_key key;
-    xcb_keycode_t keycode;
-    void (* function)(void * arg);
+    struct velox_bindable bindable;
+    velox_binding_function_t function;
     void * arg;
 };
 
-struct velox_key_binding_entry
-{
-    struct velox_key_binding * key_binding;
-    struct list_head head;
-};
+DEFINE_VECTOR(velox_binding_vector, struct velox_binding);
 
-/* Private variables */
-extern struct list_head key_bindings;
+extern struct velox_binding_vector key_bindings;
+extern struct velox_binding_vector window_button_bindings;
+extern struct velox_binding_vector root_button_bindings;
 
-/* Setup and cleanup functions */
-void setup_key_bindings();
-void cleanup_key_bindings();
-
-/* Private functions */
-void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
+void setup_bindings();
+void cleanup_bindings();
 
 #endif
 

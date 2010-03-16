@@ -99,9 +99,9 @@ bool setup()
 
     mixer_elem = snd_mixer_find_selem(mixer, sid);
 
-    MODULE_KEYBINDING(mute, NULL)
-    MODULE_KEYBINDING(raise_volume, NULL)
-    MODULE_KEYBINDING(lower_volume, NULL)
+    MODULE_KEY_BINDING(mute, NULL);
+    MODULE_KEY_BINDING(raise_volume, NULL);
+    MODULE_KEY_BINDING(lower_volume, NULL);
 
     printf("done\n");
 

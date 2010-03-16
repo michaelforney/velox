@@ -20,10 +20,16 @@
 #ifndef VELOX_MODULE_H
 #define VELOX_MODULE_H
 
-#include <velox/keybinding.h>
+#include <velox/binding.h>
 
-#define MODULE_KEYBINDING(function, arg) \
-    add_configured_key_binding(name, #function, &function, arg);
+#define MODULE_KEY_BINDING(function, arg) \
+    add_configured_key_binding(name, #function, &function, arg)
+
+#define MODULE_WINDOW_BUTTON_BINDING(function, arg) \
+    add_configured_window_button_binding(name, #function, &function, arg)
+
+#define MODULE_ROOT_BUTTON_BINDING(function, arg) \
+    add_configured_root_button_binding(name, #function, &function, arg)
 
 #endif
 

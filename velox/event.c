@@ -25,36 +25,35 @@
 
 #include "velox.h"
 #include "window.h"
-#include "keybinding.h"
 #include "hook.h"
 #include "modifier.h"
 #include "debug.h"
 
 #include "velox-private.h"
-#include "keybinding-private.h"
 #include "hook-private.h"
 #include "ewmh-private.h"
+#include "binding-private.h"
 
 /* X event handlers */
 static void key_press(xcb_key_press_event_t * event)
 {
     xcb_keysym_t keysym = 0;
-    struct velox_key_binding_entry * entry;
+    struct velox_binding * binding;
 
     keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
 
     DEBUG_PRINT("keysym: %x\n", keysym)
     DEBUG_PRINT("modifiers: %i\n", event->state)
 
-    list_for_each_entry(entry, &key_bindings, head)
+    vector_for_each(&key_bindings, binding)
     {
-        if (keysym == entry->key_binding->key.keysym &&
-            ((entry->key_binding->key.modifiers == XCB_MOD_MASK_ANY) ||
-            (CLEAN_MASK(event->state) == entry->key_binding->key.modifiers)))
+        if (keysym == binding->bindable.pressable.key.keysym &&
+            ((binding->bindable.modifiers == XCB_MOD_MASK_ANY) ||
+            (CLEAN_MASK(event->state) == binding->bindable.modifiers)))
         {
-            if (entry->key_binding->function != NULL)
+            if (binding->function != NULL)
             {
-                entry->key_binding->function(entry->key_binding->arg);
+                binding->function(binding->arg);
             }
         }
     }
@@ -62,7 +61,46 @@ static void key_press(xcb_key_press_event_t * event)
 
 static void button_press(xcb_button_press_event_t * event)
 {
+    struct velox_binding_vector * bindings;
+    struct velox_binding * binding;
+    xcb_button_t button;
+
     DEBUG_ENTER
+
+    button = event->detail;
+
+    if (event->event == root)
+    {
+        bindings = &root_button_bindings;
+    }
+    else
+    {
+        bindings = &window_button_bindings;
+    }
+
+    DEBUG_PRINT("button: %u\n", button);
+    DEBUG_PRINT("window: %u\n", event->event);
+
+    vector_for_each(bindings, binding)
+    {
+        DEBUG_PRINT("binding button: %u\n", binding->bindable.pressable.button);
+        if (button == binding->bindable.pressable.button &&
+            ((binding->bindable.modifiers == XCB_MOD_MASK_ANY) ||
+            (CLEAN_MASK(event->state) == binding->bindable.modifiers)))
+        {
+            if (binding->function != NULL)
+            {
+                if (event->event == root)
+                {
+                    binding->function(binding->arg);
+                }
+                else
+                {
+                    binding->function((void *) event->event);
+                }
+            }
+        }
+    }
 }
 
 static void enter_notify(xcb_enter_notify_event_t * event)

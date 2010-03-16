@@ -23,7 +23,7 @@
 
 #include "tag.h"
 #include "velox.h"
-#include "keybinding.h"
+#include "binding.h"
 
 #include "layout-private.h"
 

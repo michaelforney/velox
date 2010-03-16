@@ -37,24 +37,25 @@
 #include "window.h"
 #include "tag.h"
 #include "hook.h"
-#include "keybinding.h"
 #include "config_file.h"
 #include "debug.h"
 #include "list.h"
+#include "modifier.h"
 
 #include "module-private.h"
 #include "config_file-private.h"
-#include "keybinding-private.h"
 #include "hook-private.h"
 #include "layout-private.h"
 #include "ewmh-private.h"
 #include "event-private.h"
 #include "work_area-private.h"
+#include "binding-private.h"
 
 /* X variables */
 xcb_connection_t * c;
 xcb_screen_t * screen;
 xcb_window_t root;
+xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 /* X atoms */
 const uint16_t atom_length = 3;
@@ -95,6 +96,52 @@ const char wm_name[] = "velox";
 const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
 
+struct velox_window * lookup_tiled_window(xcb_window_t window_id)
+{
+    struct velox_tag ** tag_pointer;
+    struct velox_window_entry * window_entry;
+
+    vector_for_each(&tags, tag_pointer)
+    {
+        list_for_each_entry(window_entry, &(*tag_pointer)->tiled.windows, head)
+        {
+            if (window_entry->window->window_id == window_id)
+            {
+                return window_entry->window;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+struct velox_window * lookup_floated_window(xcb_window_t window_id)
+{
+    struct velox_tag ** tag_pointer;
+    struct velox_window_entry * window_entry;
+
+    vector_for_each(&tags, tag_pointer)
+    {
+        if ((*tag_pointer)->floated.top != NULL)
+        {
+            if ((*tag_pointer)->floated.top->window_id == window_id)
+            {
+                return (*tag_pointer)->floated.top;
+            }
+
+            list_for_each_entry(window_entry, &(*tag_pointer)->floated.windows, head)
+            {
+                if (window_entry->window->window_id == window_id)
+                {
+                    return window_entry->window;
+                }
+            }
+        }
+    }
+
+    return NULL;
+}
+
 struct velox_window * lookup_window(xcb_window_t window_id)
 {
     struct velox_tag ** tag_pointer;
@@ -116,13 +163,13 @@ struct velox_window * lookup_window(xcb_window_t window_id)
             {
                 return (*tag_pointer)->floated.top;
             }
-        }
 
-        list_for_each_entry(window_entry, &(*tag_pointer)->floated.windows, head)
-        {
-            if (window_entry->window->window_id == window_id)
+            list_for_each_entry(window_entry, &(*tag_pointer)->floated.windows, head)
             {
-                return window_entry->window;
+                if (window_entry->window->window_id == window_id)
+                {
+                    return window_entry->window;
+                }
             }
         }
     }
@@ -146,6 +193,82 @@ void check_wm_running()
     {
         die("Another window manager is already running");
     }
+}
+
+void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
+{
+    xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
+    xcb_keysym_t * keysyms;
+    struct velox_binding * binding;
+    uint16_t index;
+    uint16_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
+
+    DEBUG_ENTER
+
+    keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
+
+    xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
+
+    free(keyboard_mapping);
+    keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
+    keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
+    vector_for_each(&key_bindings, binding)
+    {
+        for (index = 0; index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); ++index)
+        {
+            if (keysyms[index] == binding->bindable.pressable.key.keysym)
+            {
+                binding->bindable.pressable.key.keycode = min_keycode +
+                    (index / keyboard_mapping->keysyms_per_keycode);
+                break;
+            }
+        }
+
+        for (index = 0; index < extra_modifiers_length; ++index)
+        {
+            xcb_grab_key(c, true, root,
+                binding->bindable.modifiers | extra_modifiers[index],
+                binding->bindable.pressable.key.keycode,
+                XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
+            );
+        }
+    }
+
+    xcb_flush(c);
+}
+
+static void grab_buttons(xcb_window_t window_id, struct velox_binding_vector * bindings)
+{
+    struct velox_binding * binding;
+    uint16_t index;
+    uint16_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
+
+    xcb_ungrab_button(c, XCB_BUTTON_MASK_ANY, window_id, XCB_MOD_MASK_ANY);
+
+    vector_for_each(bindings, binding)
+    {
+        for (index = 0; index < extra_modifiers_length; ++index)
+        {
+            xcb_grab_button(c, false, window_id,
+                XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE,
+                XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_SYNC,
+                XCB_WINDOW_NONE, XCB_CURSOR_NONE,
+                binding->bindable.pressable.button,
+                binding->bindable.modifiers);
+        }
+    }
+
+    xcb_flush(c);
+}
+
+void grab_root_buttons()
+{
+    grab_buttons(root, &root_button_bindings);
+}
+
+void grab_window_buttons(struct velox_window * window)
+{
+    grab_buttons(window->window_id, &window_button_bindings);
 }
 
 void setup()
@@ -207,8 +330,7 @@ void setup()
         MOVE_ID, MOVE_ID + 1, 0, 0, 0, 0xFFFF, 0xFFFF, 0xFFFF);
 
     mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
-    values[0] = XCB_EVENT_MASK_BUTTON_PRESS |
-                XCB_EVENT_MASK_ENTER_WINDOW |
+    values[0] = XCB_EVENT_MASK_ENTER_WINDOW |
                 XCB_EVENT_MASK_LEAVE_WINDOW |
                 XCB_EVENT_MASK_STRUCTURE_NOTIFY |
                 XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
@@ -241,7 +363,7 @@ void setup()
 
     free(atom_cookies);
 
-    setup_key_bindings();
+    setup_bindings();
     setup_hooks();
 
     load_config();
@@ -252,6 +374,7 @@ void setup()
     setup_ewmh();
 
     grab_keys(setup->min_keycode, setup->max_keycode);
+    grab_root_buttons();
 
     assert(tags.size > 0);
     tag = tags.data[0];
@@ -584,6 +707,50 @@ void set_focus_type(enum velox_tag_focus_type focus_type)
     }
 }
 
+void next_tag()
+{
+    struct velox_tag ** tag_position;
+    uint8_t tag_index;
+
+    DEBUG_ENTER
+
+    vector_for_each(&tags, tag_position)
+    {
+        if (*tag_position == tag) break;
+    }
+
+    tag_index = tag_position - &tags.data[0];
+
+    if (++tag_index == tags.size)
+    {
+        tag_index = 0;
+    }
+
+    set_tag((void *) tag_index);
+}
+
+void previous_tag()
+{
+    struct velox_tag ** tag_position;
+    uint8_t tag_index;
+
+    DEBUG_ENTER
+
+    vector_for_each(&tags, tag_position)
+    {
+        if (*tag_position == tag) break;
+    }
+
+    tag_index = tag_position - &tags.data[0];
+
+    if (tag_index-- == 0)
+    {
+        tag_index = tags.size - 1;
+    }
+
+    set_tag((void *) tag_index);
+}
+
 void toggle_focus_type()
 {
     if (tag->focus_type == TILE)    set_focus_type(FLOAT);
@@ -769,11 +936,14 @@ void kill_focused_window()
     xcb_flush(c);
 }
 
-void move_float()
+void move_float(void * generic_window_id)
 {
+    xcb_window_t window_id = (xcb_window_t) generic_window_id;
+    struct velox_window * window;
     xcb_grab_pointer_cookie_t grab_cookie;
     xcb_grab_pointer_reply_t * grab_reply;
-    if (tag->floated.top == NULL) return;
+
+    if ((window = lookup_floated_window(window_id)) == NULL) return;
 
     grab_cookie = xcb_grab_pointer(c, false, root, XCB_EVENT_MASK_BUTTON_PRESS |
             XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION,
@@ -792,23 +962,23 @@ void move_float()
         pointer_cookie = xcb_query_pointer(c, root);
         pointer_reply = xcb_query_pointer_reply(c, pointer_cookie, NULL);
 
-        original_x = tag->floated.top->x;
-        original_y = tag->floated.top->y;
+        original_x = window->x;
+        original_y = window->y;
 
         while ((event = xcb_wait_for_event(c)))
         {
-            if ((event->response_type & ~0x80) == XCB_BUTTON_PRESS) break;
+            if ((event->response_type & ~0x80) == XCB_BUTTON_RELEASE) break;
             else if ((event->response_type & ~0x80) == XCB_MOTION_NOTIFY)
             {
-                tag->floated.top->x = original_x +
+                window->x = original_x +
                     ((xcb_motion_notify_event_t *) event)->event_x -
                     pointer_reply->root_x;
 
-                tag->floated.top->y = original_y +
+                window->y = original_y +
                     ((xcb_motion_notify_event_t *) event)->event_y -
                     pointer_reply->root_y;
 
-                arrange_window(tag->floated.top);
+                arrange_window(window);
 
                 xcb_flush(c);
             }
@@ -822,6 +992,69 @@ void move_float()
         free(pointer_reply);
 
         xcb_ungrab_pointer(c, XCB_CURRENT_TIME);
+        xcb_flush(c);
+    }
+
+    free(grab_reply);
+}
+
+void resize_float(void * generic_window_id)
+{
+    xcb_window_t window_id = (xcb_window_t) generic_window_id;
+    struct velox_window * window;
+    xcb_grab_pointer_cookie_t grab_cookie;
+    xcb_grab_pointer_reply_t * grab_reply;
+
+    if ((window = lookup_floated_window(window_id)) == NULL) return;
+
+    grab_cookie = xcb_grab_pointer(c, false, root, XCB_EVENT_MASK_BUTTON_PRESS |
+            XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION,
+        XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE,
+        cursors[RESIZE], XCB_CURRENT_TIME);
+
+    grab_reply = xcb_grab_pointer_reply(c, grab_cookie, NULL);
+
+    if (grab_reply->status == XCB_GRAB_STATUS_SUCCESS)
+    {
+        xcb_generic_event_t * event;
+        uint32_t original_width, original_height;
+        xcb_query_pointer_cookie_t pointer_cookie;
+        xcb_query_pointer_reply_t * pointer_reply;
+
+        pointer_cookie = xcb_query_pointer(c, root);
+        pointer_reply = xcb_query_pointer_reply(c, pointer_cookie, NULL);
+
+        original_width = window->width;
+        original_height = window->height;
+
+        while ((event = xcb_wait_for_event(c)))
+        {
+            if ((event->response_type & ~0x80) == XCB_BUTTON_RELEASE) break;
+            else if ((event->response_type & ~0x80) == XCB_MOTION_NOTIFY)
+            {
+                window->width = original_width +
+                    ((xcb_motion_notify_event_t *) event)->event_x -
+                    pointer_reply->root_x;
+
+                window->height = original_height +
+                    ((xcb_motion_notify_event_t *) event)->event_y -
+                    pointer_reply->root_y;
+
+                arrange_window(window);
+
+                xcb_flush(c);
+            }
+            else
+            {
+                handle_event(event);
+            }
+        }
+
+
+        free(pointer_reply);
+
+        xcb_ungrab_pointer(c, XCB_CURRENT_TIME);
+        xcb_flush(c);
     }
 
     free(grab_reply);
@@ -948,6 +1181,9 @@ void manage(xcb_window_t window_id)
     xcb_change_window_attributes(c, window_id, mask, values);
 
     synthetic_configure(window);
+
+    /* Button bindings */
+    grab_window_buttons(window);
 
     if (window->floating)
     {
@@ -1266,7 +1502,7 @@ void cleanup()
 {
     cleanup_ewmh();
     cleanup_modules();
-    cleanup_key_bindings();
+    cleanup_bindings();
     cleanup_tags();
     cleanup_layouts();
     cleanup_work_area_modifiers();
