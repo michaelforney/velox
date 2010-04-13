@@ -33,10 +33,15 @@
 
 struct velox_layout_hashtable layouts;
 
-void __attribute__((constructor)) initialize_layouts()
+static void __attribute__((constructor)) initialize_layouts()
 {
     /* Create a new hashtable to store the layouts */
     hashtable_initialize(&layouts, 32, &sdbm_hash);
+}
+
+static void __attribute__((destructor)) free_layouts()
+{
+    hashtable_free(&layouts);
 }
 
 void cleanup_layout(void * layout)
