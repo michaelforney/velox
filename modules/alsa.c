@@ -110,9 +110,6 @@ bool setup()
 
 void cleanup()
 {
-    const char *** iterator;
-    const char ** command_iterator;
-
     printf("Alsa: Cleaning up...");
 
     snd_mixer_close(mixer);
