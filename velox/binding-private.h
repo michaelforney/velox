@@ -23,6 +23,21 @@
 #include "binding.h"
 #include "vector.h"
 
+struct velox_bindable
+{
+    union
+    {
+        struct
+        {
+            xcb_keycode_t keycode;
+            xcb_keysym_t keysym;
+        } key;
+        uint8_t button;
+    } pressable;
+
+    uint16_t modifiers;
+};
+
 struct velox_binding
 {
     struct velox_bindable bindable;

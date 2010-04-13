@@ -106,7 +106,7 @@ void configure(yaml_document_t * document)
             }
         }
 
-        add_configured_key_binding(name, binding, &spawn_command, command);
+        add_key_binding(name, binding, &spawn_command, command);
     }
 
     printf("done\n");

@@ -76,9 +76,9 @@ void add_tag(const char * name, const char * layout_names[])
     vector_append(&tags, tag);
 
     sprintf(binding_name, "set_tag_%u", tags.size);
-    add_configured_key_binding("tag", binding_name, &set_tag, (void *) tags.size - 1);
+    add_key_binding("tag", binding_name, &set_tag, (void *) tags.size - 1);
     sprintf(binding_name, "move_focus_to_tag_%u", tags.size);
-    add_configured_key_binding("tag", binding_name, &move_focus_to_tag, (void *) tags.size - 1);
+    add_key_binding("tag", binding_name, &move_focus_to_tag, (void *) tags.size - 1);
 }
 
 void setup_tags()

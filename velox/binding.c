@@ -226,18 +226,7 @@ static void setup_configured_bindings(const char * filename,
     fclose(file);
 }
 
-static void add_binding(struct velox_binding_vector * bindings, struct velox_bindable * bindable,
-    velox_binding_function_t function, void * arg)
-{
-    struct velox_binding * binding;
-
-    binding = vector_append_address(bindings);
-    binding->bindable = *bindable;
-    binding->function = function;
-    binding->arg = arg;
-}
-
-static void add_configured_binding(struct velox_bindable_hashtable * configured_bindables,
+static void add_binding(struct velox_bindable_hashtable * configured_bindables,
     struct velox_binding_vector * bindings, const char * group, const char * name,
     velox_binding_function_t function, void * arg)
 {
@@ -255,7 +244,12 @@ static void add_configured_binding(struct velox_bindable_hashtable * configured_
 
     vector_for_each(bindable_vector, bindable)
     {
-        add_binding(bindings, bindable, function, arg);
+        struct velox_binding * binding;
+
+        binding = vector_append_address(bindings);
+        binding->bindable = *bindable;
+        binding->function = function;
+        binding->arg = arg;
     }
 }
 
@@ -264,22 +258,22 @@ static void setup_key_bindings()
     setup_configured_bindings("keys.yaml", &parse_key, &configured_keys);
 
     /* Window focus */
-    add_configured_key_binding("velox", STRING_SYMBOL(focus_next), NULL);
-    add_configured_key_binding("velox", STRING_SYMBOL(focus_previous), NULL);
-    add_configured_key_binding("velox", STRING_SYMBOL(move_next), NULL);
-    add_configured_key_binding("velox", STRING_SYMBOL(move_previous), NULL);
+    add_key_binding("velox", STRING_SYMBOL(focus_next), NULL);
+    add_key_binding("velox", STRING_SYMBOL(focus_previous), NULL);
+    add_key_binding("velox", STRING_SYMBOL(move_next), NULL);
+    add_key_binding("velox", STRING_SYMBOL(move_previous), NULL);
 
-    add_configured_key_binding("velox", STRING_SYMBOL(toggle_focus_type), NULL);
+    add_key_binding("velox", STRING_SYMBOL(toggle_focus_type), NULL);
 
     /* Window operations */
-    add_configured_key_binding("velox", STRING_SYMBOL(kill_focused_window), NULL);
+    add_key_binding("velox", STRING_SYMBOL(kill_focused_window), NULL);
 
     /* Layout control */
-    add_configured_key_binding("velox", STRING_SYMBOL(next_layout), NULL);
-    add_configured_key_binding("velox", STRING_SYMBOL(previous_layout), NULL);
+    add_key_binding("velox", STRING_SYMBOL(next_layout), NULL);
+    add_key_binding("velox", STRING_SYMBOL(previous_layout), NULL);
 
     /* Quit */
-    add_configured_key_binding("velox", STRING_SYMBOL(quit), NULL);
+    add_key_binding("velox", STRING_SYMBOL(quit), NULL);
 }
 
 static void setup_button_bindings()
@@ -287,47 +281,29 @@ static void setup_button_bindings()
     setup_configured_bindings("buttons.yaml", &parse_button, &configured_buttons);
 
     /* Floating windows */
-    add_configured_window_button_binding("velox", STRING_SYMBOL(move_float));
-    add_configured_window_button_binding("velox", STRING_SYMBOL(resize_float));
+    add_window_button_binding("velox", STRING_SYMBOL(move_float));
+    add_window_button_binding("velox", STRING_SYMBOL(resize_float));
 
-    add_configured_root_button_binding("velox", STRING_SYMBOL(next_tag), NULL);
-    add_configured_root_button_binding("velox", STRING_SYMBOL(previous_tag), NULL);
+    add_root_button_binding("velox", STRING_SYMBOL(next_tag), NULL);
+    add_root_button_binding("velox", STRING_SYMBOL(previous_tag), NULL);
 }
 
-void add_key_binding(struct velox_bindable * bindable,
+void add_key_binding(const char * group, const char * name,
     velox_binding_function_t function, void * arg)
 {
-    add_binding(&key_bindings, bindable, function, arg);
+    add_binding(&configured_keys, &key_bindings, group, name, function, arg);
 }
 
-void add_window_button_binding(struct velox_bindable * bindable,
-    velox_binding_function_t function, void * arg)
-{
-    add_binding(&window_button_bindings, bindable, function, arg);
-}
-
-void add_root_button_binding(struct velox_bindable * bindable,
-    velox_binding_function_t function, void * arg)
-{
-    add_binding(&root_button_bindings, bindable, function, arg);
-}
-
-void add_configured_key_binding(const char * group, const char * name,
-    velox_binding_function_t function, void * arg)
-{
-    add_configured_binding(&configured_keys, &key_bindings, group, name, function, arg);
-}
-
-void add_configured_window_button_binding(const char * group, const char * name,
+void add_window_button_binding(const char * group, const char * name,
     velox_binding_function_t function)
 {
-    add_configured_binding(&configured_buttons, &window_button_bindings, group, name, function, NULL);
+    add_binding(&configured_buttons, &window_button_bindings, group, name, function, NULL);
 }
 
-void add_configured_root_button_binding(const char * group, const char * name,
+void add_root_button_binding(const char * group, const char * name,
     velox_binding_function_t function, void * arg)
 {
-    add_configured_binding(&configured_buttons, &root_button_bindings, group, name, function, arg);
+    add_binding(&configured_buttons, &root_button_bindings, group, name, function, arg);
 }
 
 void setup_bindings()
