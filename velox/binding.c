@@ -35,10 +35,8 @@
 DEFINE_VECTOR(velox_bindable_vector, struct velox_bindable);
 DEFINE_HASHTABLE(velox_bindable_hashtable, const char *, struct velox_bindable_vector *);
 
-static void parse_button(yaml_document_t * document, yaml_node_t * node,
-    struct velox_bindable * bindable);
-static void parse_key(yaml_document_t * document, yaml_node_t * node,
-    struct velox_bindable * bindable);
+static void parse_button(yaml_node_t * node, struct velox_bindable * bindable);
+static void parse_key(yaml_node_t * node, struct velox_bindable * bindable);
 
 struct velox_binding_vector key_bindings;
 struct velox_binding_vector root_button_bindings;
@@ -63,77 +61,32 @@ static void __attribute__((destructor)) free_bindings()
     hashtable_free(&configured_buttons);
 }
 
-static void parse_button(yaml_document_t * document, yaml_node_t * node,
-    struct velox_bindable * bindable)
+static void parse_button(yaml_node_t * node, struct velox_bindable * bindable)
 {
-    yaml_node_pair_t * pair;
-    yaml_node_t * key, * value;
+    assert(node->type == YAML_SCALAR_NODE);
 
-    /* Identify button */
-    for (pair = node->data.mapping.pairs.start;
-        pair < node->data.mapping.pairs.top;
-        ++pair)
+    if (strcmp((const char const *) node->data.scalar.value, "any")  == 0)
     {
-        key = yaml_document_get_node(document, pair->key);
-        value = yaml_document_get_node(document, pair->value);
-
-        assert(key->type == YAML_SCALAR_NODE);
-
-        if (strcmp((const char const *) key->data.scalar.value, "mod") == 0)
-        {
-            bindable->modifiers = parse_modifiers(document, value);
-        }
-        else if (strcmp((const char const *) key->data.scalar.value, "button") == 0)
-        {
-            assert(value->type == YAML_SCALAR_NODE);
-
-            if (strcmp((const char const *) value->data.scalar.value, "any")  == 0)
-            {
-                bindable->pressable.button = XCB_BUTTON_INDEX_ANY;
-            }
-            else
-            {
-                bindable->pressable.button = strtoul((const char const *)
-                    value->data.scalar.value, NULL, 10);
-            }
-        }
+        bindable->pressable.button = XCB_BUTTON_INDEX_ANY;
+    }
+    else
+    {
+        bindable->pressable.button = strtoul((const char const *)
+            node->data.scalar.value, NULL, 10);
     }
 }
 
-static void parse_key(yaml_document_t * document, yaml_node_t * node,
-    struct velox_bindable * bindable)
+static void parse_key(yaml_node_t * node, struct velox_bindable * bindable)
 {
-    yaml_node_pair_t * pair;
-    yaml_node_t * key, * value;
+    assert(node->type == YAML_SCALAR_NODE);
 
-    /* Identify key */
-    for (pair = node->data.mapping.pairs.start;
-        pair < node->data.mapping.pairs.top;
-        ++pair)
-    {
-        key = yaml_document_get_node(document, pair->key);
-        value = yaml_document_get_node(document, pair->value);
-
-        assert(key->type == YAML_SCALAR_NODE);
-
-        if (strcmp((const char const *) key->data.scalar.value, "mod") == 0)
-        {
-            bindable->modifiers = parse_modifiers(document, value);
-        }
-        else if (strcmp((const char const *) key->data.scalar.value, "key") == 0)
-        {
-            assert(value->type == YAML_SCALAR_NODE);
-
-            bindable->pressable.key.keysym = XStringToKeysym((const char const *)
-                value->data.scalar.value);
-            bindable->pressable.key.keycode = 0;
-        }
-    }
+    bindable->pressable.key.keysym = XStringToKeysym((const char const *)
+        node->data.scalar.value);
+    bindable->pressable.key.keycode = 0;
 }
 
 static void setup_configured_bindings(const char * filename,
-    void (* parse_function)(yaml_document_t * document, yaml_node_t * node,
-        struct velox_bindable * bindable),
+    void (* parse_function)(yaml_node_t * node, struct velox_bindable * bindable),
     struct velox_bindable_hashtable * configured_bindings)
 {
     FILE * file;
@@ -207,11 +160,36 @@ static void setup_configured_bindings(const char * filename,
                     mapping_item < set_value->data.sequence.items.top;
                     ++mapping_item, ++key_index)
                 {
+                    yaml_node_pair_t * binding_pair;
+                    yaml_node_t * binding_key, * binding_value;
+
                     mapping_node = yaml_document_get_node(&document, *mapping_item);
 
                     assert(mapping_node->type == YAML_MAPPING_NODE);
 
-                    parse_function(&document, mapping_node, vector_append_address(bindable_vector));
+                    /* Identify key */
+                    for (binding_pair = mapping_node->data.mapping.pairs.start;
+                        binding_pair < mapping_node->data.mapping.pairs.top;
+                        ++binding_pair)
+                    {
+                        struct velox_bindable * bindable;
+
+                        binding_key = yaml_document_get_node(&document, binding_pair->key);
+                        binding_value = yaml_document_get_node(&document, binding_pair->value);
+
+                        assert(binding_key->type == YAML_SCALAR_NODE);
+
+                        bindable = vector_append_address(bindable_vector);
+
+                        if (strcmp((const char const *) binding_key->data.scalar.value, "mod") == 0)
+                        {
+                            bindable->modifiers = parse_modifiers(&document, binding_value);
+                        }
+                        else if (strcmp((const char const *) binding_key->data.scalar.value, "value") == 0)
+                        {
+                            parse_function(binding_value, bindable);
+                        }
+                    }
                 }
 
                 hashtable_insert(configured_bindings, identifier, bindable_vector);
