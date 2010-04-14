@@ -84,10 +84,10 @@ bool setup()
 {
     printf("MPD: Initializing module...");
 
-    MODULE_KEY_BINDING(play_pause, NULL);
-    MODULE_KEY_BINDING(next, NULL);
-    MODULE_KEY_BINDING(previous, NULL);
-    MODULE_KEY_BINDING(stop, NULL);
+    MODULE_KEY_BINDING(play_pause, no_argument);
+    MODULE_KEY_BINDING(next, no_argument);
+    MODULE_KEY_BINDING(previous, no_argument);
+    MODULE_KEY_BINDING(stop, no_argument);
 
     mpd_c = mpd_connection_new(host, port, timeout);
     assert(mpd_c);

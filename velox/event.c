@@ -96,7 +96,7 @@ static void button_press(xcb_button_press_event_t * event)
                 }
                 else
                 {
-                    binding->function((void *) event->event);
+                    binding->function(window_id_argument(event->event));
                 }
             }
         }

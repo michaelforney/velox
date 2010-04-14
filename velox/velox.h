@@ -24,6 +24,7 @@
 
 #include <velox/window.h>
 #include <velox/tag.h>
+#include <velox/binding.h>
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -60,8 +61,8 @@ void move_previous();
 
 void kill_focused_window();
 
-void move_float(void * generic_window_id);
-void resize_float(void * generic_window_id);
+void move_float(union velox_argument argument);
+void resize_float(union velox_argument argument);
 
 void next_layout();
 void previous_layout();
@@ -69,8 +70,8 @@ void previous_layout();
 void die(const char const * message, ...);
 void quit();
 
-void set_tag(void * generic_index);
-void move_focus_to_tag(void * generic_index);
+void set_tag(union velox_argument argument);
+void move_focus_to_tag(union velox_argument argument);
 void next_tag();
 void previous_tag();
 

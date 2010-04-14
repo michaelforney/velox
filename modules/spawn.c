@@ -28,7 +28,7 @@ const char name[] = "spawn";
 
 static const char *** commands = NULL;
 
-static void spawn_command(void * arg);
+static void spawn_command(union velox_argument argument);
 
 void configure(yaml_document_t * document)
 {
@@ -106,7 +106,7 @@ void configure(yaml_document_t * document)
             }
         }
 
-        add_key_binding(name, binding, &spawn_command, command);
+        add_key_binding(name, binding, &spawn_command, pointer_argument(command));
     }
 
     printf("done\n");
@@ -144,10 +144,10 @@ void cleanup()
     printf("done\n");
 }
 
-void spawn_command(void * arg)
+void spawn_command(union velox_argument argument)
 {
-    printf("spawn_command: %s\n", ((char * const *) arg)[0]);
-    spawn((char * const *) arg);
+    printf("spawn_command: %s\n", ((char * const *) argument.pointer)[0]);
+    spawn((char * const *) argument.pointer);
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

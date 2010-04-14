@@ -22,16 +22,46 @@
 
 #include <xcb/xcb.h>
 
-typedef void (* velox_binding_function_t)(void * arg);
+union velox_argument
+{
+    void * pointer;
+    xcb_window_t window_id;
+    uint32_t uint32;
+    uint8_t uint8;
+};
+
+typedef void (* velox_binding_function_t)(union velox_argument arg);
+
+static inline union velox_argument uint32_argument(uint32_t value)
+{
+    return (union velox_argument) { .uint32 = value };
+}
+
+static inline union velox_argument uint8_argument(uint8_t value)
+{
+    return (union velox_argument) { .uint8 = value };
+}
+
+static inline union velox_argument pointer_argument(void * value)
+{
+    return (union velox_argument) { .pointer = value };
+}
+
+static inline union velox_argument window_id_argument(xcb_window_t window_id)
+{
+    return (union velox_argument) { .window_id = window_id };
+}
+
+static const union velox_argument no_argument = { 0 };
 
 void add_key_binding(const char * group, const char * name,
-    velox_binding_function_t function, void * arg);
+    velox_binding_function_t function, union velox_argument);
 
 void add_window_button_binding(const char * group, const char * name,
     velox_binding_function_t function);
 
 void add_root_button_binding(const char * group, const char * name,
-    velox_binding_function_t function, void * arg);
+    velox_binding_function_t function, union velox_argument);
 
 #endif
 

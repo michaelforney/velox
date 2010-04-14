@@ -42,7 +42,7 @@ struct velox_binding
 {
     struct velox_bindable bindable;
     velox_binding_function_t function;
-    void * arg;
+    union velox_argument arg;
 };
 
 DEFINE_VECTOR(velox_binding_vector, struct velox_binding);

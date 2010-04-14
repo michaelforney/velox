@@ -109,12 +109,12 @@ bool setup()
     add_layout("tile", &tile_arrange, (struct velox_layout_state *) &default_state);
 
     /* Layout modification */
-    MODULE_KEY_BINDING(increase_master_factor, NULL);
-    MODULE_KEY_BINDING(decrease_master_factor, NULL);
-    MODULE_KEY_BINDING(increase_master_count, NULL);
-    MODULE_KEY_BINDING(decrease_master_count, NULL);
-    MODULE_KEY_BINDING(increase_column_count, NULL);
-    MODULE_KEY_BINDING(decrease_column_count, NULL);
+    MODULE_KEY_BINDING(increase_master_factor, no_argument);
+    MODULE_KEY_BINDING(decrease_master_factor, no_argument);
+    MODULE_KEY_BINDING(increase_master_count, no_argument);
+    MODULE_KEY_BINDING(decrease_master_count, no_argument);
+    MODULE_KEY_BINDING(increase_column_count, no_argument);
+    MODULE_KEY_BINDING(decrease_column_count, no_argument);
 
     printf("done\n");
 

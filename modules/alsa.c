@@ -38,9 +38,9 @@ static const char * mixer_card = "default";
 static const char * mixer_name = "Master";
 static uint16_t mixer_index = 0;
 
-static void mute(void * arg);
-static void raise_volume(void * arg);
-static void lower_volume(void * arg);
+static void mute(union velox_argument argument);
+static void raise_volume(union velox_argument argument);
+static void lower_volume(union velox_argument argument);
 
 void configure(yaml_document_t * document)
 {
@@ -99,9 +99,9 @@ bool setup()
 
     mixer_elem = snd_mixer_find_selem(mixer, sid);
 
-    MODULE_KEY_BINDING(mute, NULL);
-    MODULE_KEY_BINDING(raise_volume, NULL);
-    MODULE_KEY_BINDING(lower_volume, NULL);
+    MODULE_KEY_BINDING(mute, no_argument);
+    MODULE_KEY_BINDING(raise_volume, no_argument);
+    MODULE_KEY_BINDING(lower_volume, no_argument);
 
     printf("done\n");
 
@@ -117,7 +117,7 @@ void cleanup()
     printf("done\n");
 }
 
-void mute(void * arg)
+void mute(union velox_argument argument)
 {
     int muted;
 
@@ -179,13 +179,13 @@ static void change_volume(int16_t amount)
     }
 }
 
-static void raise_volume(void * arg)
+static void raise_volume(union velox_argument argument)
 {
     printf("VOLUME_CHANGE: %u\n", VOLUME_CHANGE);
     change_volume(VOLUME_CHANGE);
 }
 
-static void lower_volume(void * arg)
+static void lower_volume(union velox_argument argument)
 {
     change_volume(-VOLUME_CHANGE);
 }

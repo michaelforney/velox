@@ -489,9 +489,9 @@ static void update_focus()
     }
 }
 
-void set_tag(void * generic_index)
+void set_tag(union velox_argument argument)
 {
-    uint8_t index = (uint8_t) generic_index;
+    uint8_t index = argument.uint8;
 
     DEBUG_ENTER
 
@@ -569,9 +569,9 @@ void set_tag(void * generic_index)
     }
 }
 
-void move_focus_to_tag(void * generic_index)
+void move_focus_to_tag(union velox_argument argument)
 {
-    uint8_t index = (uint8_t) generic_index;
+    uint8_t index = argument.uint8;
 
     DEBUG_ENTER
 
@@ -724,7 +724,7 @@ void next_tag()
         tag_index = 0;
     }
 
-    set_tag((void *) tag_index);
+    set_tag(uint8_argument(tag_index));
 }
 
 void previous_tag()
@@ -746,7 +746,7 @@ void previous_tag()
         tag_index = tags.size - 1;
     }
 
-    set_tag((void *) tag_index);
+    set_tag(uint8_argument(tag_index));
 }
 
 void toggle_focus_type()
@@ -934,9 +934,9 @@ void kill_focused_window()
     xcb_flush(c);
 }
 
-void move_float(void * generic_window_id)
+void move_float(union velox_argument argument)
 {
-    xcb_window_t window_id = (xcb_window_t) generic_window_id;
+    xcb_window_t window_id = argument.window_id;
     struct velox_window * window;
     xcb_grab_pointer_cookie_t grab_cookie;
     xcb_grab_pointer_reply_t * grab_reply;
@@ -996,9 +996,9 @@ void move_float(void * generic_window_id)
     free(grab_reply);
 }
 
-void resize_float(void * generic_window_id)
+void resize_float(union velox_argument argument)
 {
-    xcb_window_t window_id = (xcb_window_t) generic_window_id;
+    xcb_window_t window_id = argument.window_id;
     struct velox_window * window;
     xcb_grab_pointer_cookie_t grab_cookie;
     xcb_grab_pointer_reply_t * grab_reply;
