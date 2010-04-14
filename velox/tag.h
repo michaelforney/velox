@@ -46,9 +46,7 @@ struct velox_tag
 
     struct
     {
-        struct velox_window * top;
         struct list_head windows;
-        struct list_head * next_focus;
     } floated;
 
     enum velox_tag_focus_type focus_type;

@@ -55,9 +55,7 @@ void add_tag(const char * name, const char * layout_names[])
     INIT_LIST_HEAD(&tag->tiled.windows);
     tag->tiled.focus = &tag->tiled.windows;
 
-    tag->floated.top = NULL;
     INIT_LIST_HEAD(&tag->floated.windows);
-    tag->floated.next_focus = &tag->floated.windows;
 
     tag->focus_type = TILE;
 
