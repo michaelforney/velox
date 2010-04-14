@@ -65,26 +65,6 @@ extern struct velox_tag_vector tags;
 void setup_tags();
 void cleanup_tags();
 
-void set_tag_1();
-void set_tag_2();
-void set_tag_3();
-void set_tag_4();
-void set_tag_5();
-void set_tag_6();
-void set_tag_7();
-void set_tag_8();
-void set_tag_9();
-
-void move_focus_to_tag_1();
-void move_focus_to_tag_2();
-void move_focus_to_tag_3();
-void move_focus_to_tag_4();
-void move_focus_to_tag_5();
-void move_focus_to_tag_6();
-void move_focus_to_tag_7();
-void move_focus_to_tag_8();
-void move_focus_to_tag_9();
-
 #endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
