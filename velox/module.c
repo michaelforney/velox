@@ -63,6 +63,7 @@ void * open_module(const char const * name)
         else
         {
             strncpy(directory_path, start, end - start);
+            directory_path[end - start] = '\0';
             start = end + 1;
         }
 
