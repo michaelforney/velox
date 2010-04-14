@@ -988,6 +988,34 @@ void resize_float(union velox_argument argument)
     free(grab_reply);
 }
 
+void focus_cursor(union velox_argument argument)
+{
+    struct velox_window_entry * entry;
+    xcb_window_t window_id = argument.window_id;
+
+    bool found = false;
+
+    list_for_each_entry(entry, &tag->floated.windows, head)
+    {
+        if (entry->window->window_id == window_id)
+        {
+            list_del(&entry->head);
+            list_add(&entry->head, &tag->floated.windows);
+
+            restack();
+
+            found = true;
+        }
+    }
+
+    if (found)
+        tag->focus_type = FLOAT;
+    else
+        tag->focus_type = TILE;
+
+    focus(window_id);
+}
+
 void arrange()
 {
     DEBUG_ENTER

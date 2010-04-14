@@ -7,6 +7,7 @@ velox:
     resize_float        : [{mod: [*mod],            value: 3}]
     next_tag            : [{mod: [mod_any],         value: 9}]
     previous_tag        : [{mod: [mod_any],         value: 8}]
+    focus_cursor        : [{mod: [mod_any],         value: 1}]
 ...
 
 # vim: ft=yaml fo=croql et sw=4 sts=4 ts=8 tw=80

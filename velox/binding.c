@@ -257,6 +257,8 @@ static void setup_button_bindings()
 {
     setup_configured_bindings("buttons.yaml", &parse_button, &configured_buttons);
 
+    add_window_button_binding("velox", STRING_SYMBOL(focus_cursor));
+
     /* Floating windows */
     add_window_button_binding("velox", STRING_SYMBOL(move_float));
     add_window_button_binding("velox", STRING_SYMBOL(resize_float));
