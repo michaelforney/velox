@@ -162,24 +162,23 @@ static void setup_configured_bindings(const char * filename,
                 {
                     yaml_node_pair_t * binding_pair;
                     yaml_node_t * binding_key, * binding_value;
+                    struct velox_bindable * bindable;
 
                     mapping_node = yaml_document_get_node(&document, *mapping_item);
 
                     assert(mapping_node->type == YAML_MAPPING_NODE);
+
+                    bindable = vector_append_address(bindable_vector);
 
                     /* Identify key */
                     for (binding_pair = mapping_node->data.mapping.pairs.start;
                         binding_pair < mapping_node->data.mapping.pairs.top;
                         ++binding_pair)
                     {
-                        struct velox_bindable * bindable;
-
                         binding_key = yaml_document_get_node(&document, binding_pair->key);
                         binding_value = yaml_document_get_node(&document, binding_pair->value);
 
                         assert(binding_key->type == YAML_SCALAR_NODE);
-
-                        bindable = vector_append_address(bindable_vector);
 
                         if (strcmp((const char const *) binding_key->data.scalar.value, "mod") == 0)
                         {
