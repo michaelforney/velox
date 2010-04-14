@@ -54,7 +54,6 @@
 /* X variables */
 xcb_connection_t * c;
 xcb_screen_t * screen;
-xcb_window_t root;
 xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 /* X atoms */
@@ -186,7 +185,7 @@ void check_wm_running()
 
     mask = XCB_CW_EVENT_MASK;
     values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
-    change_attributes_cookie = xcb_change_window_attributes_checked(c, root, mask, values);
+    change_attributes_cookie = xcb_change_window_attributes_checked(c, screen->root, mask, values);
 
     error = xcb_request_check(c, change_attributes_cookie);
     if (error)
@@ -207,7 +206,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 
     keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
 
-    xcb_ungrab_key(c, XCB_GRAB_ANY, root, XCB_MOD_MASK_ANY);
+    xcb_ungrab_key(c, XCB_GRAB_ANY, screen->root, XCB_MOD_MASK_ANY);
 
     free(keyboard_mapping);
     keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
@@ -226,7 +225,7 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 
         for (index = 0; index < extra_modifiers_length; ++index)
         {
-            xcb_grab_key(c, true, root,
+            xcb_grab_key(c, true, screen->root,
                 binding->bindable.modifiers | extra_modifiers[index],
                 binding->bindable.pressable.key.keycode,
                 XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
@@ -263,7 +262,7 @@ static void grab_buttons(xcb_window_t window_id, struct velox_binding_vector * b
 
 void grab_root_buttons()
 {
-    grab_buttons(root, &root_button_bindings);
+    grab_buttons(screen->root, &root_button_bindings);
 }
 
 void grab_window_buttons(struct velox_window * window)
@@ -294,7 +293,6 @@ void setup()
     screen_iterator = xcb_setup_roots_iterator(setup);
 
     screen = screen_iterator.data;
-    root = screen->root;
     screen_area.width = screen->width_in_pixels;
     screen_area.height = screen->height_in_pixels;
 
@@ -338,7 +336,7 @@ void setup()
                 XCB_EVENT_MASK_PROPERTY_CHANGE;
     values[1] = cursors[POINTER];
 
-    xcb_change_window_attributes(c, root, mask, values);
+    xcb_change_window_attributes(c, screen->root, mask, values);
 
     /* Check color allocation replies */
     border_color_reply = xcb_alloc_color_reply(c, border_color_cookie, NULL);
@@ -450,13 +448,13 @@ void focus(xcb_window_t window_id)
         return;
     }
 
-    if (window_id != root)
+    if (window_id != screen->root)
     {
         values[0] = border_focus_pixel;
         xcb_change_window_attributes(c, window_id, mask, values);
     }
 
-    if (focus_reply->focus != root)
+    if (focus_reply->focus != screen->root)
     {
         values[0] = border_pixel;
         xcb_change_window_attributes(c, focus_reply->focus, mask, values);
@@ -474,7 +472,7 @@ static void update_focus()
 {
     if (tag->focus_type == TILE)
     {
-        if (list_empty(&tag->tiled.windows)) focus(root);
+        if (list_empty(&tag->tiled.windows)) focus(screen->root);
         else
         {
             focus(list_entry(tag->tiled.focus, struct velox_window_entry,
@@ -483,7 +481,7 @@ static void update_focus()
     }
     else
     {
-        if (tag->floated.top == NULL) focus(root);
+        if (tag->floated.top == NULL) focus(screen->root);
         else
         {
             focus(tag->floated.top->window_id);
@@ -524,7 +522,7 @@ void set_tag(void * generic_index)
 
         if (tags.data[index]->focus_type == TILE)
         {
-            if (list_empty(&tags.data[index]->tiled.windows)) focus(root);
+            if (list_empty(&tags.data[index]->tiled.windows)) focus(screen->root);
             else
             {
                 focus(list_entry(
@@ -536,7 +534,7 @@ void set_tag(void * generic_index)
         {
             if (tags.data[index]->floated.top == NULL)
             {
-                focus(root);
+                focus(screen->root);
             }
             else
             {
@@ -913,7 +911,7 @@ void kill_focused_window()
 
     DEBUG_ENTER
 
-    if (focus_reply->focus == root)
+    if (focus_reply->focus == screen->root)
     {
         return;
     }
@@ -945,7 +943,7 @@ void move_float(void * generic_window_id)
 
     if ((window = lookup_floated_window(window_id)) == NULL) return;
 
-    grab_cookie = xcb_grab_pointer(c, false, root, XCB_EVENT_MASK_BUTTON_PRESS |
+    grab_cookie = xcb_grab_pointer(c, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS |
             XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION,
         XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE,
         cursors[MOVE], XCB_CURRENT_TIME);
@@ -959,7 +957,7 @@ void move_float(void * generic_window_id)
         xcb_query_pointer_cookie_t pointer_cookie;
         xcb_query_pointer_reply_t * pointer_reply;
 
-        pointer_cookie = xcb_query_pointer(c, root);
+        pointer_cookie = xcb_query_pointer(c, screen->root);
         pointer_reply = xcb_query_pointer_reply(c, pointer_cookie, NULL);
 
         original_x = window->x;
@@ -1007,7 +1005,7 @@ void resize_float(void * generic_window_id)
 
     if ((window = lookup_floated_window(window_id)) == NULL) return;
 
-    grab_cookie = xcb_grab_pointer(c, false, root, XCB_EVENT_MASK_BUTTON_PRESS |
+    grab_cookie = xcb_grab_pointer(c, false, screen->root, XCB_EVENT_MASK_BUTTON_PRESS |
             XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_POINTER_MOTION,
         XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE,
         cursors[RESIZE], XCB_CURRENT_TIME);
@@ -1021,7 +1019,7 @@ void resize_float(void * generic_window_id)
         xcb_query_pointer_cookie_t pointer_cookie;
         xcb_query_pointer_reply_t * pointer_reply;
 
-        pointer_cookie = xcb_query_pointer(c, root);
+        pointer_cookie = xcb_query_pointer(c, screen->root);
         pointer_reply = xcb_query_pointer_reply(c, pointer_cookie, NULL);
 
         original_width = window->width;
@@ -1376,7 +1374,7 @@ void manage_existing_windows()
     xcb_get_property_cookie_t * state_cookies;
     xcb_get_property_reply_t ** state_replies;
 
-    query_cookie = xcb_query_tree(c, root);
+    query_cookie = xcb_query_tree(c, screen->root);
     query_reply = xcb_query_tree_reply(c, query_cookie, NULL);
     children = xcb_query_tree_children(query_reply);
     child_count = xcb_query_tree_children_length(query_reply);

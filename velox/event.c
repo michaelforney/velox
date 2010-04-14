@@ -69,7 +69,7 @@ static void button_press(xcb_button_press_event_t * event)
 
     button = event->detail;
 
-    if (event->event == root)
+    if (event->event == screen->root)
     {
         bindings = &root_button_bindings;
     }
@@ -90,7 +90,7 @@ static void button_press(xcb_button_press_event_t * event)
         {
             if (binding->function != NULL)
             {
-                if (event->event == root)
+                if (event->event == screen->root)
                 {
                     binding->function(binding->arg);
                 }
@@ -110,7 +110,7 @@ static void enter_notify(xcb_enter_notify_event_t * event)
 
     if (tag->focus_type == FLOAT) return;
 
-    if (event->event == root) focus(root);
+    if (event->event == screen->root) focus(screen->root);
     else
     {
         struct velox_window_entry * entry;
@@ -154,7 +154,7 @@ static void destroy_notify(xcb_destroy_notify_event_t * event)
     DEBUG_ENTER
     DEBUG_PRINT("window_id: 0x%x\n", event->event)
 
-    if (event->event == root) return;
+    if (event->event == screen->root) return;
 
     unmanage(event->event);
 }
@@ -167,7 +167,7 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
     DEBUG_ENTER
     DEBUG_PRINT("window_id: 0x%x\n", event->event);
 
-    if (event->event == root) return;
+    if (event->event == screen->root) return;
 
     if (pending_unmaps > 0)
     {
@@ -222,7 +222,7 @@ static void configure_notify(xcb_configure_notify_event_t * event)
 {
     DEBUG_ENTER
 
-    if (event->window == root)
+    if (event->window == screen->root)
     {
         screen_area.width = event->width;
         screen_area.height = event->height;

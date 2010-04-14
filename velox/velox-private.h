@@ -22,8 +22,6 @@
 
 #include <stdint.h>
 
-extern xcb_window_t root;
-
 extern uint16_t pending_unmaps;
 
 /* Bindings */

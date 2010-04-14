@@ -29,7 +29,6 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 extern xcb_connection_t * c;
-extern xcb_window_t root;
 extern xcb_screen_t * screen;
 extern xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 

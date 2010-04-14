@@ -69,7 +69,7 @@ void supporting_wm()
         c,
         XCB_COPY_FROM_PARENT,
         child_id,
-        root,
+        screen->root,
         -1, -1, 1, 1,
         0,
         XCB_COPY_FROM_PARENT,
@@ -105,7 +105,7 @@ void avoid_struts(const struct velox_area * screen_area, struct velox_area * wor
     uint16_t index, child_count, strut_count = 0;
     uint32_t x0, y0, x1, y1;
 
-    query_cookie = xcb_query_tree(c, root);
+    query_cookie = xcb_query_tree(c, screen->root);
 
     x0 = 0;
     y0 = 0;
