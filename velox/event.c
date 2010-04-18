@@ -173,13 +173,6 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
 
     if (event->event == screen->root) return;
 
-    if (pending_unmaps > 0)
-    {
-        /* If we are expecting an unmap due to hiding a window, ignore it */
-        --pending_unmaps;
-        return;
-    }
-
     uint32_t property_values[2];
 
     DEBUG_PRINT("setting state to withdrawn\n")

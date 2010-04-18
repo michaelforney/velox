@@ -22,8 +22,6 @@
 
 #include <stdint.h>
 
-extern uint16_t pending_unmaps;
-
 /* Bindings */
 void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
 void grab_buttons();

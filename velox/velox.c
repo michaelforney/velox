@@ -82,7 +82,6 @@ uint64_t tag_mask = 0;
 struct velox_tag * tag = NULL;
 struct velox_area screen_area;
 struct velox_area work_area;
-uint16_t pending_unmaps = 0;
 uint8_t clear_event_type = 0;
 
 uint32_t border_pixel;
@@ -94,6 +93,9 @@ uint16_t border_width = 2;
 const char wm_name[] = "velox";
 const uint16_t border_color[] = { 0x9999, 0x9999, 0x9999 };
 const uint16_t border_focus_color[] = { 0x3333,  0x8888, 0x3333 };
+const uint32_t client_mask = XCB_EVENT_MASK_ENTER_WINDOW |
+                             XCB_EVENT_MASK_PROPERTY_CHANGE |
+                             XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 
 struct velox_window * lookup_tiled_window(xcb_window_t window_id)
 {
@@ -367,17 +369,23 @@ void show_window(xcb_window_t window_id)
 
 void hide_window(xcb_window_t window_id)
 {
-    uint32_t property_values[2];
+    uint32_t values[2];
 
     DEBUG_ENTER
 
-    property_values[0] = XCB_WM_STATE_WITHDRAWN;
-    property_values[1] = 0;
-    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, property_values);
+    values[0] = XCB_WM_STATE_WITHDRAWN;
+    values[1] = 0;
+    xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, values);
 
-    ++pending_unmaps;
+    /* Temporarily disable structure notify events so we don't get an unmap
+     * event */
+    values[0] = client_mask & ~XCB_EVENT_MASK_STRUCTURE_NOTIFY;
+    xcb_change_window_attributes(c, window_id, XCB_CW_EVENT_MASK, values);
 
     xcb_unmap_window(c, window_id);
+
+    values[0] = client_mask;
+    xcb_change_window_attributes(c, window_id, XCB_CW_EVENT_MASK, values);
 }
 
 /**
@@ -1100,9 +1108,7 @@ void manage(xcb_window_t window_id)
     /* Events and border color */
     mask = XCB_CW_BORDER_PIXEL | XCB_CW_EVENT_MASK;
     values[0] = border_pixel;
-    values[1] = XCB_EVENT_MASK_ENTER_WINDOW |
-                XCB_EVENT_MASK_PROPERTY_CHANGE |
-                XCB_EVENT_MASK_STRUCTURE_NOTIFY;
+    values[1] = client_mask;
 
     xcb_change_window_attributes(c, window_id, mask, values);
 
