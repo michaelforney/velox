@@ -39,8 +39,7 @@ static void parse_button(yaml_node_t * node, struct velox_bindable * bindable);
 static void parse_key(yaml_node_t * node, struct velox_bindable * bindable);
 
 struct velox_binding_vector key_bindings;
-struct velox_binding_vector root_button_bindings;
-struct velox_binding_vector window_button_bindings;
+struct velox_binding_vector button_bindings;
 
 struct velox_bindable_hashtable configured_keys;
 struct velox_bindable_hashtable configured_buttons;
@@ -51,8 +50,7 @@ static void __attribute__((constructor)) initialize_bindings()
     hashtable_initialize(&configured_buttons, 512, &sdbm_hash);
 
     vector_initialize(&key_bindings, 128);
-    vector_initialize(&root_button_bindings, 16);
-    vector_initialize(&window_button_bindings, 16);
+    vector_initialize(&button_bindings, 16);
 }
 
 static void __attribute__((destructor)) free_bindings()
@@ -257,14 +255,12 @@ static void setup_button_bindings()
 {
     setup_configured_bindings("buttons.yaml", &parse_button, &configured_buttons);
 
-    add_window_button_binding("velox", STRING_SYMBOL(focus_cursor));
-
     /* Floating windows */
-    add_window_button_binding("velox", STRING_SYMBOL(move_float));
-    add_window_button_binding("velox", STRING_SYMBOL(resize_float));
+    add_button_binding("velox", STRING_SYMBOL(move_float));
+    add_button_binding("velox", STRING_SYMBOL(resize_float));
 
-    add_root_button_binding("velox", STRING_SYMBOL(next_tag), no_argument);
-    add_root_button_binding("velox", STRING_SYMBOL(previous_tag), no_argument);
+    add_button_binding("velox", STRING_SYMBOL(next_tag));
+    add_button_binding("velox", STRING_SYMBOL(previous_tag));
 }
 
 void add_key_binding(const char * group, const char * name,
@@ -273,16 +269,10 @@ void add_key_binding(const char * group, const char * name,
     add_binding(&configured_keys, &key_bindings, group, name, function, arg);
 }
 
-void add_window_button_binding(const char * group, const char * name,
+void add_button_binding(const char * group, const char * name,
     velox_binding_function_t function)
 {
-    add_binding(&configured_buttons, &window_button_bindings, group, name, function, no_argument);
-}
-
-void add_root_button_binding(const char * group, const char * name,
-    velox_binding_function_t function, union velox_argument argument)
-{
-    add_binding(&configured_buttons, &root_button_bindings, group, name, function, argument);
+    add_binding(&configured_buttons, &button_bindings, group, name, function, no_argument);
 }
 
 void setup_bindings()

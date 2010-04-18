@@ -220,19 +220,19 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
     xcb_flush(c);
 }
 
-static void grab_buttons(xcb_window_t window_id, struct velox_binding_vector * bindings)
+void grab_buttons()
 {
     struct velox_binding * binding;
     uint16_t index;
     uint16_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
 
-    xcb_ungrab_button(c, XCB_BUTTON_MASK_ANY, window_id, XCB_MOD_MASK_ANY);
+    xcb_ungrab_button(c, XCB_BUTTON_MASK_ANY, screen->root, XCB_MOD_MASK_ANY);
 
-    vector_for_each(bindings, binding)
+    vector_for_each(&button_bindings, binding)
     {
         for (index = 0; index < extra_modifiers_length; ++index)
         {
-            xcb_grab_button(c, false, window_id,
+            xcb_grab_button(c, false, screen->root,
                 XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE,
                 XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_SYNC,
                 XCB_WINDOW_NONE, XCB_CURSOR_NONE,
@@ -242,16 +242,6 @@ static void grab_buttons(xcb_window_t window_id, struct velox_binding_vector * b
     }
 
     xcb_flush(c);
-}
-
-void grab_root_buttons()
-{
-    grab_buttons(screen->root, &root_button_bindings);
-}
-
-void grab_window_buttons(struct velox_window * window)
-{
-    grab_buttons(window->window_id, &window_button_bindings);
 }
 
 void setup()
@@ -356,7 +346,7 @@ void setup()
     setup_ewmh();
 
     grab_keys(setup->min_keycode, setup->max_keycode);
-    grab_root_buttons();
+    grab_buttons();
 
     assert(tags.size > 0);
     tag = tags.data[0];
@@ -436,12 +426,26 @@ void focus(xcb_window_t window_id)
     {
         values[0] = border_focus_pixel;
         xcb_change_window_attributes(c, window_id, mask, values);
+
+        xcb_ungrab_button(c, XCB_BUTTON_MASK_ANY, window_id, XCB_MOD_MASK_ANY);
     }
 
     if (focus_reply->focus != screen->root)
     {
+        xcb_button_t buttons[] = { 1, 2, 3 };
+        uint8_t index;
+
         values[0] = border_pixel;
         xcb_change_window_attributes(c, focus_reply->focus, mask, values);
+
+        for (index = 0; index < sizeof(buttons) / sizeof(xcb_button_t); ++index)
+        {
+            xcb_grab_button(c, false, focus_reply->focus,
+                XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE,
+                XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_SYNC,
+                XCB_WINDOW_NONE, XCB_CURSOR_NONE,
+                buttons[index], XCB_MOD_MASK_ANY);
+        }
     }
 
     free(focus_reply);
@@ -988,34 +992,6 @@ void resize_float(union velox_argument argument)
     free(grab_reply);
 }
 
-void focus_cursor(union velox_argument argument)
-{
-    struct velox_window_entry * entry;
-    xcb_window_t window_id = argument.window_id;
-
-    bool found = false;
-
-    list_for_each_entry(entry, &tag->floated.windows, head)
-    {
-        if (entry->window->window_id == window_id)
-        {
-            list_del(&entry->head);
-            list_add(&entry->head, &tag->floated.windows);
-
-            restack();
-
-            found = true;
-        }
-    }
-
-    if (found)
-        tag->focus_type = FLOAT;
-    else
-        tag->focus_type = TILE;
-
-    focus(window_id);
-}
-
 void arrange()
 {
     DEBUG_ENTER
@@ -1131,9 +1107,6 @@ void manage(xcb_window_t window_id)
     xcb_change_window_attributes(c, window_id, mask, values);
 
     synthetic_configure(window);
-
-    /* Button bindings */
-    grab_window_buttons(window);
 
     if (window->floating)
     {

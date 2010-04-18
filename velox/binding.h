@@ -57,11 +57,8 @@ static const union velox_argument no_argument = { 0 };
 void add_key_binding(const char * group, const char * name,
     velox_binding_function_t function, union velox_argument);
 
-void add_window_button_binding(const char * group, const char * name,
+void add_button_binding(const char * group, const char * name,
     velox_binding_function_t function);
-
-void add_root_button_binding(const char * group, const char * name,
-    velox_binding_function_t function, union velox_argument);
 
 #endif
 

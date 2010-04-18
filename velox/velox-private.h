@@ -26,8 +26,7 @@ extern uint16_t pending_unmaps;
 
 /* Bindings */
 void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
-void grab_root_buttons();
-void grab_window_buttons(struct velox_window * window);
+void grab_buttons();
 
 void manage(xcb_window_t window_id);
 void unmanage(xcb_window_t window);

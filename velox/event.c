@@ -61,7 +61,6 @@ static void key_press(xcb_key_press_event_t * event)
 
 static void button_press(xcb_button_press_event_t * event)
 {
-    struct velox_binding_vector * bindings;
     struct velox_binding * binding;
     xcb_button_t button;
 
@@ -69,36 +68,41 @@ static void button_press(xcb_button_press_event_t * event)
 
     button = event->detail;
 
-    if (event->event == screen->root)
-    {
-        bindings = &root_button_bindings;
-    }
-    else
-    {
-        bindings = &window_button_bindings;
-    }
-
     DEBUG_PRINT("button: %u\n", button);
     DEBUG_PRINT("window: %u\n", event->event);
 
-    vector_for_each(bindings, binding)
+    /* Mouse bindings are grabbed with the root window, so if the event window
+     * is root, call any binding functions on the sub window */
+    if (event->event == screen->root)
     {
-        DEBUG_PRINT("binding button: %u\n", binding->bindable.pressable.button);
-        if (button == binding->bindable.pressable.button &&
-            ((binding->bindable.modifiers == XCB_MOD_MASK_ANY) ||
-            (CLEAN_MASK(event->state) == binding->bindable.modifiers)))
+        vector_for_each(&button_bindings, binding)
         {
-            if (binding->function != NULL)
+            DEBUG_PRINT("binding button: %u\n", binding->bindable.pressable.button);
+            if (button == binding->bindable.pressable.button &&
+                ((binding->bindable.modifiers == XCB_MOD_MASK_ANY) ||
+                (CLEAN_MASK(event->state) == binding->bindable.modifiers)))
             {
-                if (event->event == screen->root)
+                if (binding->function != NULL)
                 {
-                    binding->function(binding->arg);
-                }
-                else
-                {
-                    binding->function(window_id_argument(event->event));
+                    binding->function(window_id_argument(event->child));
                 }
             }
+        }
+    }
+    /* Otherwise, we are just clicking on the window to focus it */
+    else
+    {
+        struct velox_window * window = lookup_window(event->event);
+
+        focus(event->event);
+
+        if (window->floating)
+        {
+            tag->focus_type = FLOAT;
+        }
+        else
+        {
+            tag->focus_type = TILE;
         }
     }
 }

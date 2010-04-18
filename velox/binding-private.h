@@ -48,8 +48,7 @@ struct velox_binding
 DEFINE_VECTOR(velox_binding_vector, struct velox_binding);
 
 extern struct velox_binding_vector key_bindings;
-extern struct velox_binding_vector window_button_bindings;
-extern struct velox_binding_vector root_button_bindings;
+extern struct velox_binding_vector button_bindings;
 
 void setup_bindings();
 void cleanup_bindings();
