@@ -373,10 +373,6 @@ void handle_event(xcb_generic_event_t * event)
         case XCB_MAPPING_NOTIFY:
             mapping_notify((xcb_mapping_notify_event_t *) event);
             break;
-
-        default:
-            DEBUG_PRINT("unhandled event type: %i\n", event->response_type & ~0x80)
-            break;
     }
 
     free(event);
