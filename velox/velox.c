@@ -308,8 +308,7 @@ void setup()
                 XCB_EVENT_MASK_LEAVE_WINDOW |
                 XCB_EVENT_MASK_STRUCTURE_NOTIFY |
                 XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT |
-                XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY |
-                XCB_EVENT_MASK_PROPERTY_CHANGE;
+                XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY;
     values[1] = cursors[POINTER];
 
     xcb_change_window_attributes(c, screen->root, mask, values);
