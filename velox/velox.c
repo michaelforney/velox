@@ -532,6 +532,8 @@ void set_tag(union velox_argument argument)
         }
 
         run_hooks(tag, VELOX_HOOK_TAG_CHANGED);
+
+        xcb_flush(c);
     }
 }
 
