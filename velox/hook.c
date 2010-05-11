@@ -30,9 +30,6 @@ const uint16_t velox_hook_types = 7;
 void handle_floating(struct velox_window * window);
 void handle_fullscreen(struct velox_window * window);
 
-struct list_head startup_hooks;
-struct list_head manage_hooks;
-
 struct list_head * hooks;
 
 void setup_hooks()
