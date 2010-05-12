@@ -1,4 +1,4 @@
-/* velox: velox/event-private.h
+/* velox: velox/event_handler-private.h
  *
  * Copyright (c) 2010 Michael Forney <michael@obberon.com>
  *
@@ -17,10 +17,12 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_EVENT_PRIVATE_H
-#define VELOX_EVENT_PRIVATE_H
+#ifndef VELOX_EVENT_HANDLER_PRIVATE_H
+#define VELOX_EVENT_HANDLER_PRIVATE_H
 
 void handle_event(xcb_generic_event_t * event);
+
+void setup_event_handlers();
 
 #endif
 

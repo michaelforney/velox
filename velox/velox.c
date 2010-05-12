@@ -1,6 +1,6 @@
 /* velox: velox/velox.c
  *
- * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009, 2010 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -47,7 +47,7 @@
 #include "hook-private.h"
 #include "layout-private.h"
 #include "ewmh-private.h"
-#include "event-private.h"
+#include "event_handler-private.h"
 #include "work_area-private.h"
 #include "binding-private.h"
 
@@ -336,6 +336,7 @@ void setup()
 
     free(atom_cookies);
 
+    setup_event_handlers();
     setup_bindings();
     setup_hooks();
 

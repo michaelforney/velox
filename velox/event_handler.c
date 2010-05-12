@@ -1,6 +1,6 @@
-/* velox: velox/event.c
+/* velox: velox/event_handler.c
  *
- * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -18,21 +18,61 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <xcb/xcb.h>
 #include <xcb/xcb_icccm.h>
 
+#include "event_handler.h"
 #include "velox.h"
 #include "window.h"
 #include "hook.h"
 #include "modifier.h"
 #include "debug.h"
+#include "list.h"
 
 #include "velox-private.h"
 #include "hook-private.h"
 #include "ewmh-private.h"
 #include "binding-private.h"
+
+#define DO(type, name)                                                      \
+LIST_HEAD(name ## _event_handlers);                                         \
+                                                                            \
+struct name ## _event_handler_entry                                         \
+{                                                                           \
+    name ## _event_handler_t handler;                                       \
+    struct list_head head;                                                  \
+};                                                                          \
+                                                                            \
+void add_ ## name ## _event_handler(name ## _event_handler_t handler)       \
+{                                                                           \
+    struct name ## _event_handler_entry * entry =                           \
+        malloc(sizeof(struct name ## _event_handler_entry));                \
+    entry->handler = handler;                                               \
+    list_add_tail(&entry->head, &name ## _event_handlers);                  \
+}
+#include "event_types.h"
+#undef DO
+
+void handle_event(xcb_generic_event_t * event)
+{
+    switch (event->response_type & ~0x80)
+    {
+#define DO(type, name)                                                      \
+        case type:                                                          \
+        {                                                                   \
+            struct name ## _event_handler_entry * entry;                    \
+                                                                            \
+            list_for_each_entry(entry, &name ## _event_handlers, head)      \
+            {                                                               \
+                entry->handler((xcb_ ## name ## _event_t *) event);         \
+            }                                                               \
+                                                                            \
+            break;                                                          \
+        }
+#include "event_types.h"
+#undef DO
+    }
+}
 
 /* X event handlers */
 static void key_press(xcb_key_press_event_t * event)
@@ -326,49 +366,20 @@ static void mapping_notify(xcb_mapping_notify_event_t * event)
     }
 }
 
-void handle_event(xcb_generic_event_t * event)
+void setup_event_handlers()
 {
-    switch (event->response_type & ~0x80)
-    {
-        case XCB_KEY_PRESS:
-            key_press((xcb_key_press_event_t *) event);
-            break;
-        case XCB_BUTTON_PRESS:
-            button_press((xcb_button_press_event_t *) event);
-            break;
-        case XCB_ENTER_NOTIFY:
-            enter_notify((xcb_enter_notify_event_t *) event);
-            break;
-        case XCB_LEAVE_NOTIFY:
-            leave_notify((xcb_leave_notify_event_t *) event);
-            break;
-        case XCB_DESTROY_NOTIFY:
-            destroy_notify((xcb_destroy_notify_event_t *) event);
-            break;
-        case XCB_UNMAP_NOTIFY:
-            unmap_notify((xcb_unmap_notify_event_t *) event);
-            break;
-        case XCB_MAP_REQUEST:
-            map_request((xcb_map_request_event_t *) event);
-            break;
-        case XCB_CONFIGURE_NOTIFY:
-            configure_notify((xcb_configure_notify_event_t *) event);
-            break;
-        case XCB_CONFIGURE_REQUEST:
-            configure_request((xcb_configure_request_event_t *) event);
-            break;
-        case XCB_PROPERTY_NOTIFY:
-            property_notify((xcb_property_notify_event_t *) event);
-            break;
-        case XCB_CLIENT_MESSAGE:
-            client_message((xcb_client_message_event_t *) event);
-            break;
-        case XCB_MAPPING_NOTIFY:
-            mapping_notify((xcb_mapping_notify_event_t *) event);
-            break;
-    }
-
-    free(event);
+    add_key_press_event_handler(&key_press);
+    add_button_press_event_handler(&button_press);
+    add_enter_notify_event_handler(&enter_notify);
+    add_leave_notify_event_handler(&leave_notify);
+    add_destroy_notify_event_handler(&destroy_notify);
+    add_unmap_notify_event_handler(&unmap_notify);
+    add_map_request_event_handler(&map_request);
+    add_configure_notify_event_handler(&configure_notify);
+    add_configure_request_event_handler(&configure_request);
+    add_property_notify_event_handler(&property_notify);
+    add_client_message_event_handler(&client_message);
+    add_mapping_notify_event_handler(&mapping_notify);
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

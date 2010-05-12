@@ -2,7 +2,7 @@
 
 add_executable(velox
     velox.c
-    event.c
+    event_handler.c
     window.c
     layout.c
     hook.c
