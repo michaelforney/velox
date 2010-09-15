@@ -264,6 +264,8 @@ static void configure_notify(xcb_configure_notify_event_t * event)
         screen_area.width = event->width;
         screen_area.height = event->height;
 
+        arrange();
+
         run_hooks(NULL, VELOX_HOOK_ROOT_RESIZED);
     }
 }

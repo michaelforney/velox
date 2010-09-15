@@ -75,6 +75,7 @@ void setup()
     printf("Wallpaper: Initializing...");
 
     add_hook(&set_wallpaper, VELOX_HOOK_STARTUP);
+    add_hook(&set_wallpaper, VELOX_HOOK_ROOT_RESIZED);
 
     printf("done\n");
 }
