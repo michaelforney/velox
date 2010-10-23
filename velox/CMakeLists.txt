@@ -43,6 +43,7 @@ install(FILES
     tag.h
     window.h
     module.h
+    ewmh.h
     work_area.h
     debug.h
 
