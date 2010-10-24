@@ -1339,31 +1339,48 @@ void spawn(char * const command[])
 
 void run()
 {
+    time_t current_time;
+    time_t last_time;
     xcb_generic_event_t * event;
 
     printf("\n** Main Event Loop **\n");
 
-    while (running && (event = xcb_wait_for_event(c)))
+    time(&last_time);
+
+    while (running)
     {
-        handle_event(event);
+        time(&current_time);
 
-        if (clear_event_type)
+        if (current_time > last_time)
         {
-            xcb_aux_sync(c);
+            last_time = current_time;
+            run_hooks(NULL, VELOX_HOOK_CLOCK_TICK);
+        }
 
-            while ((event = xcb_poll_for_event(c)))
+        event = xcb_poll_for_event(c);
+
+        if (event)
+        {
+            handle_event(event);
+
+            if (clear_event_type)
             {
-                if ((event->response_type & ~0x80) == clear_event_type)
+                xcb_aux_sync(c);
+
+                while ((event = xcb_poll_for_event(c)))
                 {
-                    free(event);
-                    DEBUG_PRINT("dropping masked event\n")
+                    if ((event->response_type & ~0x80) == clear_event_type)
+                    {
+                        free(event);
+                        DEBUG_PRINT("dropping masked event\n")
+                    }
+                    else
+                    {
+                        handle_event(event);
+                    }
                 }
-                else
-                {
-                    handle_event(event);
-                }
+                clear_event_type = 0;
             }
-            clear_event_type = 0;
         }
     }
 
