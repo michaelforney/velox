@@ -1,6 +1,6 @@
 /* velox: velox/window.c
  *
- * Copyright (c) 2009 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *

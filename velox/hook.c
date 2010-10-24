@@ -1,6 +1,6 @@
 /* velox: velox/hook.c
  *
- * Copyright (c) 2009, 2010 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2009, 2010 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *

@@ -1,6 +1,6 @@
 /* velox: velox/work_area.c
  *
- * Copyright (c) 2010 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
