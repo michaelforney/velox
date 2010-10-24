@@ -9,6 +9,7 @@ velox:
     move_next           : [{mod: [*mod, mod_shift], value: h}]
     move_previous       : [{mod: [*mod, mod_shift], value: t}]
     kill_focused_window : [{mod: [*mod, mod_shift], value: c}]
+    toggle_floating     : [{mod: [*mod],            value: f}]
     next_layout         : [{mod: [*mod],            value: space}]
     previous_layout     : [{mod: [*mod, mod_shift], value: space}]
     quit                : [{mod: [*mod, mod_shift], value: q}]

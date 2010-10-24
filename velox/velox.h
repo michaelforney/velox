@@ -61,6 +61,7 @@ void move_next();
 void move_previous();
 
 void kill_focused_window();
+void toggle_floating();
 
 void move_float(union velox_argument argument);
 void resize_float(union velox_argument argument);

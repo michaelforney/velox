@@ -242,6 +242,7 @@ static void setup_key_bindings()
 
     /* Window operations */
     add_key_binding("velox", STRING_SYMBOL(kill_focused_window), no_argument);
+    add_key_binding("velox", STRING_SYMBOL(toggle_floating), no_argument);
 
     /* Layout control */
     add_key_binding("velox", STRING_SYMBOL(next_layout), no_argument);

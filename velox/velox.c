@@ -878,6 +878,49 @@ void kill_focused_window()
     xcb_flush(c);
 }
 
+void toggle_floating()
+{
+    struct velox_window_entry * entry;
+
+    if (tag->focus_type == TILE)
+    {
+        if (!list_empty(&tag->tiled.windows))
+        {
+            entry = list_entry(tag->tiled.focus, struct velox_window_entry, head);
+            tag->tiled.focus = list_actual_next(tag->tiled.focus, &tag->tiled.windows);
+
+            list_del(&entry->head);
+            list_add(&entry->head, &tag->floated.windows);
+
+            entry->window->floating = true;
+            tag->focus_type = FLOAT;
+
+            update_focus(tag);
+            restack();
+            arrange();
+        }
+    }
+    else
+    {
+        if (!list_empty(&tag->floated.windows))
+        {
+            entry = list_first_entry(&tag->floated.windows, struct velox_window_entry, head);
+
+            list_del(&entry->head);
+            list_add(&entry->head, &tag->tiled.windows);
+
+            tag->tiled.focus = &entry->head;
+
+            entry->window->floating = false;
+            tag->focus_type = TILE;
+
+            update_focus(tag);
+            restack();
+            arrange();
+        }
+    }
+}
+
 void move_float(union velox_argument argument)
 {
     xcb_window_t window_id = argument.window_id;
