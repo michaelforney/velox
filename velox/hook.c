@@ -108,6 +108,7 @@ void handle_fullscreen(struct velox_window * window)
         window->x = 0;
         window->y = 0;
         window->border_width = 0;
+        window->floating = true;
     }
 }
 
