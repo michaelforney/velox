@@ -1,6 +1,6 @@
 /* velox: velox/ewmh.h
  *
- * Copyright (c) 2010 Michael Forney <michael@obberon.com>
+ * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -17,8 +17,8 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_HOOK_H
-#define VELOX_HOOK_H
+#ifndef VELOX_EWMH_H
+#define VELOX_EWMH_H
 
 #include <xcb/xcb_ewmh.h>
 
