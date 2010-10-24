@@ -136,7 +136,7 @@ static void button_press(xcb_button_press_event_t * event)
 
         focus(event->event);
 
-        if (window->floating)
+        if (window && window->floating)
         {
             tag->focus_type = FLOAT;
         }
