@@ -339,13 +339,13 @@ void setup()
     setup_event_handlers();
     setup_bindings();
     setup_hooks();
+    setup_ewmh();
 
     load_config();
 
     setup_modules();
 
     setup_tags();
-    setup_ewmh();
 
     grab_keys(setup->min_keycode, setup->max_keycode);
     grab_buttons();

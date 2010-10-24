@@ -24,6 +24,7 @@ target_link_libraries(velox
     ${XCB-ICCCM_LIBRARIES}
     ${XCB-Aux_LIBRARIES}
     ${XCB-EWMH_LIBRARIES}
+    ${XCB-Image_LIBRARIES}
     ${LibYAML_LIBRARIES}
     ${X11_LIBRARIES}
     pthread

@@ -10,6 +10,7 @@ option(ENABLE_MPD           "Build the MPD plugin"          ON)
 option(ENABLE_SPAWN         "Build the spawn plugin"        ON)
 option(ENABLE_WALLPAPER     "Build the wallpaper plugin"    ON)
 option(ENABLE_ALSA          "Build the alsa plugin"         ON)
+option(ENABLE_BAR           "Build the bar plugin"          ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DVELOX_DEBUG")
@@ -21,6 +22,7 @@ find_package(XCB-Atom REQUIRED)
 find_package(XCB-ICCCM REQUIRED)
 find_package(XCB-Aux REQUIRED)
 find_package(XCB-EWMH REQUIRED)
+find_package(XCB-Image REQUIRED)
 find_package(X11 REQUIRED) # For XStringToKeysym
 
 if(ENABLE_MPD)
