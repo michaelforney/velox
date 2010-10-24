@@ -128,12 +128,32 @@ static inline uint32_t next_power_of_two(uint32_t n)
  * Traverse the contents of a vector.
  *
  * @param vector The vector to traverse
- * @param position The value to use as the iterator
+ * @param iterator The value to use as the iterator
  */
-#define vector_for_each(vector, position)                                   \
-    for (position = (vector)->data;                                         \
-        position - (vector)->data < (vector)->size;                         \
-        ++position)                                                         \
+#define vector_for_each(vector, iterator)                                   \
+    for ((iterator) = (vector)->data;                                       \
+        (iterator) - (vector)->data < (vector)->size;                       \
+        ++(iterator))                                                       \
+
+/**
+ * Traverse the contents of a vector with an index.
+ *
+ * @param vector The vector to traverse
+ * @param iterator The value to use as the iterator
+ * @param index The value to use as the index
+ */
+#define vector_for_each_with_index(vector, iterator, index)                 \
+    for ((iterator) = (vector)->data, (index) = 0;                          \
+        (index) < (vector)->size;                                           \
+        ++(index), ++(iterator))                                            \
+
+/**
+ * Returns the position of an iterator.
+ *
+ * @param vector The vector the iterator belongs to.
+ * @param iterator The iterator of which to calculate position.
+ */
+#define vector_position(vector, iterator) ((iterator) - (vector)->data)
 
 /**
  * Free the contents of a vector
