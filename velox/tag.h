@@ -56,7 +56,7 @@ struct velox_tag
     struct velox_layout_state state;
 };
 
-DEFINE_VECTOR(velox_tag_vector, struct velox_tag *);
+DEFINE_VECTOR(velox_tag_vector, struct velox_tag);
 
 extern struct velox_tag_vector tags;
 

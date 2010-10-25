@@ -46,7 +46,7 @@ void add_tag(const char * name, const char * layout_names[])
     char binding_name[128];
 
     /* Allocate a new tag, then set its attributes */
-    tag = (struct velox_tag *) malloc(sizeof(struct velox_tag));
+    tag = vector_append_address(&tags);
 
     /* Might be needed with windows on multiple tags at once */
     // tag->id = 1 << tag_count++;
@@ -69,9 +69,6 @@ void add_tag(const char * name, const char * layout_names[])
 
     tag->layout = tag->layouts.next;
     tag->state = list_entry(tag->layout, struct velox_layout_entry, head)->layout->default_state;
-
-    /* Add the tag to the list of tags */
-    vector_append(&tags, tag);
 
     sprintf(binding_name, "set_tag_%u", tags.size);
     add_key_binding("tag", binding_name, &set_tag, uint32_argument(tags.size - 1));
@@ -104,7 +101,7 @@ void setup_tags()
 
 void cleanup_tags()
 {
-    struct velox_tag ** tag;
+    struct velox_tag * tag;
     struct velox_tag_entry * tag_entry, * tag_temp;
     struct velox_window_entry * window_entry, * window_temp;
     struct velox_layout_entry * layout_entry, * layout_temp;
@@ -112,7 +109,7 @@ void cleanup_tags()
     vector_for_each(&tags, tag)
     {
         /* Free the tag's windows */
-        list_for_each_entry_safe(window_entry, window_temp, &(*tag)->tiled.windows, head)
+        list_for_each_entry_safe(window_entry, window_temp, &tag->tiled.windows, head)
         {
             free(window_entry->window->name);
             free(window_entry->window->class);
@@ -121,13 +118,12 @@ void cleanup_tags()
         }
 
         /* Free the tag's layouts */
-        list_for_each_entry_safe(layout_entry, layout_temp, &(*tag)->layouts, head)
+        list_for_each_entry_safe(layout_entry, layout_temp, &tag->layouts, head)
         {
             free(layout_entry);
         }
 
-        free((*tag)->name);
-        free(*tag);
+        free(tag->name);
     }
 }
 

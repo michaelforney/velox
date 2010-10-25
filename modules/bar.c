@@ -136,7 +136,7 @@ static void clock_icon_item(struct pixmap * pixmap)
 
 static void tag_list_item(struct pixmap * pixmap)
 {
-    struct velox_tag ** tag_iterator;
+    struct velox_tag * tag_iterator;
     uint32_t index;
     uint32_t length;
     uint32_t x = 0;
@@ -150,9 +150,9 @@ static void tag_list_item(struct pixmap * pixmap)
 
     vector_for_each(&tags, tag_iterator)
     {
-        for (index = 0, length = strlen((*tag_iterator)->name); index < length; ++index)
+        for (index = 0, length = strlen(tag_iterator->name); index < length; ++index)
         {
-            text2b[index] = (xcb_char2b_t) { 0, (*tag_iterator)->name[index] };
+            text2b[index] = (xcb_char2b_t) { 0, tag_iterator->name[index] };
         }
 
         text_extents_cookies[vector_position(&tags, tag_iterator)] =
@@ -175,16 +175,16 @@ static void tag_list_item(struct pixmap * pixmap)
 
     vector_for_each_with_index(&tags, tag_iterator, index)
     {
-        if (*tag_iterator == tag)
+        if (tag_iterator == tag)
         {
             xcb_poly_fill_rectangle(c, pixmap->pixmap, selected_background_gc, 1,
                 (xcb_rectangle_t[]) { x, 0, widths[index], bar_height });
         }
 
-        xcb_image_text_8(c, strlen((*tag_iterator)->name), pixmap->pixmap,
-            *tag_iterator == tag ? selected_foreground_gc : default_foreground_gc,
+        xcb_image_text_8(c, strlen(tag_iterator->name), pixmap->pixmap,
+            tag_iterator == tag ? selected_foreground_gc : default_foreground_gc,
             x + spacing / 2, (bar_height + text_extents_replies[index]->font_ascent -
-            text_extents_replies[index]->font_descent) / 2, (*tag_iterator)->name);
+            text_extents_replies[index]->font_descent) / 2, tag_iterator->name);
 
         x += widths[index];
     }
