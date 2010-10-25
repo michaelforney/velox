@@ -1302,8 +1302,6 @@ void manage_existing_windows()
     uint16_t child, child_count;
     xcb_get_window_attributes_cookie_t * window_attributes_cookies;
     xcb_get_window_attributes_reply_t ** window_attributes_replies;
-    xcb_get_property_cookie_t * property_cookies;
-    xcb_get_property_reply_t ** property_replies;
     xcb_get_property_cookie_t * state_cookies;
     xcb_get_property_reply_t ** state_replies;
 
@@ -1316,10 +1314,6 @@ void manage_existing_windows()
         malloc(child_count * sizeof(xcb_get_window_attributes_cookie_t));
     window_attributes_replies = (xcb_get_window_attributes_reply_t **)
         malloc(child_count * sizeof(xcb_get_window_attributes_reply_t *));
-    property_cookies = (xcb_get_property_cookie_t *)
-        malloc(child_count * sizeof(xcb_get_property_cookie_t));
-    property_replies = (xcb_get_property_reply_t **)
-        malloc(child_count * sizeof(xcb_get_property_reply_t *));
     state_cookies = (xcb_get_property_cookie_t *)
         malloc(child_count * sizeof(xcb_get_property_cookie_t));
     state_replies = (xcb_get_property_reply_t **)
@@ -1327,25 +1321,22 @@ void manage_existing_windows()
 
     DEBUG_PRINT("child_count: %i\n", child_count)
 
-    for (child = 0; child < child_count; child++)
+    for (child = 0; child < child_count; ++child)
     {
         window_attributes_cookies[child] = xcb_get_window_attributes(c, children[child]);
-        property_cookies[child] = xcb_get_property(c, false, children[child],
-            XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
         state_cookies[child] = xcb_get_property(c, false, children[child],
             WM_STATE, WM_STATE, 0, 2);
     }
-    for (child = 0; child < child_count; child++)
+
+    for (child = 0; child < child_count; ++child)
     {
         window_attributes_replies[child] = xcb_get_window_attributes_reply(c,
             window_attributes_cookies[child], NULL);
-        property_replies[child] = xcb_get_property_reply(c, property_cookies[child], NULL);
         state_replies[child] = xcb_get_property_reply(c, state_cookies[child], NULL);
 
-        if (window_attributes_replies[child]->override_redirect ||
-            *((xcb_window_t *) xcb_get_property_value(property_replies[child])))
+        if (window_attributes_replies[child]->override_redirect)
         {
-            DEBUG_PRINT("override_redirect or transient\n")
+            DEBUG_PRINT("override_redirect\n")
             continue;
         }
 
@@ -1354,27 +1345,15 @@ void manage_existing_windows()
         {
             manage(children[child]);
         }
-    }
-    for (child = 0; child < child_count; child++)
-    {
-        if (*((xcb_window_t *) xcb_get_property_value(property_replies[child])) &&
-            (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE ||
-            ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC))
-        {
-            manage(children[child]);
-        }
 
         free(window_attributes_replies[child]);
-        free(property_replies[child]);
         free(state_replies[child]);
     }
 
     free(query_reply);
     free(window_attributes_cookies);
-    free(property_cookies);
     free(state_cookies);
     free(window_attributes_replies);
-    free(property_replies);
     free(state_replies);
 }
 
