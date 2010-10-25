@@ -952,7 +952,11 @@ void move_float(union velox_argument argument)
 
         while ((event = xcb_wait_for_event(c)))
         {
-            if ((event->response_type & ~0x80) == XCB_BUTTON_RELEASE) break;
+            if ((event->response_type & ~0x80) == XCB_BUTTON_RELEASE)
+            {
+                free(event);
+                break;
+            }
             else if ((event->response_type & ~0x80) == XCB_MOTION_NOTIFY)
             {
                 window->x = original_x +
@@ -971,6 +975,8 @@ void move_float(union velox_argument argument)
             {
                 handle_event(event);
             }
+
+            free(event);
         }
 
 
@@ -1014,7 +1020,11 @@ void resize_float(union velox_argument argument)
 
         while ((event = xcb_wait_for_event(c)))
         {
-            if ((event->response_type & ~0x80) == XCB_BUTTON_RELEASE) break;
+            if ((event->response_type & ~0x80) == XCB_BUTTON_RELEASE)
+            {
+                free(event);
+                break;
+            }
             else if ((event->response_type & ~0x80) == XCB_MOTION_NOTIFY)
             {
                 window->width = original_width +
@@ -1033,6 +1043,8 @@ void resize_float(union velox_argument argument)
             {
                 handle_event(event);
             }
+
+            free(event);
         }
 
 
@@ -1405,6 +1417,7 @@ void run()
         if (event)
         {
             handle_event(event);
+            free(event);
 
             if (clear_event_type)
             {
@@ -1414,19 +1427,20 @@ void run()
                 {
                     if ((event->response_type & ~0x80) == clear_event_type)
                     {
-                        free(event);
                         DEBUG_PRINT("dropping masked event\n")
                     }
                     else
                     {
                         handle_event(event);
                     }
+
+                    free(event);
                 }
+
                 clear_event_type = 0;
             }
         }
     }
-
 }
 
 void quit()
