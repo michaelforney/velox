@@ -355,7 +355,6 @@ static void property_notify(xcb_property_notify_event_t * event)
 
 static void client_message(xcb_client_message_event_t * event)
 {
-    ewmh_handle_client_message(event);
 }
 
 static void mapping_notify(xcb_mapping_notify_event_t * event)

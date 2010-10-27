@@ -28,6 +28,7 @@
 #include "hook.h"
 #include "debug.h"
 #include "vector.h"
+#include "event_handler.h"
 
 #include "ewmh-private.h"
 
@@ -46,7 +47,7 @@ static void __attribute__((destructor)) free_client_list()
     vector_free(&client_list);
 }
 
-void update_client_list()
+static void update_client_list()
 {
     DEBUG_ENTER
 
@@ -57,7 +58,7 @@ void update_client_list()
     }
 }
 
-void supporting_wm()
+static void supporting_wm()
 {
     xcb_window_t child_id;
     pid_t wm_pid;
@@ -94,7 +95,8 @@ void supporting_wm()
     xcb_ewmh_set_wm_pid(ewmh, child_id, wm_pid);
 }
 
-void avoid_struts(const struct velox_area * screen_area, struct velox_area * work_area)
+static void avoid_struts(const struct velox_area * screen_area,
+    struct velox_area * work_area)
 {
     xcb_query_tree_cookie_t query_cookie;
     xcb_query_tree_reply_t * query_reply;
@@ -160,7 +162,7 @@ void avoid_struts(const struct velox_area * screen_area, struct velox_area * wor
     free(query_reply);
 }
 
-void add_client_hook(struct velox_window * window)
+static void add_client_hook(struct velox_window * window)
 {
     DEBUG_ENTER
 
@@ -169,7 +171,7 @@ void add_client_hook(struct velox_window * window)
     update_client_list();
 }
 
-void remove_client_hook(struct velox_window * window)
+static void remove_client_hook(struct velox_window * window)
 {
     xcb_window_t * window_id;
 
@@ -189,7 +191,7 @@ void remove_client_hook(struct velox_window * window)
     update_client_list();
 }
 
-void update_clients_hook(struct velox_tag * tag)
+static void update_clients_hook(struct velox_tag * tag)
 {
     struct velox_window_entry * entry;
 
@@ -205,12 +207,12 @@ void update_clients_hook(struct velox_tag * tag)
     update_client_list();
 }
 
-void desktop_geometry_hook(void * arg)
+static void desktop_geometry_hook(void * arg)
 {
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
 }
 
-void focus_hook(const xcb_window_t * window_id)
+static void focus_hook(const xcb_window_t * window_id)
 {
     if (*window_id == screen->root)
     {
@@ -222,7 +224,7 @@ void focus_hook(const xcb_window_t * window_id)
     }
 }
 
-void ewmh_handle_client_message(xcb_client_message_event_t * event)
+static void handle_client_message(xcb_client_message_event_t * event)
 {
     DEBUG_ENTER
 
@@ -314,6 +316,7 @@ void setup_ewmh()
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
     xcb_ewmh_set_desktop_viewport(ewmh, 0, 0, 0);
 
+    add_client_message_event_handler(&handle_client_message);
     add_work_area_modifier(avoid_struts);
 
     /* Client list updates */
@@ -330,4 +333,6 @@ void cleanup_ewmh()
 {
     free(ewmh);
 }
+
+// vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 
