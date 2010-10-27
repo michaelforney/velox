@@ -111,8 +111,6 @@ void cleanup_tags()
         /* Free the tag's windows */
         list_for_each_entry_safe(window_entry, window_temp, &tag->tiled.windows, head)
         {
-            free(window_entry->window->name);
-            free(window_entry->window->class);
             free(window_entry->window);
             free(window_entry);
         }

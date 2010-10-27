@@ -31,8 +31,8 @@ struct velox_window
 {
     xcb_window_t window_id;
 
-    char * name;
-    char * class;
+    char name[256];
+    char class[256];
 
     struct velox_tag * tag;
 

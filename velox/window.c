@@ -60,6 +60,9 @@ void window_set_geometry(struct velox_window * window, struct velox_area * area)
 
 void update_name_class(struct velox_window * window)
 {
+    uint32_t wm_name_length;
+    uint32_t wm_class_length;
+
     xcb_get_property_cookie_t wm_name_cookie, wm_class_cookie;
     xcb_get_property_reply_t * wm_name_reply, * wm_class_reply;
 
@@ -71,13 +74,18 @@ void update_name_class(struct velox_window * window)
     wm_name_reply = xcb_get_property_reply(c, wm_name_cookie, NULL);
     wm_class_reply = xcb_get_property_reply(c, wm_class_cookie, NULL);
 
-    DEBUG_PRINT("wm_name: %s\n", xcb_get_property_value(wm_name_reply))
-    DEBUG_PRINT("wm_class: %s\n", xcb_get_property_value(wm_class_reply))
-
-    window->name = strndup(xcb_get_property_value(wm_name_reply),
+    wm_name_length = MIN(sizeof(window->name) - 1,
         xcb_get_property_value_length(wm_name_reply));
-    window->class = strndup(xcb_get_property_value(wm_class_reply),
+    wm_class_length = MIN(sizeof(window->class) - 1,
         xcb_get_property_value_length(wm_class_reply));
+
+    memcpy(window->name, xcb_get_property_value(wm_name_reply), wm_name_length);
+    memcpy(window->class, xcb_get_property_value(wm_class_reply), wm_class_length);
+    window->name[wm_name_length] = '\0';
+    window->class[wm_class_length] = '\0';
+
+    DEBUG_PRINT("wm_name: %s\n", window->name)
+    DEBUG_PRINT("wm_class: %s\n", window->class)
 
     free(wm_name_reply);
     free(wm_class_reply);
