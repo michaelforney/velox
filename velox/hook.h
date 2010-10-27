@@ -40,7 +40,8 @@ enum velox_hook_type
     VELOX_HOOK_TAG_CHANGED,
     VELOX_HOOK_ROOT_RESIZED,
     VELOX_HOOK_FOCUS_CHANGED,
-    VELOX_HOOK_CLOCK_TICK
+    VELOX_HOOK_CLOCK_TICK,
+    VELOX_HOOK_WINDOW_NAME_CHANGED
 };
 
 void add_hook(velox_hook_t hook, enum velox_hook_type type);

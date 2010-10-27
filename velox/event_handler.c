@@ -332,25 +332,36 @@ static void configure_request(xcb_configure_request_event_t * event)
 
 static void property_notify(xcb_property_notify_event_t * event)
 {
-    xcb_get_atom_name_cookie_t atom_name_cookie;
-    xcb_get_atom_name_reply_t * atom_name_reply;
-
     DEBUG_ENTER
 
-    atom_name_cookie = xcb_get_atom_name(c, event->atom);
-    atom_name_reply = xcb_get_atom_name_reply(c, atom_name_cookie, NULL);
-
-    if (atom_name_reply)
+    if (event->atom == XCB_ATOM_WM_NAME && event->state == XCB_PROPERTY_NEW_VALUE)
     {
-        char * atom_name = strndup(
-            xcb_get_atom_name_name(atom_name_reply),
-            xcb_get_atom_name_name_length(atom_name_reply)
-        );
-        DEBUG_PRINT("atom: %s\n", atom_name)
-        free(atom_name);
-    }
+        struct velox_window * window = lookup_window(event->window);
 
-    free(atom_name_reply);
+        if (window)
+        {
+            update_name_class(window);
+            run_hooks(window, VELOX_HOOK_WINDOW_NAME_CHANGED);
+        }
+    }
+    else
+    {
+        xcb_get_atom_name_cookie_t atom_name_cookie = xcb_get_atom_name(c, event->atom);
+        xcb_get_atom_name_reply_t * atom_name_reply = xcb_get_atom_name_reply(c,
+            atom_name_cookie, NULL);
+
+        if (atom_name_reply)
+        {
+            char * atom_name = strndup(
+                xcb_get_atom_name_name(atom_name_reply),
+                xcb_get_atom_name_name_length(atom_name_reply)
+            );
+            DEBUG_PRINT("atom: %s\n", atom_name)
+            free(atom_name);
+        }
+
+        free(atom_name_reply);
+    }
 }
 
 static void client_message(xcb_client_message_event_t * event)
