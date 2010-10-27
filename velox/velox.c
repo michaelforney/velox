@@ -57,7 +57,6 @@ xcb_screen_t * screen;
 xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 /* X atoms */
-const uint16_t atom_length = 3;
 xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 
 /* X cursors */
@@ -283,7 +282,7 @@ void setup()
         border_focus_color[0], border_focus_color[1], border_focus_color[2]);
 
     /* Setup atoms */
-    atom_cookies = (xcb_intern_atom_cookie_t *) malloc(atom_length * sizeof(xcb_intern_atom_cookie_t));
+    atom_cookies = (xcb_intern_atom_cookie_t *) malloc(3 * sizeof(xcb_intern_atom_cookie_t));
     atom_cookies[0] = xcb_intern_atom(c, false, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
     atom_cookies[1] = xcb_intern_atom(c, false, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
     atom_cookies[2] = xcb_intern_atom(c, false, strlen("WM_STATE"), "WM_STATE");
@@ -652,46 +651,42 @@ void set_focus_type(enum velox_tag_focus_type focus_type)
 
 void next_tag()
 {
-    struct velox_tag * tag_position;
-    uint8_t tag_index;
+    struct velox_tag * tag_iterator;
+    uint8_t index;
 
     DEBUG_ENTER
 
-    vector_for_each(&tags, tag_position)
+    vector_for_each_with_index(&tags, tag_iterator, index)
     {
-        if (tag_position == tag) break;
+        if (tag_iterator == tag) break;
     }
 
-    tag_index = tag_position - &tags.data[0];
-
-    if (++tag_index == tags.size)
+    if (++index == tags.size)
     {
-        tag_index = 0;
+        index = 0;
     }
 
-    set_tag(uint8_argument(tag_index));
+    set_tag(uint8_argument(index));
 }
 
 void previous_tag()
 {
-    struct velox_tag * tag_position;
-    uint8_t tag_index;
+    struct velox_tag * tag_iterator;
+    uint8_t index;
 
     DEBUG_ENTER
 
-    vector_for_each(&tags, tag_position)
+    vector_for_each_with_index(&tags, tag_iterator, index)
     {
-        if (tag_position == tag) break;
+        if (tag_iterator == tag) break;
     }
 
-    tag_index = tag_position - &tags.data[0];
-
-    if (tag_index-- == 0)
+    if (index-- == 0)
     {
-        tag_index = tags.size - 1;
+        index = tags.size - 1;
     }
 
-    set_tag(uint8_argument(tag_index));
+    set_tag(uint8_argument(index));
 }
 
 void toggle_focus_type()
