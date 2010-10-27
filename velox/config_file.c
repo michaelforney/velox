@@ -86,7 +86,7 @@ void load_config()
         assert(key->type == YAML_SCALAR_NODE);
 
         /* The module section */
-        if (strcmp((const char const *) key->data.scalar.value, "modules") == 0)
+        if (strcmp((const char *) key->data.scalar.value, "modules") == 0)
         {
             yaml_node_item_t * module_item;
             yaml_node_t * node;
@@ -102,15 +102,15 @@ void load_config()
             {
                 node = yaml_document_get_node(&document, *module_item);
 
-                load_module((const char const *) node->data.scalar.value);
+                load_module((const char *) node->data.scalar.value);
             }
         }
         /* The border_width property */
-        else if (strcmp((const char const *) key->data.scalar.value, "border_width") == 0)
+        else if (strcmp((const char *) key->data.scalar.value, "border_width") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
 
-            border_width = strtoul((const char const *) value->data.scalar.value, NULL, 10);
+            border_width = strtoul((const char *) value->data.scalar.value, NULL, 10);
         }
     }
 
@@ -128,7 +128,7 @@ void load_config()
             break;
         }
 
-        sscanf((const char const *) yaml_document_get_root_node(&document)->tag, "!velox:%s", name);
+        sscanf((const char *) yaml_document_get_root_node(&document)->tag, "!velox:%s", name);
 
         /* Configure the specified module with this YAML document */
         configure_module(name, &document);

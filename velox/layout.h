@@ -50,7 +50,8 @@ struct velox_layout_entry
     struct list_head head;
 };
 
-void add_layout(const char const * identifier, velox_arrange_t arrange, struct velox_layout_state * default_state);
+void add_layout(const char * const identifier, velox_arrange_t arrange,
+    struct velox_layout_state * default_state);
 
 void arrange_window(struct velox_window * window);
 

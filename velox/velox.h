@@ -69,7 +69,7 @@ void resize_float(union velox_argument argument);
 void next_layout();
 void previous_layout();
 
-void die(const char const * message, ...);
+void die(const char * const message, ...);
 void quit();
 
 void set_tag(union velox_argument argument);

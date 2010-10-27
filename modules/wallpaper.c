@@ -56,14 +56,14 @@ void configure(yaml_document_t * document)
 
         assert(key->type == YAML_SCALAR_NODE);
 
-        if (strcmp((const char const *) key->data.scalar.value, "path") == 0)
+        if (strcmp((const char *) key->data.scalar.value, "path") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
 
             /* TODO: Free this when cleaning up. I'm not sure how to
              * differentiate between a configured value and the default, so for
              * now, we will accept a memory leak. */
-            path = strdup((const char const *) value->data.scalar.value);
+            path = strdup((const char *) value->data.scalar.value);
         }
     }
 

@@ -70,7 +70,7 @@ void configure(yaml_document_t * document)
 
             assert(key->type == YAML_SCALAR_NODE);
 
-            if (strcmp((const char const *) key->data.scalar.value, "command") == 0)
+            if (strcmp((const char *) key->data.scalar.value, "command") == 0)
             {
                 uint16_t command_length;
 
@@ -93,16 +93,16 @@ void configure(yaml_document_t * document)
 
                     assert(command_node->type == YAML_SCALAR_NODE);
 
-                    command[command_item - value->data.sequence.items.start] = strdup((const char const *) command_node->data.scalar.value);
+                    command[command_item - value->data.sequence.items.start] = strdup((const char *) command_node->data.scalar.value);
                 }
 
                 commands[item - sequence->data.sequence.items.start] = command;
             }
-            else if (strcmp((const char const *) key->data.scalar.value, "binding") == 0)
+            else if (strcmp((const char *) key->data.scalar.value, "binding") == 0)
             {
                 assert(value->type == YAML_SCALAR_NODE);
 
-                binding = (const char const *) value->data.scalar.value;
+                binding = (const char *) value->data.scalar.value;
             }
         }
 

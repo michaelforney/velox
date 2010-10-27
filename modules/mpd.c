@@ -60,20 +60,20 @@ void configure(yaml_document_t * document)
 
         assert(key->type == YAML_SCALAR_NODE);
 
-        if (strcmp((const char const *) key->data.scalar.value, "host") == 0)
+        if (strcmp((const char *) key->data.scalar.value, "host") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
-            host = strdup((const char const *) value->data.scalar.value);
+            host = strdup((const char *) value->data.scalar.value);
         }
-        else if (strcmp((const char const *) key->data.scalar.value, "port") == 0)
+        else if (strcmp((const char *) key->data.scalar.value, "port") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
-            port = atoi((const char const *) value->data.scalar.value);
+            port = strtoul((const char *) value->data.scalar.value, NULL, 10);
         }
-        else if (strcmp((const char const *) key->data.scalar.value, "timeout") == 0)
+        else if (strcmp((const char *) key->data.scalar.value, "timeout") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
-            timeout = atoi((const char const *) value->data.scalar.value);
+            timeout = strtoul((const char *) value->data.scalar.value, NULL, 10);
         }
     }
 

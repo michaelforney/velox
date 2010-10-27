@@ -64,17 +64,17 @@ void configure(yaml_document_t * document)
         assert(key->type == YAML_SCALAR_NODE);
         assert(value->type == YAML_SCALAR_NODE);
 
-        if (strcmp((const char const *) key->data.scalar.value, "card") == 0)
+        if (strcmp((const char *) key->data.scalar.value, "card") == 0)
         {
-            mixer_card = strdup((const char const *) value->data.scalar.value);
+            mixer_card = strdup((const char *) value->data.scalar.value);
         }
-        else if (strcmp((const char const *) key->data.scalar.value, "name") == 0)
+        else if (strcmp((const char *) key->data.scalar.value, "name") == 0)
         {
-            mixer_name = strdup((const char const *) value->data.scalar.value);
+            mixer_name = strdup((const char *) value->data.scalar.value);
         }
-        else if (strcmp((const char const *) key->data.scalar.value, "index") == 0)
+        else if (strcmp((const char *) key->data.scalar.value, "index") == 0)
         {
-            mixer_index = strtoul((const char const *) value->data.scalar.value, NULL, 10);
+            mixer_index = strtoul((const char *) value->data.scalar.value, NULL, 10);
         }
     }
 

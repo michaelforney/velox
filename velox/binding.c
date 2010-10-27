@@ -63,13 +63,13 @@ static void parse_button(yaml_node_t * node, struct velox_bindable * bindable)
 {
     assert(node->type == YAML_SCALAR_NODE);
 
-    if (strcmp((const char const *) node->data.scalar.value, "any")  == 0)
+    if (strcmp((const char *) node->data.scalar.value, "any")  == 0)
     {
         bindable->pressable.button = XCB_BUTTON_INDEX_ANY;
     }
     else
     {
-        bindable->pressable.button = strtoul((const char const *)
+        bindable->pressable.button = strtoul((const char *)
             node->data.scalar.value, NULL, 10);
     }
 }
@@ -78,7 +78,7 @@ static void parse_key(yaml_node_t * node, struct velox_bindable * bindable)
 {
     assert(node->type == YAML_SCALAR_NODE);
 
-    bindable->pressable.key.keysym = XStringToKeysym((const char const *)
+    bindable->pressable.key.keysym = XStringToKeysym((const char *)
         node->data.scalar.value);
     bindable->pressable.key.keycode = 0;
 }
@@ -178,11 +178,11 @@ static void setup_configured_bindings(const char * filename,
 
                         assert(binding_key->type == YAML_SCALAR_NODE);
 
-                        if (strcmp((const char const *) binding_key->data.scalar.value, "mod") == 0)
+                        if (strcmp((const char *) binding_key->data.scalar.value, "mod") == 0)
                         {
                             bindable->modifiers = parse_modifiers(&document, binding_value);
                         }
-                        else if (strcmp((const char const *) binding_key->data.scalar.value, "value") == 0)
+                        else if (strcmp((const char *) binding_key->data.scalar.value, "value") == 0)
                         {
                             parse_function(binding_value, bindable);
                         }

@@ -32,7 +32,7 @@
 #include <velox/debug.h>
 #include <velox/area.h>
 
-const char const name[] = "layout_tile";
+const char name[] = "layout_tile";
 
 struct velox_tile_layout_state
 {
@@ -78,20 +78,20 @@ void configure(yaml_document_t * document)
 
         assert(key->type == YAML_SCALAR_NODE);
 
-        if (strcmp((const char const *) key->data.scalar.value, "master_factor") == 0)
+        if (strcmp((const char *) key->data.scalar.value, "master_factor") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
-            default_state.master_factor = strtod((const char const *) value->data.scalar.value, NULL);
+            default_state.master_factor = strtod((const char *) value->data.scalar.value, NULL);
         }
-        else if (strcmp((const char const *) key->data.scalar.value, "master_count") == 0)
+        else if (strcmp((const char *) key->data.scalar.value, "master_count") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
-            default_state.master_count = strtoul((const char const *) value->data.scalar.value, NULL, 10);
+            default_state.master_count = strtoul((const char *) value->data.scalar.value, NULL, 10);
         }
-        else if (strcmp((const char const *) key->data.scalar.value, "column_count") == 0)
+        else if (strcmp((const char *) key->data.scalar.value, "column_count") == 0)
         {
             assert(value->type == YAML_SCALAR_NODE);
-            default_state.column_count = strtoul((const char const *) value->data.scalar.value, NULL, 10);
+            default_state.column_count = strtoul((const char *) value->data.scalar.value, NULL, 10);
         }
     }
 

@@ -30,7 +30,7 @@
 #include <velox/debug.h>
 #include <velox/area.h>
 
-const char const name[] = "layout_grid";
+const char name[] = "layout_grid";
 
 static void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
 

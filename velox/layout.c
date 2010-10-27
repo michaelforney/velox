@@ -55,7 +55,8 @@ void cleanup_layouts()
     /* Delete the hashtable, and free all of the layouts */
 }
 
-void add_layout(const char const * identifier, velox_arrange_t arrange, struct velox_layout_state * default_state)
+void add_layout(const char * const identifier, velox_arrange_t arrange,
+    struct velox_layout_state * default_state)
 {
     struct velox_layout * layout;
 

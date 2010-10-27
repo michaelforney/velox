@@ -57,7 +57,7 @@ static uint16_t parse_modifiers(yaml_document_t * document, yaml_node_t * node)
     {
         mod_node = yaml_document_get_node(document, *item);
         assert(mod_node->type == YAML_SCALAR_NODE);
-        modifiers |= modifier_value((const char const *) mod_node->data.scalar.value);
+        modifiers |= modifier_value((const char *) mod_node->data.scalar.value);
     }
 
     return modifiers;

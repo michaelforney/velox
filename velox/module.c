@@ -28,7 +28,7 @@
 
 LIST_HEAD(modules);
 
-void * open_module(const char const * name)
+void * open_module(const char * const name)
 {
     char search_path[1024];
     char module_path[1024];
@@ -87,7 +87,7 @@ void * open_module(const char const * name)
     return handle;
 }
 
-void load_module(const char const * name)
+void load_module(const char * const name)
 {
     void * module_handle;
     struct velox_module * module;
@@ -122,7 +122,7 @@ void load_module(const char const * name)
     list_add(&entry->head, &modules);
 }
 
-void configure_module(const char const * name, yaml_document_t * document)
+void configure_module(const char * const name, yaml_document_t * document)
 {
     struct velox_module_entry * entry;
 
