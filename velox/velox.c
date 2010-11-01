@@ -25,6 +25,8 @@
 #include <assert.h>
 #include <limits.h>
 #include <unistd.h>
+#include <signal.h>
+#include <sys/time.h>
 
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
@@ -77,6 +79,7 @@ xcb_cursor_t cursors[3];
 
 /* VELOX variables */
 bool running = true;
+volatile sig_atomic_t clock_tick_update = true;
 uint64_t tag_mask = 0;
 struct velox_tag * tag = NULL;
 struct velox_area screen_area;
@@ -425,12 +428,14 @@ void focus(xcb_window_t window_id)
 
     if (focus_reply->focus == window_id)
     {
+        DEBUG_PRINT("already focused\n");
         free(focus_reply);
         return;
     }
 
     if (window_id != screen->root)
     {
+        DEBUG_PRINT("setting focused border\n");
         values[0] = border_focus_pixel;
         xcb_change_window_attributes(c, window_id, mask, values);
 
@@ -1203,6 +1208,7 @@ void manage(xcb_window_t window_id)
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id,
             WM_STATE, WM_STATE, 32, 2, property_values);
 
+        DEBUG_PRINT("focusing window: %u\n", window->window_id);
         focus(window->window_id);
 
         run_hooks(window, VELOX_HOOK_MANAGE_POST);
@@ -1366,53 +1372,50 @@ void spawn(char * const command[])
     }
 }
 
+void catch_alarm(int signal)
+{
+    clock_tick_update = true;
+}
+
 void run()
 {
-    time_t current_time;
-    time_t last_time;
+    struct itimerval timer;
     xcb_generic_event_t * event;
 
     printf("\n** Main Event Loop **\n");
 
-    time(&last_time);
+    timer.it_interval.tv_usec = 0;
+    timer.it_interval.tv_sec = 1;
+    timer.it_value.tv_usec = 0;
+    timer.it_value.tv_sec = 1;
 
-    while (running)
+    signal(SIGALRM, &catch_alarm);
+    setitimer(ITIMER_REAL, &timer, NULL);
+
+    while (running && (event = xcb_wait_for_event(c)))
     {
-        time(&current_time);
+        handle_event(event);
+        free(event);
 
-        if (current_time > last_time)
+        if (clear_event_type)
         {
-            last_time = current_time;
-            run_hooks(NULL, VELOX_HOOK_CLOCK_TICK);
-        }
+            xcb_aux_sync(c);
 
-        event = xcb_poll_for_event(c);
-
-        if (event)
-        {
-            handle_event(event);
-            free(event);
-
-            if (clear_event_type)
+            while ((event = xcb_poll_for_event(c)))
             {
-                xcb_aux_sync(c);
-
-                while ((event = xcb_poll_for_event(c)))
+                if ((event->response_type & ~0x80) == clear_event_type)
                 {
-                    if ((event->response_type & ~0x80) == clear_event_type)
-                    {
-                        DEBUG_PRINT("dropping masked event\n")
-                    }
-                    else
-                    {
-                        handle_event(event);
-                    }
-
-                    free(event);
+                    DEBUG_PRINT("dropping masked event\n")
+                }
+                else
+                {
+                    handle_event(event);
                 }
 
-                clear_event_type = 0;
+                free(event);
             }
+
+            clear_event_type = 0;
         }
     }
 }
