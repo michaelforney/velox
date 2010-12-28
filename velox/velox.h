@@ -21,13 +21,11 @@
 #define VELOX_VELOX_H
 
 #include <xcb/xcb.h>
+#include <sys/param.h>
 
 #include <velox/window.h>
 #include <velox/tag.h>
 #include <velox/binding.h>
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 extern xcb_connection_t * c;
 extern xcb_screen_t * screen;
