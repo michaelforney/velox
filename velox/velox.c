@@ -1376,6 +1376,12 @@ void spawn(char * const command[])
     }
 }
 
+void catch_int(int signal)
+{
+    DEBUG_ENTER
+    quit();
+}
+
 void catch_alarm(int signal)
 {
     clock_tick_update = true;
@@ -1394,6 +1400,7 @@ void run()
     timer.it_value.tv_sec = 1;
 
     signal(SIGALRM, &catch_alarm);
+    signal(SIGINT, &catch_int);
     setitimer(ITIMER_REAL, &timer, NULL);
 
     while (running && (event = xcb_wait_for_event(c)))
