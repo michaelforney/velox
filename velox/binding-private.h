@@ -27,11 +27,7 @@ struct velox_bindable
 {
     union
     {
-        struct
-        {
-            xcb_keycode_t keycode;
-            xcb_keysym_t keysym;
-        } key;
+        xcb_keysym_t key;
         uint8_t button;
     } pressable;
 

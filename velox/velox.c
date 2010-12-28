@@ -186,38 +186,42 @@ void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode)
 {
     xcb_get_keyboard_mapping_cookie_t keyboard_mapping_cookie;
     xcb_keysym_t * keysyms;
+    xcb_keycode_t keycode;
     struct velox_binding * binding;
-    uint16_t index;
-    uint16_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
+    uint32_t keysym_index;
+    uint8_t modifier_index;
+    uint8_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
 
     DEBUG_ENTER
 
-    keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode, max_keycode - min_keycode + 1);
+    keyboard_mapping_cookie = xcb_get_keyboard_mapping(c, min_keycode,
+        max_keycode - min_keycode + 1);
 
     xcb_ungrab_key(c, XCB_GRAB_ANY, screen->root, XCB_MOD_MASK_ANY);
 
     free(keyboard_mapping);
     keyboard_mapping = xcb_get_keyboard_mapping_reply(c, keyboard_mapping_cookie, NULL);
     keysyms = xcb_get_keyboard_mapping_keysyms(keyboard_mapping);
+
     vector_for_each(&key_bindings, binding)
     {
-        for (index = 0; index < xcb_get_keyboard_mapping_keysyms_length(keyboard_mapping); ++index)
+        for (keysym_index = 0; keysym_index < keyboard_mapping->length; ++keysym_index)
         {
-            if (keysyms[index] == binding->bindable.pressable.key.keysym)
+            if (keysyms[keysym_index] == binding->bindable.pressable.key)
             {
-                binding->bindable.pressable.key.keycode = min_keycode +
-                    (index / keyboard_mapping->keysyms_per_keycode);
-                break;
-            }
-        }
+                keycode = min_keycode +
+                    (keysym_index / keyboard_mapping->keysyms_per_keycode);
 
-        for (index = 0; index < extra_modifiers_length; ++index)
-        {
-            xcb_grab_key(c, true, screen->root,
-                binding->bindable.modifiers | extra_modifiers[index],
-                binding->bindable.pressable.key.keycode,
-                XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
-            );
+                for (modifier_index = 0; modifier_index < extra_modifiers_length;
+                    ++modifier_index)
+                {
+                    xcb_grab_key(c, true, screen->root,
+                        binding->bindable.modifiers | extra_modifiers[modifier_index],
+                        keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC
+                    );
+                }
+            }
+
         }
     }
 

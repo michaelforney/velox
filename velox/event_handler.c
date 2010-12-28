@@ -87,7 +87,7 @@ static void key_press(xcb_key_press_event_t * event)
 
     vector_for_each(&key_bindings, binding)
     {
-        if (keysym == binding->bindable.pressable.key.keysym &&
+        if (keysym == binding->bindable.pressable.key &&
             ((binding->bindable.modifiers == XCB_MOD_MASK_ANY) ||
             (CLEAN_MASK(event->state) == binding->bindable.modifiers)))
         {

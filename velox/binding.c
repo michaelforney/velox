@@ -78,9 +78,8 @@ static void parse_key(yaml_node_t * node, struct velox_bindable * bindable)
 {
     assert(node->type == YAML_SCALAR_NODE);
 
-    bindable->pressable.key.keysym = XStringToKeysym((const char *)
+    bindable->pressable.key = XStringToKeysym((const char *)
         node->data.scalar.value);
-    bindable->pressable.key.keycode = 0;
 }
 
 static void setup_configured_bindings(const char * filename,
