@@ -234,7 +234,7 @@ void grab_buttons()
     uint16_t index;
     uint16_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
 
-    xcb_ungrab_button(c, XCB_BUTTON_MASK_ANY, screen->root, XCB_MOD_MASK_ANY);
+    xcb_ungrab_button(c, XCB_BUTTON_INDEX_ANY, screen->root, XCB_MOD_MASK_ANY);
 
     vector_for_each(&button_bindings, binding)
     {
@@ -443,7 +443,7 @@ void focus(xcb_window_t window_id)
         values[0] = border_focus_pixel;
         xcb_change_window_attributes(c, window_id, mask, values);
 
-        xcb_ungrab_button(c, XCB_BUTTON_MASK_ANY, window_id, XCB_MOD_MASK_ANY);
+        xcb_ungrab_button(c, XCB_BUTTON_INDEX_ANY, window_id, XCB_MOD_MASK_ANY);
     }
 
     if (focus_reply->focus != screen->root)
