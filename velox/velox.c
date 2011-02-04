@@ -26,6 +26,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 #include <sys/time.h>
 
 #include <xcb/xcb_atom.h>
@@ -78,7 +79,7 @@ enum
 xcb_cursor_t cursors[3];
 
 /* VELOX variables */
-bool running = true;
+volatile sig_atomic_t running = true;
 volatile sig_atomic_t clock_tick_update = true;
 uint64_t tag_mask = 0;
 struct velox_tag * tag = NULL;
@@ -1391,6 +1392,10 @@ void run()
 {
     struct itimerval timer;
     xcb_generic_event_t * event;
+    int connection_fd;
+    fd_set fd;
+    sigset_t blocked_set;
+    sigset_t empty_set;
 
     printf("\n** Main Event Loop **\n");
 
@@ -1399,34 +1404,65 @@ void run()
     timer.it_value.tv_usec = 0;
     timer.it_value.tv_sec = 1;
 
+    /* Initial signal masks */
+    sigemptyset(&blocked_set);
+    sigemptyset(&empty_set);
+
+    sigaddset(&blocked_set, SIGALRM);
+    sigaddset(&blocked_set, SIGINT);
+
+    sigprocmask(SIG_BLOCK, &blocked_set, NULL);
+
+    /* Setup signal handlers */
     signal(SIGALRM, &catch_alarm);
     signal(SIGINT, &catch_int);
+
     setitimer(ITIMER_REAL, &timer, NULL);
 
-    while (running && (event = xcb_wait_for_event(c)))
+    /* Setup connection file descriptor set */
+    connection_fd = xcb_get_file_descriptor(c);
+
+    FD_ZERO(&fd);
+    FD_SET(connection_fd, &fd);
+
+    /* Main event loop */
+    while (running)
     {
-        handle_event(event);
-        free(event);
-
-        if (clear_event_type)
+        while ((event = xcb_poll_for_event(c)))
         {
-            xcb_aux_sync(c);
+            handle_event(event);
+            free(event);
 
-            while ((event = xcb_poll_for_event(c)))
+            if (clear_event_type)
             {
-                if ((event->response_type & ~0x80) == clear_event_type)
+                xcb_aux_sync(c);
+
+                while ((event = xcb_poll_for_event(c)))
                 {
-                    DEBUG_PRINT("dropping masked event\n")
-                }
-                else
-                {
-                    handle_event(event);
+                    if ((event->response_type & ~0x80) == clear_event_type)
+                    {
+                        DEBUG_PRINT("dropping masked event\n")
+                    }
+                    else
+                    {
+                        handle_event(event);
+                    }
+
+                    free(event);
                 }
 
-                free(event);
+                clear_event_type = 0;
             }
+        }
 
-            clear_event_type = 0;
+        if (pselect(connection_fd + 1, &fd, NULL, NULL, NULL, &empty_set) == -1
+            && errno == EINTR)
+        {
+            if (clock_tick_update)
+            {
+                clock_tick_update = false;
+                run_hooks(NULL, VELOX_HOOK_CLOCK_TICK);
+            }
         }
     }
 }
