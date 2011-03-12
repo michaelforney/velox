@@ -62,6 +62,12 @@ alsa:
     mute            : [{mod: [mod_any], value: XF86AudioMute}]
     raise_volume    : [{mod: [mod_any], value: XF86AudioRaiseVolume}]
     lower_volume    : [{mod: [mod_any], value: XF86AudioLowerVolume}]
+
+pulseaudio:
+    cycle           : [{mod: [mod_any], value: XF86Tools}]
+    mute            : [{mod: [mod_any], value: XF86AudioMute}]
+    raise_volume    : [{mod: [mod_any], value: XF86AudioRaiseVolume}]
+    lower_volume    : [{mod: [mod_any], value: XF86AudioLowerVolume}]
 ...
 
 # vim: ft=yaml fo=croql et sw=4 sts=4 ts=8 tw=80

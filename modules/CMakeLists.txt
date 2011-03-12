@@ -8,6 +8,7 @@ set(VELOX_MODULES
     mpd
     alsa
     bar
+    pulseaudio
 )
 
 include_directories(${velox_SOURCE_DIR})
@@ -29,4 +30,9 @@ if(ENABLE_ALSA)
     target_link_libraries(velox_alsa ${ALSA_LIBRARIES})
     include_directories(${ALSA_INCLUDE_DIR})
 endif(ENABLE_ALSA)
+
+if(ENABLE_PULSEAUDIO)
+    target_link_libraries(velox_pulseaudio ${LibPulse_LIBRARIES})
+    include_directories(${LibPulse_INCLUDE_DIR})
+endif(ENABLE_PULSEAUDIO)
 
