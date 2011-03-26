@@ -109,7 +109,7 @@ static void button_press(xcb_button_press_event_t * event)
     button = event->detail;
 
     DEBUG_PRINT("button: %u\n", button);
-    DEBUG_PRINT("window: %u\n", event->event);
+    DEBUG_PRINT("window: 0x%x\n", event->event);
 
     /* Mouse bindings are grabbed with the root window, so if the event window
      * is root, call any binding functions on the sub window */
@@ -150,7 +150,7 @@ static void button_press(xcb_button_press_event_t * event)
 static void enter_notify(xcb_enter_notify_event_t * event)
 {
     DEBUG_ENTER
-    DEBUG_PRINT("window_id: %i\n", event->event)
+    DEBUG_PRINT("window_id: 0x%x\n", event->event)
 
     if (tag->focus_type == FLOAT) return;
 
@@ -249,6 +249,10 @@ static void map_request(xcb_map_request_event_t * event)
         if (window == NULL && !window_attributes->override_redirect)
         {
             manage(event->window);
+        }
+        else
+        {
+            DEBUG_PRINT("not managing window with id: 0x%x\n", event->window);
         }
 
         free(window_attributes);

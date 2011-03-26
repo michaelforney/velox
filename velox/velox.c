@@ -438,6 +438,8 @@ void focus(xcb_window_t window_id)
         return;
     }
 
+    DEBUG_PRINT("window_id: 0x%x\n", window_id)
+
     if (window_id != screen->root)
     {
         DEBUG_PRINT("setting focused border\n");

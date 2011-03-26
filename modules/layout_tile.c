@@ -165,6 +165,10 @@ static void tile_arrange(struct velox_area * area, struct list_head * windows, s
     grid_count = window_count - master_count;
     column_count = MIN(grid_count, state->column_count);
 
+    DEBUG_PRINT("window_count: %u\n", window_count);
+    DEBUG_PRINT("master_count: %u\n", master_count);
+    DEBUG_PRINT("grid_count: %u\n", grid_count);
+
     /* Set the master and grid areas
      *
      * There is no grid area */

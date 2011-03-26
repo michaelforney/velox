@@ -85,7 +85,7 @@ void arrange_window(struct velox_window * window)
     values[2] = window->width;
     values[3] = window->height;
 
-    DEBUG_PRINT("%i (x: %i, y: %i, width: %i, height: %i)\n",
+    DEBUG_PRINT("0x%x (x: %i, y: %i, width: %i, height: %i)\n",
         window->window_id,
         window->x,
         window->y,
