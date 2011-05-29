@@ -76,6 +76,19 @@ static uint16_t selected_background_color[] = { 0x3333, 0x8888, 0x3333 };
 static uint16_t selected_foreground_color[] = { 0xFFFF, 0xFFFF, 0xFFFF };
 
 /* Items */
+static void divider_item(struct pixmap * pixmap)
+{
+    pixmap->pixmap = xcb_generate_id(c);
+    pixmap->width = spacing + 2;
+
+    xcb_create_pixmap(c, screen->root_depth, pixmap->pixmap, window, pixmap->width, bar_height);
+
+    xcb_poly_fill_rectangle(c, pixmap->pixmap, default_background_gc, 1, (xcb_rectangle_t[])
+        { 0, 0, pixmap->width, bar_height });
+    xcb_poly_fill_rectangle(c, pixmap->pixmap, default_foreground_gc, 1, (xcb_rectangle_t[])
+        { spacing / 2, 0, 2, bar_height });
+}
+
 static void text_item(struct pixmap * pixmap, const char * const text)
 {
     uint32_t index;
@@ -132,6 +145,25 @@ static void clock_item(struct pixmap * pixmap)
 static void clock_icon_item(struct pixmap * pixmap)
 {
     bitmap_item(pixmap, clock_width, clock_height, sizeof(clock_bits), clock_bits);
+}
+
+static void window_title_item(struct pixmap * pixmap)
+{
+    struct velox_window_entry * entry = NULL;
+
+    if (tag->focus_type == TILE && !list_empty(&tag->tiled.windows))
+    {
+        entry = list_entry(tag->tiled.focus, struct velox_window_entry, head);
+    }
+    else if (!list_empty(&tag->floated.windows))
+    {
+        entry = list_first_entry(&tag->floated.windows, struct velox_window_entry, head);
+    }
+
+    if (entry)
+    {
+        text_item(pixmap, entry->window->name);
+    }
 }
 
 static void tag_list_item(struct pixmap * pixmap)
@@ -231,6 +263,9 @@ static void redraw()
     }
 
     /* Draw items */
+    xcb_poly_fill_rectangle(c, window, default_background_gc, 1, (xcb_rectangle_t[])
+        { 0, 0, screen_area.width, bar_height });
+
     for (alignment = ALIGN_LEFT; alignment <= ALIGN_RIGHT; ++alignment)
     {
         x = start_x[alignment];
@@ -378,11 +413,15 @@ bool setup()
     /* Register hooks and event handler */
     add_hook(&redraw_hook, VELOX_HOOK_TAG_CHANGED);
     add_hook(&redraw_hook, VELOX_HOOK_CLOCK_TICK);
+    add_hook(&redraw_hook, VELOX_HOOK_FOCUS_CHANGED);
+    add_hook(&redraw_hook, VELOX_HOOK_WINDOW_NAME_CHANGED);
     add_hook(&resize_hook, VELOX_HOOK_ROOT_RESIZED);
     add_expose_event_handler(&expose);
 
     /* Add bar items */
     vector_append(&items[ALIGN_LEFT], tag_list_item);
+    vector_append(&items[ALIGN_LEFT], divider_item);
+    vector_append(&items[ALIGN_LEFT], window_title_item);
     vector_append(&items[ALIGN_RIGHT], clock_icon_item);
     vector_append(&items[ALIGN_RIGHT], clock_item);
 
