@@ -16,7 +16,7 @@ find_path(XCB-Aux_INCLUDE_DIR
 )
 
 find_library(XCB-Aux_LIBRARY
-    NAMES xcb-aux
+    NAMES xcb-aux xcb-util
     PATHS ${XCB-Aux_PKGCONF_LIBRARY_DIRS}
 )
 

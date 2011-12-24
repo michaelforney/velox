@@ -367,7 +367,7 @@ void show_window(xcb_window_t window_id)
 
     DEBUG_ENTER
 
-    property_values[0] = XCB_WM_STATE_NORMAL;
+    property_values[0] = XCB_ICCCM_WM_STATE_NORMAL;
     property_values[1] = 0;
     xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, property_values);
 
@@ -380,7 +380,7 @@ void hide_window(xcb_window_t window_id)
 
     DEBUG_ENTER
 
-    values[0] = XCB_WM_STATE_WITHDRAWN;
+    values[0] = XCB_ICCCM_WM_STATE_WITHDRAWN;
     values[1] = 0;
     xcb_change_property(c, XCB_PROP_MODE_REPLACE, window_id, WM_STATE, WM_STATE, 32, 2, values);
 
@@ -1210,7 +1210,7 @@ void manage(xcb_window_t window_id)
 
         xcb_map_window(c, window->window_id);
 
-        property_values[0] = XCB_WM_STATE_NORMAL;
+        property_values[0] = XCB_ICCCM_WM_STATE_NORMAL;
         property_values[1] = 0;
         xcb_change_property(c, XCB_PROP_MODE_REPLACE, window->window_id,
             WM_STATE, WM_STATE, 32, 2, property_values);
@@ -1349,7 +1349,7 @@ void manage_existing_windows()
         }
 
         if (window_attributes_replies[child]->map_state == XCB_MAP_STATE_VIEWABLE ||
-            ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_WM_STATE_ICONIC)
+            ((uint32_t *) xcb_get_property_value(state_replies[child]))[0] == XCB_ICCCM_WM_STATE_ICONIC)
         {
             manage(children[child]);
         }

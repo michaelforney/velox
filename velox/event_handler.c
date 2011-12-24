@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_event.h>
 #include <xcb/xcb_icccm.h>
 
 #include "event_handler.h"
@@ -219,7 +220,7 @@ static void unmap_notify(xcb_unmap_notify_event_t * event)
 
     xcb_grab_server(c);
 
-    property_values[0] = XCB_WM_STATE_WITHDRAWN;
+    property_values[0] = XCB_ICCCM_WM_STATE_WITHDRAWN;
     property_values[1] = 0;
     xcb_change_property(c, XCB_PROP_MODE_REPLACE, event->window, WM_STATE, WM_STATE, 32, 2, property_values);
 

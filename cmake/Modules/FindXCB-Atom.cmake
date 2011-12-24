@@ -16,7 +16,7 @@ find_path(XCB-Atom_INCLUDE_DIR
 )
 
 find_library(XCB-Atom_LIBRARY
-    NAMES xcb-atom
+    NAMES xcb-atom xcb-util
     PATHS ${XCB-Atom_PKGCONF_LIBRARY_DIRS}
 )
 
