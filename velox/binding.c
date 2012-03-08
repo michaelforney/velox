@@ -20,12 +20,16 @@
 #include <yaml.h>
 #include <assert.h>
 #include <X11/Xlib.h> // For XStringToKeysym
+#include <xcb/xcb_keysyms.h>
 
 #include "binding.h"
 #include "hashtable.h"
 #include "velox.h"
 #include "config_file.h"
 #include "modifier.h"
+#include "keyboard_mapping.h"
+#include "hook.h"
+#include "debug.h"
 
 #include "binding-private.h"
 
@@ -275,10 +279,52 @@ void add_button_binding(const char * group, const char * name,
     add_binding(&configured_buttons, &button_bindings, group, name, function, no_argument);
 }
 
+void grab_keys(void * arg)
+{
+    xcb_keycode_t * keycode;
+    struct velox_binding * binding;
+    uint8_t modifier_index;
+    uint8_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
+
+    DEBUG_ENTER
+
+    xcb_ungrab_key(c, XCB_GRAB_ANY, screen->root, XCB_MOD_MASK_ANY);
+
+    vector_for_each(&key_bindings, binding)
+    {
+        xcb_keycode_t * keycodes = xcb_key_symbols_get_keycode(keyboard_mapping,
+            binding->bindable.pressable.key);
+
+        if (!keycodes) continue;
+
+        keycode = keycodes;
+
+        while (*keycode != XCB_NO_SYMBOL)
+        {
+            for (modifier_index = 0; modifier_index < extra_modifiers_length;
+                ++modifier_index)
+            {
+                xcb_grab_key(c, true, screen->root,
+                    binding->bindable.modifiers | extra_modifiers[modifier_index],
+                    *keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
+            }
+
+            ++keycode;
+        }
+
+        free(keycodes);
+    }
+
+    xcb_flush(c);
+}
+
 void setup_bindings()
 {
     setup_key_bindings();
     setup_button_bindings();
+
+    /* Add binding related hooks */
+    add_hook(&grab_keys, VELOX_HOOK_KEYBOARD_MAPPING_CHANGED);
 }
 
 void cleanup_bindings()

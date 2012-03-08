@@ -24,6 +24,7 @@ find_package(XCB-ICCCM REQUIRED)
 find_package(XCB-Aux REQUIRED)
 find_package(XCB-EWMH REQUIRED)
 find_package(XCB-Image REQUIRED)
+find_package(XCB-Keysyms REQUIRED)
 find_package(X11 REQUIRED) # For XStringToKeysym
 
 if(ENABLE_MPD)

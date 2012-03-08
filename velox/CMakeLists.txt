@@ -12,6 +12,7 @@ add_executable(velox
     module.c
     ewmh.c
     work_area.c
+    keyboard_mapping.c
 
     hashtable.c
 )
@@ -25,6 +26,7 @@ target_link_libraries(velox
     ${XCB-Aux_LIBRARIES}
     ${XCB-EWMH_LIBRARIES}
     ${XCB-Image_LIBRARIES}
+    ${XCB-Keysyms_LIBRARIES}
     ${LibYAML_LIBRARIES}
     ${X11_LIBRARIES}
     pthread
@@ -46,6 +48,7 @@ install(FILES
     module.h
     ewmh.h
     work_area.h
+    keyboard_mapping.h
     debug.h
 
     # Utility headers

@@ -29,6 +29,7 @@
 #include "modifier.h"
 #include "debug.h"
 #include "list.h"
+#include "keyboard_mapping.h"
 
 #include "velox-private.h"
 #include "hook-private.h"
@@ -78,10 +79,10 @@ void handle_event(xcb_generic_event_t * event)
 /* X event handlers */
 static void key_press(xcb_key_press_event_t * event)
 {
-    xcb_keysym_t keysym = 0;
+    xcb_keysym_t keysym = XCB_NO_SYMBOL;
     struct velox_binding * binding;
 
-    keysym = xcb_get_keyboard_mapping_keysyms(keyboard_mapping)[keyboard_mapping->keysyms_per_keycode * (event->detail - xcb_get_setup(c)->min_keycode)];
+    keysym = xcb_key_press_lookup_keysym(keyboard_mapping, event, 0);
 
     DEBUG_PRINT("keysym: %x\n", keysym)
     DEBUG_PRINT("modifiers: %i\n", event->state)
@@ -379,7 +380,9 @@ static void mapping_notify(xcb_mapping_notify_event_t * event)
 
     if (event->request == XCB_MAPPING_KEYBOARD)
     {
-        grab_keys(event->first_keycode, event->first_keycode + event->count - 1);
+        xcb_refresh_keyboard_mapping(keyboard_mapping, event);
+
+        run_hooks(NULL, VELOX_HOOK_KEYBOARD_MAPPING_CHANGED);
     }
 }
 

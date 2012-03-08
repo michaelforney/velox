@@ -29,7 +29,6 @@
 
 extern xcb_connection_t * c;
 extern xcb_screen_t * screen;
-extern xcb_get_keyboard_mapping_reply_t * keyboard_mapping;
 
 extern struct velox_area screen_area;
 extern struct velox_area work_area;
