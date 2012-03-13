@@ -19,6 +19,7 @@
 
 #include <yaml.h>
 #include <assert.h>
+#include <string.h>
 
 #include "config_file.h"
 
@@ -40,6 +41,25 @@ FILE * open_config_file(const char * name)
     if ((file = fopen(path, "r")) != NULL) return file;
 
     return NULL;
+}
+
+char * concat_strings(char * frags[], int count)
+{
+    size_t size = 0;
+    size_t frag_sizes[count];
+    for (int i = 0; i < count; ++i) {
+        frag_sizes[i] = strlen(frags[i]);
+        size += frag_sizes[i];
+    }
+    ++size;
+    char * str = (char *)malloc(size);
+    if (!str) return NULL;
+    char * cur = str;
+    for (int i = 0; i < count; ++i) {
+        cur = memcpy(cur, frags[i], frag_sizes[i]) + frag_sizes[i];
+    }
+    *cur = '\0';
+    return str;
 }
 
 void load_config()
