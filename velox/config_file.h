@@ -20,6 +20,7 @@
 #ifndef VELOX_CONFIG_FILE_H
 #define VELOX_CONFIG_FILE_H
 
+char * concat_strings(char * path_parts[], int part_count);
 FILE * open_config_file(const char * name);
 
 #endif
