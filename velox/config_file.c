@@ -28,26 +28,36 @@
 
 FILE * open_config_file(const char * name)
 {
-    FILE * file;
-    char path[1024];
+    FILE * file = NULL;
 
-    /* First check in "${HOME}/.velox/" */
-    snprintf(path, sizeof(path), "%s/.velox/%s", getenv("HOME"), name);
-    if ((file = fopen(path, "r")) != NULL) return file;
+    char * paths[] = {
+        cats(3, getenv("XDG_CONFIG_HOME"), "/velox/", name),
+        cats(3, getenv("HOME"), "/.config/velox/", name),
+        cats(3, getenv("HOME"), "/.velox/", name),
+        cats(2, "/etc/velox/", name),
+    };
 
-    /* Then try the global "/etc/velox" */
-    // TODO: Some users might not use this as the global configuration directory
-    snprintf(path, sizeof(path), "/etc/velox/%s", name);
-    if ((file = fopen(path, "r")) != NULL) return file;
-
-    return NULL;
+    for (int i = 0; i < (sizeof(paths)/sizeof(char *)); ++i) {
+        if (!paths[i]) {
+            continue;
+        } else if (file) {
+            free(paths[i]);
+        } else if (file = fopen(paths[i], "r")) {
+            printf("Found velox config at %s\n", paths[i]);
+            free(paths[i]);
+        } else {
+            free(paths[i]);
+        }
+    }
+    return file;
 }
 
-char * concat_strings(char * frags[], int count)
+char * concat_strings(int count, char ** frags) 
 {
-    size_t size = 0;
     size_t frag_sizes[count];
+    size_t size = 0;
     for (int i = 0; i < count; ++i) {
+        if (!frags[i]) return NULL;
         frag_sizes[i] = strlen(frags[i]);
         size += frag_sizes[i];
     }
