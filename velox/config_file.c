@@ -29,17 +29,23 @@
 FILE * open_config_file(const char * name)
 {
     FILE * file;
-    char path[1024];
+    char * path;
 
-    /* First check in "${HOME}/.velox/" */
-    snprintf(path, sizeof(path), "%s/.velox/%s", getenv("HOME"), name);
-    if ((file = fopen(path, "r")) != NULL) return file;
+    char * paths[4][3] = {
+        { getenv("XDG_CONFIG_HOME"), "/velox/", name },
+        { getenv("HOME"), "/.config/velox/", name },
+        { getenv("HOME"), "/.velox/", name },
+        { "/etc/velox/", name },
+    };
 
-    /* Then try the global "/etc/velox" */
-    // TODO: Some users might not use this as the global configuration directory
-    snprintf(path, sizeof(path), "/etc/velox/%s", name);
-    if ((file = fopen(path, "r")) != NULL) return file;
-
+    for (uint8_t i = 0; i < sizeof(paths); ++i) {
+        path = concat_strings(paths[i], sizeof(paths[i]));
+        if (!path) continue;
+        if (file = fopen(path, "r")) {
+            free(path);
+            return file;
+        } else free(path);
+    }
     return NULL;
 }
 
