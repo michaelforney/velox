@@ -28,32 +28,36 @@
 
 FILE * open_config_file(const char * name)
 {
-    FILE * file;
-    char * path;
+    FILE * file = NULL;
 
-    char * paths[4][3] = {
-        { getenv("XDG_CONFIG_HOME"), "/velox/", name },
-        { getenv("HOME"), "/.config/velox/", name },
-        { getenv("HOME"), "/.velox/", name },
-        { "/etc/velox/", name },
+    char * paths[] = {
+        cats(3, getenv("XDG_CONFIG_HOME"), "/velox/", name),
+        cats(3, getenv("HOME"), "/.config/velox/", name),
+        cats(3, getenv("HOME"), "/.velox/", name),
+        cats(2, "/etc/velox/", name),
     };
 
-    for (uint8_t i = 0; i < sizeof(paths); ++i) {
-        path = concat_strings(paths[i], sizeof(paths[i]));
-        if (!path) continue;
-        if (file = fopen(path, "r")) {
-            free(path);
-            return file;
-        } else free(path);
+    for (int i = 0; i < (sizeof(paths)/sizeof(char *)); ++i) {
+        if (!paths[i]) {
+            continue;
+        } else if (file) {
+            free(paths[i]);
+        } else if (file = fopen(paths[i], "r")) {
+            printf("Found velox config at %s\n", paths[i]);
+            free(paths[i]);
+        } else {
+            free(paths[i]);
+        }
     }
-    return NULL;
+    return file;
 }
 
-char * concat_strings(char * frags[], int count)
+char * concat_strings(int count, char ** frags) 
 {
-    size_t size = 0;
     size_t frag_sizes[count];
+    size_t size = 0;
     for (int i = 0; i < count; ++i) {
+        if (!frags[i]) return NULL;
         frag_sizes[i] = strlen(frags[i]);
         size += frag_sizes[i];
     }
