@@ -38,7 +38,7 @@ struct velox_area
  * @param piece The destination piece
  */
 static inline void velox_area_split_vertically(
-    const struct velox_area const * area,
+    const struct velox_area * const area,
     uint16_t pieces, uint16_t piece_index,
     struct velox_area * piece
 )
@@ -59,7 +59,7 @@ static inline void velox_area_split_vertically(
  * @param piece The destination piece
  */
 static inline void velox_area_split_horizontally(
-    const struct velox_area const * area,
+    const struct velox_area * const area,
     uint16_t pieces, uint16_t piece_index,
     struct velox_area * piece
 )
