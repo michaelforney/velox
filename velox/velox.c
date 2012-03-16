@@ -1332,7 +1332,7 @@ void spawn(char * const command[])
 
         setsid();
         execvp(command[0], command);
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 }
 
