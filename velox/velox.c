@@ -1368,8 +1368,6 @@ void run()
     sigemptyset(&empty_set);
 
     sigaddset(&blocked_set, SIGALRM);
-    sigaddset(&blocked_set, SIGINT);
-
     sigprocmask(SIG_BLOCK, &blocked_set, NULL);
 
     /* Setup signal handlers */
