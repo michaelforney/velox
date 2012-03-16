@@ -1068,8 +1068,7 @@ void manage(xcb_window_t window_id)
     uint32_t values[2];
     uint32_t property_values[2];
 
-    transient_for_cookie = xcb_get_property(c, false, window_id,
-        XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, 0, 1);
+    transient_for_cookie = xcb_icccm_get_wm_transient_for(c, window_id);
     geometry_cookie = xcb_get_geometry(c, window_id);
 
     window = (struct velox_window *) malloc(sizeof(struct velox_window));
@@ -1078,9 +1077,8 @@ void manage(xcb_window_t window_id)
     window->window_id = window_id;
 
     transient_for_reply = xcb_get_property_reply(c, transient_for_cookie, NULL);
-    transient_id = *((xcb_window_t *) xcb_get_property_value(transient_for_reply));
 
-    if (transient_for_reply->type == XCB_ATOM_WINDOW && transient_id)
+    if (xcb_icccm_get_wm_transient_for_reply(c, transient_for_cookie, &transient_id, NULL))
     {
         DEBUG_PRINT("transient_id: %i\n", transient_id)
         transient = lookup_window(transient_id);
