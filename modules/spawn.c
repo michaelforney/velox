@@ -146,8 +146,9 @@ void cleanup()
 
 void spawn_command(union velox_argument argument)
 {
-    printf("spawn_command: %s\n", ((char * const *) argument.pointer)[0]);
-    spawn((char * const *) argument.pointer);
+    char * const * const command = (char * const * const) argument.pointer;
+    printf("spawn_command: %s\n", command[0]);
+    spawn(command);
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
