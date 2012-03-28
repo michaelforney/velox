@@ -2,6 +2,7 @@
 
 add_executable(velox
     velox.c
+    atom.c
     event_handler.c
     window.c
     layout.c
@@ -37,6 +38,7 @@ target_link_libraries(velox
 install(TARGETS velox DESTINATION bin)
 
 install(FILES
+    atom.h
     config_file.h
     hook.h
     binding.h

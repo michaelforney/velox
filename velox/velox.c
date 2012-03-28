@@ -45,6 +45,7 @@
 #include "list.h"
 #include "modifier.h"
 #include "keyboard_mapping.h"
+#include "atom.h"
 
 #include "module-private.h"
 #include "config_file-private.h"
@@ -59,9 +60,6 @@
 /* X variables */
 xcb_connection_t * c;
 xcb_screen_t * screen;
-
-/* X atoms */
-xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 
 /* X cursors */
 enum
@@ -213,8 +211,6 @@ void setup()
     const xcb_setup_t * setup;
     xcb_screen_iterator_t screen_iterator;
     xcb_font_t cursor_font;
-    xcb_intern_atom_cookie_t * atom_cookies;
-    xcb_intern_atom_reply_t * atom_reply;
     xcb_alloc_color_cookie_t border_color_cookie;
     xcb_alloc_color_cookie_t border_focus_color_cookie;
     xcb_alloc_color_reply_t * border_color_reply;
@@ -244,11 +240,7 @@ void setup()
     border_focus_color_cookie = xcb_alloc_color(c, screen->default_colormap,
         border_focus_color[0], border_focus_color[1], border_focus_color[2]);
 
-    /* Setup atoms */
-    atom_cookies = (xcb_intern_atom_cookie_t *) malloc(3 * sizeof(xcb_intern_atom_cookie_t));
-    atom_cookies[0] = xcb_intern_atom(c, false, strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
-    atom_cookies[1] = xcb_intern_atom(c, false, strlen("WM_DELETE_WINDOW"), "WM_DELETE_WINDOW");
-    atom_cookies[2] = xcb_intern_atom(c, false, strlen("WM_STATE"), "WM_STATE");
+    setup_atoms();
 
     /* Setup cursors */
     cursor_font = xcb_generate_id(c);
@@ -285,31 +277,18 @@ void setup()
     free(border_color_reply);
     free(border_focus_color_reply);
 
-    atom_reply = xcb_intern_atom_reply(c, atom_cookies[0], NULL);
-    WM_PROTOCOLS = atom_reply->atom;
-    free(atom_reply);
-    atom_reply = xcb_intern_atom_reply(c, atom_cookies[1], NULL);
-    WM_DELETE_WINDOW = atom_reply->atom;
-    free(atom_reply);
-    atom_reply = xcb_intern_atom_reply(c, atom_cookies[2], NULL);
-    WM_STATE = atom_reply->atom;
-    free(atom_reply);
-    atom_reply = xcb_intern_atom_reply(c, atom_cookies[3], NULL);
-
-    free(atom_cookies);
-
     setup_hooks();
     setup_keyboard_mapping();
     setup_event_handlers();
     setup_ewmh();
-
     setup_bindings();
 
     load_config();
 
     setup_modules();
-
     setup_tags();
+
+    sync_atoms();
 
     grab_buttons();
     run_hooks(NULL, VELOX_HOOK_KEYBOARD_MAPPING_CHANGED);
