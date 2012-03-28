@@ -22,12 +22,11 @@
 
 #include <velox/window.h>
 #include <velox/list.h>
-
-typedef void (* velox_hook_t)(void * arg);
+#include <velox/function.h>
 
 struct velox_hook_entry
 {
-    velox_hook_t hook;
+    velox_function_t hook;
     struct list_head head;
 };
 
@@ -45,7 +44,7 @@ enum velox_hook_type
     VELOX_HOOK_KEYBOARD_MAPPING_CHANGED
 };
 
-void add_hook(velox_hook_t hook, enum velox_hook_type type);
+void add_hook(velox_function_t hook, enum velox_hook_type type);
 
 #endif
 

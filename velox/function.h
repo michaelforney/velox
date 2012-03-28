@@ -1,6 +1,6 @@
-/* velox: velox/binding.h
+/* velox: velox/function.h
  *
- * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
+ * Copyright (c) 2012 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -17,16 +17,12 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_BINDING
-#define VELOX_BINDING
+#ifndef VELOX_FUNCTION
+#define VELOX_FUNCTION
 
-#include <velox/function.h>
+#include <velox/argument.h>
 
-void add_key_binding(const char * group, const char * name,
-    velox_function_t function, union velox_argument argument);
-
-void add_button_binding(const char * group, const char * name,
-    velox_function_t function);
+typedef void (* velox_function_t)(union velox_argument arg);
 
 #endif
 

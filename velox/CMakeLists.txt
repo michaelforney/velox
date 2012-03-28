@@ -49,6 +49,8 @@ install(FILES
     ewmh.h
     work_area.h
     keyboard_mapping.h
+    function.h
+    argument.h
     debug.h
 
     # Utility headers

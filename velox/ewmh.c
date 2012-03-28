@@ -162,8 +162,10 @@ static void avoid_struts(const struct velox_area * screen_area,
     free(query_reply);
 }
 
-static void add_client_hook(struct velox_window * window)
+static void add_client_hook(union velox_argument argument)
 {
+    struct velox_window * window = (struct velox_window *) argument.pointer;
+
     DEBUG_ENTER
 
     vector_append(&client_list, window->window_id);
@@ -171,8 +173,9 @@ static void add_client_hook(struct velox_window * window)
     update_client_list();
 }
 
-static void remove_client_hook(struct velox_window * window)
+static void remove_client_hook(union velox_argument argument)
 {
+    struct velox_window * window = (struct velox_window *) argument.pointer;
     xcb_window_t * window_id;
 
     DEBUG_ENTER
@@ -191,8 +194,9 @@ static void remove_client_hook(struct velox_window * window)
     update_client_list();
 }
 
-static void update_clients_hook(struct velox_tag * tag)
+static void update_clients_hook(union velox_argument argument)
 {
+    struct velox_tag * tag = (struct velox_tag *) argument.pointer;
     struct velox_window_entry * entry;
 
     DEBUG_ENTER
@@ -207,13 +211,15 @@ static void update_clients_hook(struct velox_tag * tag)
     update_client_list();
 }
 
-static void desktop_geometry_hook(void * arg)
+static void desktop_geometry_hook(union velox_argument argument)
 {
     xcb_ewmh_set_desktop_geometry(ewmh, 0, screen_area.width, screen_area.height);
 }
 
-static void focus_hook(const xcb_window_t * window_id)
+static void focus_hook(union velox_argument argument)
 {
+    const xcb_window_t * window_id = (const xcb_window_t *) argument.pointer;
+
     if (*window_id == screen->root)
     {
         xcb_ewmh_set_active_window(ewmh, 0, XCB_WINDOW_NONE);
@@ -320,13 +326,13 @@ void setup_ewmh()
     add_work_area_modifier(avoid_struts);
 
     /* Client list updates */
-    add_hook((velox_hook_t) add_client_hook, VELOX_HOOK_MANAGE_POST);
-    add_hook((velox_hook_t) remove_client_hook, VELOX_HOOK_UNMANAGE);
-    add_hook((velox_hook_t) update_clients_hook, VELOX_HOOK_TAG_CHANGED);
+    add_hook(add_client_hook, VELOX_HOOK_MANAGE_POST);
+    add_hook(remove_client_hook, VELOX_HOOK_UNMANAGE);
+    add_hook(update_clients_hook, VELOX_HOOK_TAG_CHANGED);
 
     add_hook(desktop_geometry_hook, VELOX_HOOK_ROOT_RESIZED);
 
-    add_hook((velox_hook_t) focus_hook, VELOX_HOOK_FOCUS_CHANGED);
+    add_hook(focus_hook, VELOX_HOOK_FOCUS_CHANGED);
 }
 
 void cleanup_ewmh()

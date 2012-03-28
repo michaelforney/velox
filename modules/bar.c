@@ -282,12 +282,12 @@ static void redraw()
     xcb_flush(c);
 };
 
-static void redraw_hook(void * arg)
+static void redraw_hook(union velox_argument argument)
 {
     redraw();
 }
 
-static void resize_hook(void * arg)
+static void resize_hook(union velox_argument argument)
 {
     DEBUG_ENTER
 

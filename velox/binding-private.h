@@ -37,7 +37,7 @@ struct velox_bindable
 struct velox_binding
 {
     struct velox_bindable bindable;
-    velox_binding_function_t function;
+    velox_function_t function;
     union velox_argument arg;
 };
 

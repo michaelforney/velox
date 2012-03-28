@@ -206,7 +206,7 @@ static void setup_configured_bindings(const char * filename,
 
 static void add_binding(struct velox_bindable_hashtable * configured_bindables,
     struct velox_binding_vector * bindings, const char * group, const char * name,
-    velox_binding_function_t function, union velox_argument arg)
+    velox_function_t function, union velox_argument arg)
 {
     struct velox_bindable_vector * bindable_vector;
     struct velox_bindable * bindable;
@@ -268,18 +268,18 @@ static void setup_button_bindings()
 }
 
 void add_key_binding(const char * group, const char * name,
-    velox_binding_function_t function, union velox_argument arg)
+    velox_function_t function, union velox_argument arg)
 {
     add_binding(&configured_keys, &key_bindings, group, name, function, arg);
 }
 
 void add_button_binding(const char * group, const char * name,
-    velox_binding_function_t function)
+    velox_function_t function)
 {
     add_binding(&configured_buttons, &button_bindings, group, name, function, no_argument);
 }
 
-void grab_keys(void * arg)
+void grab_keys(union velox_argument argument)
 {
     xcb_keycode_t * keycode;
     struct velox_binding * binding;

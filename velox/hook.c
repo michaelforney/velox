@@ -27,8 +27,8 @@
 const uint16_t velox_hook_types = 10;
 
 /* Manage hooks */
-void handle_floating(struct velox_window * window);
-void handle_fullscreen(struct velox_window * window);
+void handle_floating(union velox_argument argument);
+void handle_fullscreen(union velox_argument argument);
 
 struct list_head * hooks;
 
@@ -44,8 +44,8 @@ void setup_hooks()
     }
 
     // TODO: Should these be a part of some plugin instead?
-    add_hook((velox_hook_t) &handle_floating, VELOX_HOOK_MANAGE_PRE);
-    add_hook((velox_hook_t) &handle_fullscreen, VELOX_HOOK_MANAGE_PRE);
+    add_hook(&handle_floating, VELOX_HOOK_MANAGE_PRE);
+    add_hook(&handle_fullscreen, VELOX_HOOK_MANAGE_PRE);
 }
 
 void cleanup_hooks()
@@ -68,7 +68,7 @@ void cleanup_hooks()
     }
 }
 
-void add_hook(velox_hook_t hook, enum velox_hook_type type)
+void add_hook(velox_function_t hook, enum velox_hook_type type)
 {
     struct velox_hook_entry * entry;
 
@@ -77,7 +77,7 @@ void add_hook(velox_hook_t hook, enum velox_hook_type type)
     list_add(&entry->head, &hooks[type]);
 }
 
-void run_hooks(void * arg, enum velox_hook_type type)
+void run_hooks(union velox_argument arg, enum velox_hook_type type)
 {
     struct velox_hook_entry * entry;
 
@@ -88,8 +88,10 @@ void run_hooks(void * arg, enum velox_hook_type type)
 }
 
 /* Manage hooks */
-void handle_floating(struct velox_window * window)
+void handle_floating(union velox_argument argument)
 {
+    struct velox_window * window = (struct velox_window *) argument.pointer;
+
     /* TODO: Make download konqueror windows floating */
     if (strcmp(window->name, "MPlayer") == 0)
     {
@@ -101,8 +103,10 @@ void handle_floating(struct velox_window * window)
     }
 }
 
-void handle_fullscreen(struct velox_window * window)
+void handle_fullscreen(union velox_argument argument)
 {
+    struct velox_window * window = (struct velox_window *) argument.pointer;
+
     if (window->width == screen_area.width && window->height == screen_area.height)
     {
         window->x = 0;
