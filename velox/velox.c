@@ -1324,6 +1324,12 @@ void catch_alarm(int signal)
     clock_tick_update = true;
 }
 
+void catch_chld(int signal)
+{
+    /* Clean up zombie processes */
+    while (waitpid(-1, NULL, WNOHANG) != -1);
+}
+
 void run()
 {
     struct itimerval timer;
@@ -1350,6 +1356,7 @@ void run()
     /* Setup signal handlers */
     signal(SIGALRM, &catch_alarm);
     signal(SIGINT, &catch_int);
+    signal(SIGCHLD, &catch_chld);
 
     setitimer(ITIMER_REAL, &timer, NULL);
 
