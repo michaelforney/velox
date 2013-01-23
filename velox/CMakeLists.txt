@@ -1,19 +1,19 @@
 # velox: velox/CMakeLists.txt
 
 add_executable(velox
-    velox.c
     atom.c
-    event_handler.c
-    window.c
-    layout.c
-    hook.c
-    tag.c
     binding.c
     config_file.c
-    module.c
+    event_handler.c
     ewmh.c
-    work_area.c
+    hook.c
     keyboard_mapping.c
+    layout.c
+    module.c
+    tag.c
+    velox.c
+    window.c
+    work_area.c
 
     hashtable.c
 )
