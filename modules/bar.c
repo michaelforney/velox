@@ -417,11 +417,11 @@ bool setup()
     add_expose_event_handler(&expose);
 
     /* Add bar items */
-    vector_append(&items[ALIGN_LEFT], tag_list_item);
-    vector_append(&items[ALIGN_LEFT], divider_item);
-    vector_append(&items[ALIGN_LEFT], window_title_item);
-    vector_append(&items[ALIGN_RIGHT], clock_icon_item);
-    vector_append(&items[ALIGN_RIGHT], clock_item);
+    vector_add_value(&items[ALIGN_LEFT], &tag_list_item);
+    vector_add_value(&items[ALIGN_LEFT], &divider_item);
+    vector_add_value(&items[ALIGN_LEFT], &window_title_item);
+    vector_add_value(&items[ALIGN_RIGHT], &clock_icon_item);
+    vector_add_value(&items[ALIGN_RIGHT], &clock_item);
 
     printf("done\n");
 
