@@ -29,23 +29,21 @@ struct atom_request
     xcb_atom_t * atom;
 };
 
-DEFINE_VECTOR(atom_request_list, struct atom_request);
+struct velox_vector atom_requests;
 
-struct atom_request_list atom_requests;
-
-static void __attribute__((constructor)) initialize_client_list()
+static void __attribute__((constructor)) initialize_atom_requests()
 {
-    vector_initialize(&atom_requests, 64);
+    vector_initialize(&atom_requests, sizeof(struct atom_request), 64);
 }
 
-static void __attribute__((destructor)) free_client_list()
+static void __attribute__((destructor)) free_atom_requests()
 {
     vector_free(&atom_requests);
 }
 
 void register_atom(const char * const name, xcb_atom_t * atom)
 {
-    struct atom_request * request = vector_append_address(&atom_requests);
+    struct atom_request * request = vector_add(&atom_requests);
 
     request->cookie = xcb_intern_atom(c, false, strlen(name), name);
     request->atom = atom;

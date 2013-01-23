@@ -25,13 +25,13 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define DEFINE_VECTOR(type, data_type)                                      \
-    struct type                                                             \
-    {                                                                       \
-        data_type * data;                                                   \
-        uint32_t size;                                                      \
-        uint32_t capacity;                                                  \
-    }
+struct velox_vector
+{
+    void * data;
+    uint32_t item_size;
+    uint32_t size;
+    uint32_t capacity;
+};
 
 static inline uint32_t next_power_of_two(uint32_t n)
 {
@@ -46,15 +46,17 @@ static inline uint32_t next_power_of_two(uint32_t n)
 /**
  * Initialize a new vector with the specified capacity
  *
- * @param capacity The capacity of the new vector. This will be rounded up to
- * the next power of two
+ * @param item_size The size of each item in the vector.
+ * @param initial_capacity The initial capacity (in number of items) of the new
+ * vector.
  */
-#define vector_initialize(vector, initial_capacity)                         \
-{                                                                           \
-    (vector)->size = 0;                                                     \
-    (vector)->capacity = next_power_of_two(initial_capacity);               \
-    (vector)->data = (typeof((vector)->data))                               \
-        malloc((vector)->capacity * sizeof(typeof(*(vector)->data)));       \
+static inline void vector_initialize(struct velox_vector * vector,
+    uint32_t item_size, uint32_t initial_capacity)
+{
+    vector->size = 0;
+    vector->item_size = item_size;
+    vector->capacity = next_power_of_two(initial_capacity * item_size);
+    vector->data = malloc(vector->capacity);
 }
 
 /**
@@ -62,68 +64,45 @@ static inline uint32_t next_power_of_two(uint32_t n)
  *
  * @param vector The vector to increase the capacity of
  */
-#define vector_increase_capacity(vector)                                    \
-{                                                                           \
-    (vector)->data = (typeof((vector)->data)) realloc((vector)->data,       \
-        2 * (vector)->capacity * sizeof(typeof(*(vector)->data)));          \
-    memset((vector)->data + (vector)->capacity, 0,                          \
-        (vector)->capacity * sizeof(typeof(*(vector)->data)));              \
-    (vector)->capacity *= 2;                                                \
+static inline void vector_increase_capacity(struct velox_vector * vector)
+{
+    vector->data = realloc(vector->data, 2 * vector->capacity
+        * vector->item_size);
+    vector->capacity *= 2;
+}
+
+static inline void * vector_add(struct velox_vector * vector)
+{
+    while (vector->size * vector->item_size > vector->capacity)
+        vector_increase_capacity(vector);
+    return vector->data + vector->size++ * vector->item_size;
 }
 
 /**
- * Insert a new value at the beginning of a vector
- *
- * @param vector The vector in which to insert the value
- * @param data The value to insert
- */
-#define vector_insert(vector, value)                                        \
-{                                                                           \
-    if ((vector)->size == (vector)->capacity)                               \
-        vector_increase_capacity(vector);                                   \
-    memmove((vector)->data + 1, (vector)->data, (vector)->size);            \
-    (vector)->data[0] = value;                                              \
-    ++(vector)->size;                                                       \
-}
-
-/**
- * Append a new value at the end of a vector
- *
- * @param vector The vector in which to append the value
- * @param data The value to append
- */
-#define vector_append(vector, value)                                        \
-{                                                                           \
-    if ((vector)->size == (vector)->capacity)                               \
-        vector_increase_capacity(vector);                                   \
-    (vector)->data[(vector)->size++] = value;                               \
-}
-
-/**
- * Append a new value at the end of a vector and return its address
+ * Add a new value at the end of a vector.
  *
  * @param vector The vector to append
  * @return The location of the new element
  */
-#define vector_append_address(vector)                                       \
-({                                                                          \
-    if ((vector)->size == (vector)->capacity)                               \
-        vector_increase_capacity(vector);                                   \
-    &(vector)->data[(vector)->size++];                                      \
-})
+#define vector_add_value(vector, value)                                     \
+{                                                                           \
+    *((typeof(value) *) vector_add(vector)) = value;                      \
+}
 
 /**
- * Remove a value at the specified position in a vector
+ * Remove a value at the specified position in a vector.
  *
  * @param vector The vector from which to remove the value
  * @param index The location of the value to remove
  */
-#define vector_remove_at(vector, position)                                  \
-{                                                                           \
-    memmove(position, position + 1,                                         \
-        ((vector)->size - (position - (vector)->data) - 1) *                \
-            sizeof(typeof(*(vector)->data)));                               \
-    --(vector)->size;                                                       \
+static inline void vector_remove_at(struct velox_vector * vector,
+    uint32_t index)
+{
+    void * position = vector->data + index * vector->item_size;
+    if (index < vector->size - 1)
+        memmove(position, position + vector->item_size,
+            (vector->size - 1 - index) * vector->item_size);
+    --vector->size;
 }
 
 /**
@@ -133,8 +112,8 @@ static inline uint32_t next_power_of_two(uint32_t n)
  * @param iterator The value to use as the iterator
  */
 #define vector_for_each(vector, iterator)                                   \
-    for ((iterator) = (vector)->data;                                       \
-        (iterator) - (vector)->data < (vector)->size;                       \
+    for ((iterator) = (typeof((iterator))) (vector)->data;                  \
+        vector_position((vector), (iterator)) < (vector)->size;             \
         ++(iterator))                                                       \
 
 /**
@@ -145,7 +124,7 @@ static inline uint32_t next_power_of_two(uint32_t n)
  * @param index The value to use as the index
  */
 #define vector_for_each_with_index(vector, iterator, index)                 \
-    for ((iterator) = (vector)->data, (index) = 0;                          \
+    for ((iterator) = (typeof(iterator)) (vector)->data, (index) = 0;       \
         (index) < (vector)->size;                                           \
         ++(index), ++(iterator))                                            \
 
@@ -155,21 +134,42 @@ static inline uint32_t next_power_of_two(uint32_t n)
  * @param vector The vector the iterator belongs to.
  * @param iterator The iterator of which to calculate position.
  */
-#define vector_position(vector, iterator) ((iterator) - (vector)->data)
+static inline uint32_t vector_position(const struct velox_vector * vector,
+    void * iterator)
+{
+    return (iterator - vector->data) / vector->item_size;
+}
+
+/**
+ * Returns a pointer to the item at the specified index in the vector.
+ *
+ * @param vector The vector in which to index
+ * @param index The index of the item to be retreived.
+ */
+static inline void * vector_at(struct velox_vector * vector, uint32_t index)
+{
+    return vector->data + index * vector->item_size;
+}
 
 /**
  * Free the contents of a vector
  *
  * @param vector The vector to free
  */
-#define vector_free(vector) free((vector)->data)
+static inline void vector_free(struct velox_vector * vector)
+{
+    free(vector->data);
+}
 
 /**
  * Clear the contents of a vector
  *
  * @param vector The vector to clear
  */
-#define vector_clear(vector) (vector)->size = 0
+static inline void vector_clear(struct velox_vector * vector)
+{
+    vector->size = 0;
+}
 
 #endif
 

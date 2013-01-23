@@ -295,7 +295,7 @@ void setup()
     run_hooks(NULL, VELOX_HOOK_KEYBOARD_MAPPING_CHANGED);
 
     assert(tags.size > 0);
-    tag = &tags.data[0];
+    tag = tag_at(0);
 }
 
 void show_window(xcb_window_t window_id)
@@ -442,7 +442,7 @@ void set_tag(union velox_argument argument)
 
     assert(index < tags.size);
 
-    if (tag == &tags.data[index]) return; // Nothing to do...
+    if (tag == tag_at(index)) return; // Nothing to do...
     else
     {
         struct velox_window_entry * window_entry;
@@ -450,17 +450,17 @@ void set_tag(union velox_argument argument)
         struct velox_window * window;
 
         /* Show the windows now visible */
-        list_for_each_entry(window_entry, &tags.data[index].tiled.windows, head)
+        list_for_each_entry(window_entry, &tag_at(index)->tiled.windows, head)
         {
             show_window(window_entry->window->window_id);
         }
 
-        list_for_each_entry(window_entry, &tags.data[index].floated.windows, head)
+        list_for_each_entry(window_entry, &tag_at(index)->floated.windows, head)
         {
             show_window(window_entry->window->window_id);
         }
 
-        update_focus(&tags.data[index]);
+        update_focus(tag_at(index));
 
         /* Hide windows no longer visible */
         list_for_each_entry(window_entry, &tag->tiled.windows, head)
@@ -473,7 +473,7 @@ void set_tag(union velox_argument argument)
             hide_window(window_entry->window->window_id);
         }
 
-        tag = &tags.data[index];
+        tag = tag_at(index);
 
         if (tag->focus_type == TILE)
         {
@@ -515,14 +515,14 @@ void move_focus_to_tag(union velox_argument argument)
 
             /* Remove the focus from the old list, and add it to the new list */
             list_del(tag->tiled.focus);
-            list_add(tag->tiled.focus, &tags.data[index].tiled.windows);
+            list_add(tag->tiled.focus, &tag_at(index)->tiled.windows);
 
             tag->tiled.focus = next_focus;
 
-            if (list_is_singular(&tags.data[index].tiled.windows))
+            if (list_is_singular(&tag_at(index)->tiled.windows))
             {
                 /* If the tag was empty before, set its focus to the new window */
-                tags.data[index].tiled.focus = tags.data[index].tiled.windows.next;
+                tag_at(index)->tiled.focus = tag_at(index)->tiled.windows.next;
             }
 
             /* Switch focus type to float if those are the only windows on this
@@ -538,9 +538,9 @@ void move_focus_to_tag(union velox_argument argument)
 
             /* If the new tag only has tiling windows, set its focus type to
              * tile */
-            if (list_empty(&tags.data[index].floated.windows))
+            if (list_empty(&tag_at(index)->floated.windows))
             {
-                tags.data[index].focus_type = TILE;
+                tag_at(index)->focus_type = TILE;
             }
         }
     }
@@ -555,7 +555,7 @@ void move_focus_to_tag(union velox_argument argument)
             window = list_entry(head, struct velox_window_entry, head)->window;
 
             list_del(head);
-            list_add(head, &tags.data[index].floated.windows);
+            list_add(head, &tag_at(index)->floated.windows);
 
             /* Switch focus type to tile if those are the only windows on this
              * tag */
@@ -568,9 +568,9 @@ void move_focus_to_tag(union velox_argument argument)
             hide_window(window->window_id);
             arrange();
 
-            if (list_empty(&tags.data[index].tiled.windows))
+            if (list_empty(&tag_at(index)->tiled.windows))
             {
-                tags.data[index].focus_type = FLOAT;
+                tag_at(index)->focus_type = FLOAT;
             }
         }
     }

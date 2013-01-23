@@ -53,9 +53,7 @@ static xcb_font_t font;
 
 typedef void (* item_t)(struct pixmap * pixmap);
 
-DEFINE_VECTOR(item_vector, item_t);
-
-struct item_vector items[3];
+struct velox_vector items[3];
 
 static uint32_t default_background_pixel;
 static uint32_t default_foreground_pixel;
@@ -323,9 +321,9 @@ bool setup()
     printf("Bar: Initializing...");
 
     /* Pixmap Vectors */
-    vector_initialize(&items[ALIGN_LEFT], 16);
-    vector_initialize(&items[ALIGN_CENTER], 16);
-    vector_initialize(&items[ALIGN_RIGHT], 16);
+    vector_initialize(&items[ALIGN_LEFT], sizeof(item_t), 16);
+    vector_initialize(&items[ALIGN_CENTER], sizeof(item_t), 16);
+    vector_initialize(&items[ALIGN_RIGHT], sizeof(item_t), 16);
 
     /* Allocate colors */
     default_background_cookie = xcb_alloc_color(c, screen->default_colormap,

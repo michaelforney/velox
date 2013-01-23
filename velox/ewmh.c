@@ -34,12 +34,11 @@
 
 xcb_ewmh_connection_t * ewmh;
 
-DEFINE_VECTOR(window_vector, xcb_window_t);
-struct window_vector client_list;
+struct velox_vector client_list;
 
 static void __attribute__((constructor)) initialize_client_list()
 {
-    vector_initialize(&client_list, 32);
+    vector_initialize(&client_list, sizeof(xcb_window_t), 32);
 }
 
 static void __attribute__((destructor)) free_client_list()
@@ -168,7 +167,7 @@ static void add_client_hook(union velox_argument argument)
 
     DEBUG_ENTER
 
-    vector_append(&client_list, window->window_id);
+    vector_add_value(&client_list, window->window_id);
 
     update_client_list();
 }
@@ -186,7 +185,7 @@ static void remove_client_hook(union velox_argument argument)
     {
         if (*window_id == window->window_id)
         {
-            vector_remove_at(&client_list, window_id);
+            vector_remove_at(&client_list, vector_position(&client_list, window_id));
             break;
         }
     }
@@ -205,7 +204,7 @@ static void update_clients_hook(union velox_argument argument)
 
     list_for_each_entry(entry, &tag->tiled.windows, head)
     {
-        vector_append(&client_list, entry->window->window_id);
+        vector_add_value(&client_list, entry->window->window_id);
     }
 
     update_client_list();

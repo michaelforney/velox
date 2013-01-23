@@ -27,11 +27,11 @@
 
 #include "layout-private.h"
 
-struct velox_tag_vector tags;
+struct velox_vector tags;
 
 static void __attribute__((constructor)) initialize_tags()
 {
-    vector_initialize(&tags, 32);
+    vector_initialize(&tags, sizeof(struct velox_tag), 32);
 }
 
 static void __attribute__((destructor)) free_tags()
@@ -46,7 +46,7 @@ void add_tag(const char * name, const char * layout_names[])
     char binding_name[128];
 
     /* Allocate a new tag, then set its attributes */
-    tag = vector_append_address(&tags);
+    tag = vector_add(&tags);
 
     /* Might be needed with windows on multiple tags at once */
     // tag->id = 1 << tag_count++;

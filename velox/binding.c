@@ -36,14 +36,13 @@
 /* Helper macros */
 #define STRING_SYMBOL(name) #name, &name
 
-DEFINE_VECTOR(velox_bindable_vector, struct velox_bindable);
-DEFINE_HASHTABLE(velox_bindable_hashtable, const char *, struct velox_bindable_vector *);
+DEFINE_HASHTABLE(velox_bindable_hashtable, const char *, struct velox_vector *);
 
 static void parse_button(yaml_node_t * node, struct velox_bindable * bindable);
 static void parse_key(yaml_node_t * node, struct velox_bindable * bindable);
 
-struct velox_binding_vector key_bindings;
-struct velox_binding_vector button_bindings;
+struct velox_vector key_bindings;
+struct velox_vector button_bindings;
 
 struct velox_bindable_hashtable configured_keys;
 struct velox_bindable_hashtable configured_buttons;
@@ -53,8 +52,8 @@ static void __attribute__((constructor)) initialize_bindings()
     hashtable_initialize(&configured_keys, 512, &sdbm_hash);
     hashtable_initialize(&configured_buttons, 512, &sdbm_hash);
 
-    vector_initialize(&key_bindings, 128);
-    vector_initialize(&button_bindings, 16);
+    vector_initialize(&key_bindings, sizeof(struct velox_binding), 128);
+    vector_initialize(&button_bindings, sizeof(struct velox_binding), 16);
 }
 
 static void __attribute__((destructor)) free_bindings()
@@ -92,7 +91,7 @@ static void setup_configured_bindings(const char * filename,
 {
     FILE * file;
     char identifier[256];
-    struct velox_bindable_vector * bindable_vector;
+    struct velox_vector * bindable_vector;
 
     yaml_parser_t parser;
     yaml_document_t document;
@@ -146,10 +145,10 @@ static void setup_configured_bindings(const char * filename,
                 assert(set_key->type == YAML_SCALAR_NODE);
                 assert(set_value->type == YAML_SEQUENCE_NODE);
 
-                bindable_vector = (struct velox_bindable_vector *)
-                    malloc(sizeof(struct velox_bindable_vector));
-                vector_initialize(bindable_vector, set_value->data.sequence.items.top -
-                    set_value->data.sequence.items.start);
+                bindable_vector = malloc(sizeof(struct velox_vector));
+                vector_initialize(bindable_vector, sizeof(struct velox_bindable),
+                    set_value->data.sequence.items.top
+                    - set_value->data.sequence.items.start);
 
                 snprintf(identifier, sizeof(identifier), "%s:%s",
                     root_key->data.scalar.value,
@@ -169,7 +168,7 @@ static void setup_configured_bindings(const char * filename,
 
                     assert(mapping_node->type == YAML_MAPPING_NODE);
 
-                    bindable = vector_append_address(bindable_vector);
+                    bindable = vector_add(bindable_vector);
 
                     /* Identify key */
                     for (binding_pair = mapping_node->data.mapping.pairs.start;
@@ -205,10 +204,10 @@ static void setup_configured_bindings(const char * filename,
 }
 
 static void add_binding(struct velox_bindable_hashtable * configured_bindables,
-    struct velox_binding_vector * bindings, const char * group, const char * name,
+    struct velox_vector * bindings, const char * group, const char * name,
     velox_function_t function, union velox_argument arg)
 {
-    struct velox_bindable_vector * bindable_vector;
+    struct velox_vector * bindable_vector;
     struct velox_bindable * bindable;
     char identifier[strlen(group) + strlen(name) + 1];
 
@@ -224,7 +223,7 @@ static void add_binding(struct velox_bindable_hashtable * configured_bindables,
     {
         struct velox_binding * binding;
 
-        binding = vector_append_address(bindings);
+        binding = vector_add(bindings);
         binding->bindable = *bindable;
         binding->function = function;
         binding->arg = arg;

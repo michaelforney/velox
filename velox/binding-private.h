@@ -41,10 +41,8 @@ struct velox_binding
     union velox_argument arg;
 };
 
-DEFINE_VECTOR(velox_binding_vector, struct velox_binding);
-
-extern struct velox_binding_vector key_bindings;
-extern struct velox_binding_vector button_bindings;
+extern struct velox_vector key_bindings;
+extern struct velox_vector button_bindings;
 
 void setup_bindings();
 void cleanup_bindings();

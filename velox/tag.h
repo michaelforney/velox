@@ -56,9 +56,12 @@ struct velox_tag
     struct velox_layout_state state;
 };
 
-DEFINE_VECTOR(velox_tag_vector, struct velox_tag);
+extern struct velox_vector tags;
 
-extern struct velox_tag_vector tags;
+static inline struct velox_tag * tag_at(uint32_t index)
+{
+    return (struct velox_tag *) vector_at(&tags, index);
+}
 
 void setup_tags();
 void cleanup_tags();
