@@ -21,6 +21,7 @@
 #define VELOX_DEBUG_H
 
 #ifdef VELOX_DEBUG
+#   include <stdio.h>
 #   define DEBUG_ENTER \
         fprintf(stderr, "# %s\n", __func__);
 #   define DEBUG_PRINT(fmt, args...)\

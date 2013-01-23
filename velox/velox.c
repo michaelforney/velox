@@ -28,6 +28,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <sys/wait.h>
 
 #include <xcb/xcb_atom.h>
 #include <xcb/xcb_icccm.h>
