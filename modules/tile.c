@@ -1,4 +1,4 @@
-/* velox: modules/layout_tile.c
+/* velox: modules/tile.c
  *
  * Copyright (c) 2009, 2010 Michael Forney <mforney@mforney.org>
  *
@@ -32,7 +32,7 @@
 #include <velox/debug.h>
 #include <velox/area.h>
 
-const char name[] = "layout_tile";
+const char name[] = "tile";
 
 struct velox_tile_layout_state
 {

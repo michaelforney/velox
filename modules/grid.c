@@ -1,4 +1,4 @@
-/* velox: modules/layout_grid.c
+/* velox: modules/grid.c
  *
  * Copyright (c) 2009, 2010 Michael Forney <mforney@mforney.org>
  *
@@ -30,7 +30,7 @@
 #include <velox/debug.h>
 #include <velox/area.h>
 
-const char name[] = "layout_grid";
+const char name[] = "grid";
 
 static void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
 

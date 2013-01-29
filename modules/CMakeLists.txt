@@ -1,8 +1,8 @@
 # velox: modules/CMakeLists.txt
 
 set(VELOX_MODULES
-    layout_tile
-    layout_grid
+    tile
+    grid
     wallpaper
     spawn
     mpd
