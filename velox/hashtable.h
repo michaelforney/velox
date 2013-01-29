@@ -72,6 +72,8 @@ static inline uint32_t find_optimal_size(uint32_t size)
     (hashtable)->data = (typeof((hashtable)->data))                         \
         malloc((hashtable)->size * sizeof(typeof(*(hashtable)->data)));     \
     (hashtable)->function = hash_function;                                  \
+    memset((hashtable)->data, 0, (hashtable)->size                          \
+        * sizeof(typeof(*(hashtable)->data)));                              \
 }
 
 /**
