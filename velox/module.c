@@ -67,7 +67,7 @@ void * open_module(const char * const name)
             start = end + 1;
         }
 
-        snprintf(module_path, sizeof(module_path), "%s/velox_%s.so", directory_path, name);
+        snprintf(module_path, sizeof(module_path), "%s/%s.so", directory_path, name);
 
         printf("    %s...", module_path);
 
