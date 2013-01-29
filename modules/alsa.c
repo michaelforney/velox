@@ -20,8 +20,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <yaml.h>
-#include <asoundlib.h>
-#include <mixer.h>
+#include <alsa/asoundlib.h>
+#include <alsa/mixer.h>
 
 #include <velox/velox.h>
 #include <velox/module.h>
