@@ -131,7 +131,8 @@ static void set_wallpaper(void * arg)
 
         for (index = 0, entry = next_file(directory);
             index < wallpaper_index;
-            ++index, entry = next_file(directory));
+            ++index, entry = next_file(directory))
+        ;
 
         {
             char wallpaper[strlen(entry->d_name) + strlen(path) + 2];
