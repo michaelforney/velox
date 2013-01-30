@@ -23,7 +23,7 @@ foreach(module ${VELOX_MODULES})
 endforeach(module)
 
 if(ENABLE_MPD)
-    target_link_libraries(mpd ${LibMPDClient_LIBRARIES})
+    target_link_libraries(mpd ${LIBMPDCLIENT_LIBRARIES})
 endif(ENABLE_MPD)
 
 if(ENABLE_ALSA)
@@ -32,7 +32,7 @@ if(ENABLE_ALSA)
 endif(ENABLE_ALSA)
 
 if(ENABLE_PULSEAUDIO)
-    target_link_libraries(pulseaudio ${LibPulse_LIBRARIES})
+    target_link_libraries(pulseaudio ${LIBPULSE_LIBRARIES})
     include_directories(${LibPulse_INCLUDE_DIR})
 endif(ENABLE_PULSEAUDIO)
 
