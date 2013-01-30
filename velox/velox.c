@@ -1328,7 +1328,7 @@ void catch_alarm(int signal)
 void catch_chld(int signal)
 {
     /* Clean up zombie processes */
-    while (waitpid(-1, NULL, WNOHANG) != -1);
+    while (waitpid(-1, NULL, WNOHANG) > 0);
 }
 
 void run()
