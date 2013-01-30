@@ -19,12 +19,7 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DVELOX_DEBUG")
 find_package(PkgConfig REQUIRED)
 find_package(LibYAML REQUIRED)
 find_package(XCB REQUIRED)
-find_package(XCB-Atom REQUIRED)
-find_package(XCB-ICCCM REQUIRED)
-find_package(XCB-Aux REQUIRED)
-find_package(XCB-EWMH REQUIRED)
-find_package(XCB-Image REQUIRED)
-find_package(XCB-Keysyms REQUIRED)
+find_package(XCB-Util COMPONENTS Atom ICCCM Aux EWMH Image Keysyms REQUIRED)
 find_package(X11 REQUIRED) # For XStringToKeysym
 
 if(ENABLE_MPD)

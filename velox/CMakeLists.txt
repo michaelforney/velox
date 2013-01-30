@@ -22,12 +22,7 @@ include_directories(${velox_SOURCE_DIR})
 
 target_link_libraries(velox
     ${XCB_LIBRARIES}
-    ${XCB-Atom_LIBRARIES}
-    ${XCB-ICCCM_LIBRARIES}
-    ${XCB-Aux_LIBRARIES}
-    ${XCB-EWMH_LIBRARIES}
-    ${XCB-Image_LIBRARIES}
-    ${XCB-Keysyms_LIBRARIES}
+    ${XCB_UTIL_LIBRARIES}
     ${LibYAML_LIBRARIES}
     ${X11_LIBRARIES}
     pthread
