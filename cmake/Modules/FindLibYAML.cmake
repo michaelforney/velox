@@ -1,21 +1,33 @@
 # - Try to find LibYAML
 # Once done, this will define
 #
-#  LibYAML_FOUND - system has LibYAML
-#  LibYAML_INCLUDE_DIRS - the LibYAML include directories
-#  LibYAML_LIBRARIES - link these to use LibYAML
+#   LIBYAML_FOUND - System has LibYAML
+#   LIBYAML_INCLUDE_DIRS - The LibYAML include directories
+#   LIBYAML_LIBRARIES - The libraries needed to use LibYAML
+#   LIBYAML_DEFINITIONS - Compiler switches required for using LibYAML
 
-include(LibFindMacros)
+find_package(PkgConfig)
+pkg_check_modules(PC_LIBYAML QUIET yaml)
+set(LIBYAML_DEFINITIONS ${PC_LIBYAML_CFLAGS_OTHER})
 
-find_path(LibYAML_INCLUDE_DIR
+find_path(LIBYAML_INCLUDE_DIR
     NAMES yaml.h
+    HINTS ${PC_LIBYAML_INCLUDE_DIR} ${PC_LIBYAML_INCLUDE_DIRS}
 )
 
-find_library(LibYAML_LIBRARY
+find_library(LIBYAML_LIBRARY
     NAMES yaml
+    HINTS ${PC_LIBYAML_LIBRARY} ${PC_LIBYAML_LIBRARY_DIRS}
 )
 
-set(LibYAML_PROCESS_INCLUDES LibYAML_INCLUDE_DIR)
-set(LibYAML_PROCESS_LIBS LibYAML_LIBRARY)
-libfind_process(LibYAML)
+set(LIBYAML_LIBRARIES ${LIBYAML_LIBRARY})
+set(LIBYAML_INCLUDE_DIRS ${LIBYAML_INCLUDE_DIR})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(LibYAML DEFAULT_MSG
+    LIBYAML_LIBRARY
+    LIBYAML_INCLUDE_DIR
+)
+
+mark_as_advanced(LIBYAML_LIBRARY LIBYAML_INCLUDE_DIR)
 

@@ -1,25 +1,32 @@
 # - Try to find LibMPDClient
 # Once done, this will define
 #
-#  LibMPDClient_FOUND - system has LibMPDClient
-#  LibMPDClient_INCLUDE_DIRS - the LibMPDClient include directories
-#  LibMPDClient_LIBRARIES - link these to use LibMPDClient
+#   LIBMPDCLIENT_FOUND - System has LibMPDClient
+#   LIBMPDCLIENT_INCLUDE_DIRS - The LibMPDClient include directories
+#   LIBMPDCLIENT_LIBRARIES - The libraries needed to use LibMPDClient
+#   LIBMPDCLIENT_DEFINITIONS - Compiler switches required for using LibMPDClient
 
-include(LibFindMacros)
+find_package(PkgConfig)
+pkg_check_modules(PC_LIBMPDCLIENT QUIET libmpdclient)
+set(LIBMPDCLIENT_DEFINITIONS ${PC_LIBMPDCLIENT_CFLAGS_OTHER})
 
-libfind_pkg_check_modules(LibMPDClient_PKGCONF libmpdclient)
-
-find_path(LibMPDClient_INCLUDE_DIR
+find_path(LIBMPDCLIENT_INCLUDE_DIR
     NAMES mpd/player.h
-    PATHS ${LibMPDClient_PKGCONF_INCLUDE_DIRS}
+    HINTS ${PC_LIBMPDCLIENT_INCLUDEDIR} ${PC_LIBMPDCLIENT_INCLUDE_DIRS}
 )
 
-find_library(LibMPDClient_LIBRARY
+find_library(LIBMPDCLIENT_LIBRARY
     NAMES mpdclient
-    PATHS ${LibMPDClient_PKGCONF_LIBRARY_DIRS}
+    HINTS ${PC_LIBMPDCLIENT_LIBDIR} ${PC_LIBMPDCLIENT_LIBRARY_DIRS}
 )
 
-set(LibMPDClient_PROCESS_INCLUDES LibMPDClient_INCLUDE_DIR)
-set(LibMPDClient_PROCESS_LIBS LibMPDClient_LIBRARY)
-libfind_process(LibMPDClient)
+set(LIBMPDCLIENT_LIBRARIES ${LIBMPDCLIENT_LIBRARY})
+set(LIBMPDCLIENT_INCLUDE_DIRS ${LIBMPDCLIENT_INCLUDE_DIR})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(LibMPDClient DEFAULT_MSG
+    LIBMPDCLIENT_LIBRARY LIBMPDCLIENT_INCLUDE_DIR
+)
+
+mark_as_advanced(LIBMPDCLIENT_LIBRARY LIBMPDCLIENT_INCLUDE_DIR)
 
