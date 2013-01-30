@@ -13,7 +13,7 @@ option(ENABLE_ALSA          "Build the alsa module"         ON)
 option(ENABLE_BAR           "Build the bar module"          ON)
 option(ENABLE_PULSEAUDIO    "Build the PulseAudio module"   ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DVELOX_DEBUG")
 
 find_package(PkgConfig REQUIRED)
