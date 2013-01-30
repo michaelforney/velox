@@ -104,7 +104,7 @@ void configure(yaml_document_t * document)
 
 bool setup()
 {
-    printf("Grid Layout: Initializing...");
+    printf("Tile Layout: Initializing...");
 
     add_layout("tile", &tile_arrange, (struct velox_layout_state *) &default_state);
 
@@ -123,7 +123,7 @@ bool setup()
 
 void cleanup()
 {
-    printf("Grid Layout: Cleaning up...");
+    printf("Tile Layout: Cleaning up...");
     printf("done\n");
 }
 
