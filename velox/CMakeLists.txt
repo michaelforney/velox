@@ -10,10 +10,10 @@ add_executable(velox
     keyboard_mapping.c
     layout.c
     module.c
-    tag.c
     velox.c
     window.c
     work_area.c
+    workspace.c
 
     hashtable.c
 )
@@ -40,7 +40,7 @@ install(FILES
     modifier.h
     layout.h
     velox.h
-    tag.h
+    workspace.h
     window.h
     module.h
     ewmh.h

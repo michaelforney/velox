@@ -1,4 +1,4 @@
-/* velox: velox/tag.h
+/* velox: velox/workspace.h
  *
  * Copyright (c) 2009, 2010 Michael Forney <mforney@mforney.org>
  *
@@ -17,8 +17,8 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_TAG_H
-#define VELOX_TAG_H
+#ifndef VELOX_WORKSPACE_H
+#define VELOX_WORKSPACE_H
 
 #include <xcb/xcb.h>
 
@@ -26,15 +26,15 @@
 #include <velox/list.h>
 #include <velox/vector.h>
 
-enum velox_tag_focus_type
+enum velox_workspace_focus_type
 {
     TILE,
     FLOAT
 };
 
-struct velox_tag
+struct velox_workspace
 {
-    /* Might be needed with windows on multiple tags at once */
+    /* Might be needed with windows on multiple workspaces at once */
     // uint64_t id;
     char * name;
 
@@ -49,22 +49,22 @@ struct velox_tag
         struct list_head windows;
     } floated;
 
-    enum velox_tag_focus_type focus_type;
+    enum velox_workspace_focus_type focus_type;
 
     struct list_head layouts;
     struct list_head * layout;
     struct velox_layout_state state;
 };
 
-extern struct velox_vector tags;
+extern struct velox_vector workspaces;
 
-static inline struct velox_tag * tag_at(uint32_t index)
+static inline struct velox_workspace * workspace_at(uint32_t index)
 {
-    return (struct velox_tag *) vector_at(&tags, index);
+    return (struct velox_workspace *) vector_at(&workspaces, index);
 }
 
-void setup_tags();
-void cleanup_tags();
+void setup_workspaces();
+void cleanup_workspaces();
 
 #endif
 

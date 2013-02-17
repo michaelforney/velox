@@ -46,7 +46,7 @@ struct pixmap
     uint32_t width;
 };
 
-static void tag_list_item(struct pixmap * pixmap);
+static void workspace_list_item(struct pixmap * pixmap);
 
 static xcb_window_t window;
 static xcb_font_t font;
@@ -149,13 +149,13 @@ static void window_title_item(struct pixmap * pixmap)
 {
     struct velox_window_entry * entry = NULL;
 
-    if (tag->focus_type == TILE && !list_empty(&tag->tiled.windows))
+    if (workspace->focus_type == TILE && !list_empty(&workspace->tiled.windows))
     {
-        entry = list_entry(tag->tiled.focus, struct velox_window_entry, head);
+        entry = list_entry(workspace->tiled.focus, struct velox_window_entry, head);
     }
-    else if (!list_empty(&tag->floated.windows))
+    else if (!list_empty(&workspace->floated.windows))
     {
-        entry = list_first_entry(&tag->floated.windows, struct velox_window_entry, head);
+        entry = list_first_entry(&workspace->floated.windows, struct velox_window_entry, head);
     }
 
     if (entry)
@@ -164,32 +164,32 @@ static void window_title_item(struct pixmap * pixmap)
     }
 }
 
-static void tag_list_item(struct pixmap * pixmap)
+static void workspace_list_item(struct pixmap * pixmap)
 {
-    struct velox_tag * tag_iterator;
+    struct velox_workspace * workspace_iterator;
     uint32_t index;
     uint32_t length;
     uint32_t x = 0;
     xcb_char2b_t text2b[256];
-    xcb_query_text_extents_cookie_t text_extents_cookies[tags.size];
-    xcb_query_text_extents_reply_t * text_extents_replies[tags.size];
-    uint32_t widths[tags.size];
+    xcb_query_text_extents_cookie_t text_extents_cookies[workspaces.size];
+    xcb_query_text_extents_reply_t * text_extents_replies[workspaces.size];
+    uint32_t widths[workspaces.size];
 
     pixmap->pixmap = xcb_generate_id(c);
     pixmap->width = 0;
 
-    vector_for_each(&tags, tag_iterator)
+    vector_for_each(&workspaces, workspace_iterator)
     {
-        for (index = 0, length = strlen(tag_iterator->name); index < length; ++index)
+        for (index = 0, length = strlen(workspace_iterator->name); index < length; ++index)
         {
-            text2b[index] = (xcb_char2b_t) { 0, tag_iterator->name[index] };
+            text2b[index] = (xcb_char2b_t) { 0, workspace_iterator->name[index] };
         }
 
-        text_extents_cookies[vector_position(&tags, tag_iterator)] =
+        text_extents_cookies[vector_position(&workspaces, workspace_iterator)] =
             xcb_query_text_extents(c, font, length, text2b);
     }
 
-    for (index = 0; index < tags.size; ++index)
+    for (index = 0; index < workspaces.size; ++index)
     {
         text_extents_replies[index] = xcb_query_text_extents_reply(c,
             text_extents_cookies[index], NULL);
@@ -203,18 +203,18 @@ static void tag_list_item(struct pixmap * pixmap)
     xcb_poly_fill_rectangle(c, pixmap->pixmap, default_background_gc, 1, (xcb_rectangle_t[])
         { 0, 0, pixmap->width, bar_height });
 
-    vector_for_each_with_index(&tags, tag_iterator, index)
+    vector_for_each_with_index(&workspaces, workspace_iterator, index)
     {
-        if (tag_iterator == tag)
+        if (workspace_iterator == workspace)
         {
             xcb_poly_fill_rectangle(c, pixmap->pixmap, selected_background_gc, 1,
                 (xcb_rectangle_t[]) { x, 0, widths[index], bar_height });
         }
 
-        xcb_image_text_8(c, strlen(tag_iterator->name), pixmap->pixmap,
-            tag_iterator == tag ? selected_foreground_gc : default_foreground_gc,
+        xcb_image_text_8(c, strlen(workspace_iterator->name), pixmap->pixmap,
+            workspace_iterator == workspace ? selected_foreground_gc : default_foreground_gc,
             x + spacing / 2, (bar_height + text_extents_replies[index]->font_ascent -
-            text_extents_replies[index]->font_descent) / 2, tag_iterator->name);
+            text_extents_replies[index]->font_descent) / 2, workspace_iterator->name);
 
         x += widths[index];
     }
@@ -417,7 +417,7 @@ bool setup()
     add_expose_event_handler(&expose);
 
     /* Add bar items */
-    vector_add_value(&items[ALIGN_LEFT], &tag_list_item);
+    vector_add_value(&items[ALIGN_LEFT], &workspace_list_item);
     vector_add_value(&items[ALIGN_LEFT], &divider_item);
     vector_add_value(&items[ALIGN_LEFT], &window_title_item);
     vector_add_value(&items[ALIGN_RIGHT], &clock_icon_item);

@@ -24,7 +24,7 @@
 #include <sys/param.h>
 
 #include <velox/window.h>
-#include <velox/tag.h>
+#include <velox/workspace.h>
 #include <velox/binding.h>
 
 extern xcb_connection_t * c;
@@ -38,7 +38,7 @@ extern const char wm_name[];
 
 extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
 
-extern struct velox_tag * tag;
+extern struct velox_workspace * workspace;
 
 void synthetic_configure(struct velox_window * window);
 
@@ -69,12 +69,12 @@ void previous_layout();
 void die(const char * const message, ...);
 void quit();
 
-void set_tag(union velox_argument argument);
-void move_focus_to_tag(union velox_argument argument);
-void next_tag();
-void previous_tag();
+void set_workspace(union velox_argument argument);
+void move_focus_to_workspace(union velox_argument argument);
+void next_workspace();
+void previous_workspace();
 
-void set_focus_type(enum velox_tag_focus_type focus_type);
+void set_focus_type(enum velox_workspace_focus_type focus_type);
 void toggle_focus_type();
 
 #endif

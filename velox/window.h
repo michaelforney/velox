@@ -34,7 +34,7 @@ struct velox_window
     char name[256];
     char class[256];
 
-    struct velox_tag * tag;
+    struct velox_workspace * workspace;
 
     int16_t x, y;
     uint16_t width, height;

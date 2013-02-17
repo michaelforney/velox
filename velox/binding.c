@@ -262,8 +262,8 @@ static void setup_button_bindings()
     add_button_binding("velox", STRING_SYMBOL(move_float));
     add_button_binding("velox", STRING_SYMBOL(resize_float));
 
-    add_button_binding("velox", STRING_SYMBOL(next_tag));
-    add_button_binding("velox", STRING_SYMBOL(previous_tag));
+    add_button_binding("velox", STRING_SYMBOL(next_workspace));
+    add_button_binding("velox", STRING_SYMBOL(previous_workspace));
 }
 
 void add_key_binding(const char * group, const char * name,

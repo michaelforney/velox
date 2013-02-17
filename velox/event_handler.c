@@ -140,11 +140,11 @@ static void button_press(xcb_button_press_event_t * event)
 
         if (window && window->floating)
         {
-            tag->focus_type = FLOAT;
+            workspace->focus_type = FLOAT;
         }
         else
         {
-            tag->focus_type = TILE;
+            workspace->focus_type = TILE;
         }
     }
 }
@@ -154,7 +154,7 @@ static void enter_notify(xcb_enter_notify_event_t * event)
     DEBUG_ENTER
     DEBUG_PRINT("window_id: 0x%x\n", event->event)
 
-    if (tag->focus_type == FLOAT) return;
+    if (workspace->focus_type == FLOAT) return;
 
     if (event->event == screen->root) focus(screen->root);
     else
@@ -165,12 +165,12 @@ static void enter_notify(xcb_enter_notify_event_t * event)
         window = NULL;
 
         /* Look through tiled windows */
-        list_for_each_entry(entry, &tag->tiled.windows, head)
+        list_for_each_entry(entry, &workspace->tiled.windows, head)
         {
             if (entry->window->window_id == event->event)
             {
                 window = entry->window;
-                window->tag->tiled.focus = &entry->head;
+                window->workspace->tiled.focus = &entry->head;
                 break;
             }
         }
