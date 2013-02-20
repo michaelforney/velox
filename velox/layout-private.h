@@ -20,10 +20,7 @@
 #ifndef VELOX_LAYOUT_PRIVATE_H
 #define VELOX_LAYOUT_PRIVATE_H
 
-DEFINE_HASHTABLE(velox_layout_hashtable, const char *, struct velox_layout *);
-extern struct velox_layout_hashtable layouts;
-
-void cleanup_layouts();
+void setup_layouts();
 
 #endif
 

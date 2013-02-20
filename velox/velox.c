@@ -283,6 +283,7 @@ void setup()
     setup_event_handlers();
     setup_ewmh();
     setup_bindings();
+    setup_layouts();
 
     load_config();
 
@@ -1423,7 +1424,6 @@ void cleanup()
     cleanup_modules();
     cleanup_bindings();
     cleanup_workspaces();
-    cleanup_layouts();
     cleanup_work_area_modifiers();
     cleanup_hooks();
     cleanup_resources();

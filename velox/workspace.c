@@ -25,8 +25,6 @@
 #include "velox.h"
 #include "binding.h"
 
-#include "layout-private.h"
-
 struct velox_vector workspaces;
 
 static void __attribute__((constructor)) initialize_workspaces()
@@ -63,7 +61,7 @@ void add_workspace(const char * name, const char * layout_names[])
     for (; *layout_names != NULL; ++layout_names)
     {
         layout_entry = (struct velox_layout_entry *) malloc(sizeof(struct velox_layout_entry));
-        layout_entry->layout = hashtable_lookup(&layouts, *layout_names);
+        layout_entry->layout = find_layout(*layout_names);
         list_add_tail(&layout_entry->head, &workspace->layouts);
     }
 

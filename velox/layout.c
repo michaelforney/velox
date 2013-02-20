@@ -27,32 +27,23 @@
 #include "velox.h"
 #include "window.h"
 #include "layout.h"
+#include "resource.h"
 #include "debug.h"
 
-#include "layout-private.h"
+uint32_t layout_resource_id;
 
-struct velox_layout_hashtable layouts;
-
-static void __attribute__((constructor)) initialize_layouts()
+static void free_layout(void * data)
 {
-    /* Create a new hashtable to store the layouts */
-    hashtable_initialize(&layouts, 32, &sdbm_hash);
-}
+    struct velox_layout * layout = data;
 
-static void __attribute__((destructor)) free_layouts()
-{
-    hashtable_free(&layouts);
-}
-
-void cleanup_layout(void * layout)
-{
-    free(((struct velox_layout *) layout)->identifier);
+    free(layout->identifier);
     free(layout);
 }
 
-void cleanup_layouts()
+void setup_layouts()
 {
-    /* Delete the hashtable, and free all of the layouts */
+    layout_resource_id = resource_id("layout");
+    resource_set_destroy(layout_resource_id, &free_layout);
 }
 
 void add_layout(const char * const identifier, velox_arrange_t arrange,
@@ -67,7 +58,21 @@ void add_layout(const char * const identifier, velox_arrange_t arrange,
     layout->arrange = arrange;
     layout->default_state = *default_state;
 
-    hashtable_insert(&layouts, layout->identifier, layout);
+    add_resource(layout_resource_id, layout);
+}
+
+struct velox_layout * find_layout(const char * identifier)
+{
+    struct velox_layout ** layout;
+    const struct velox_vector * layouts = get_resources(layout_resource_id);
+
+    vector_for_each(layouts, layout)
+    {
+        if (strcmp((*layout)->identifier, identifier) == 0)
+            return *layout;
+    }
+
+    return NULL;
 }
 
 void arrange_window(struct velox_window * window)
