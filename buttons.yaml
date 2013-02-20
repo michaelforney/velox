@@ -3,10 +3,10 @@
 %YAML 1.1
 ---
 velox:
-    move_float          : [{mod: [&mod mod_4],      value: 1}]
-    resize_float        : [{mod: [*mod],            value: 3}]
-    next_workspace      : [{mod: [mod_any],         value: 9}]
-    previous_workspace  : [{mod: [mod_any],         value: 8}]
+    move_float          : [{mod: [&mod logo],   value: 1}]
+    resize_float        : [{mod: [*mod],        value: 3}]
+    next_workspace      : [{mod: [any],         value: 9}]
+    previous_workspace  : [{mod: [any],         value: 8}]
 ...
 
 # vim: ft=yaml fo=croql et sw=4 sts=4 ts=8 tw=80

@@ -29,15 +29,15 @@
 /* Static functions */
 static inline uint16_t modifier_value(const char * name)
 {
-    if (strcmp(name, "mod_shift") == 0)         return XCB_MOD_MASK_SHIFT;
-    else if (strcmp(name, "mod_lock") == 0)     return XCB_MOD_MASK_LOCK;
-    else if (strcmp(name, "mod_control") == 0)  return XCB_MOD_MASK_CONTROL;
-    else if (strcmp(name, "mod_1") == 0)        return XCB_MOD_MASK_1;
-    else if (strcmp(name, "mod_2") == 0)        return XCB_MOD_MASK_2;
-    else if (strcmp(name, "mod_3") == 0)        return XCB_MOD_MASK_3;
-    else if (strcmp(name, "mod_4") == 0)        return XCB_MOD_MASK_4;
-    else if (strcmp(name, "mod_5") == 0)        return XCB_MOD_MASK_5;
-    else if (strcmp(name, "mod_any") == 0)      return XCB_MOD_MASK_ANY;
+    if (strcmp(name, "shift") == 0)         return XCB_MOD_MASK_SHIFT;
+    else if (strcmp(name, "lock") == 0)     return XCB_MOD_MASK_LOCK;
+    else if (strcmp(name, "control") == 0)  return XCB_MOD_MASK_CONTROL;
+    else if (strcmp(name, "1") == 0)        return XCB_MOD_MASK_1;
+    else if (strcmp(name, "2") == 0)        return XCB_MOD_MASK_2;
+    else if (strcmp(name, "3") == 0)        return XCB_MOD_MASK_3;
+    else if (strcmp(name, "logo") == 0)     return XCB_MOD_MASK_4;
+    else if (strcmp(name, "5") == 0)        return XCB_MOD_MASK_5;
+    else if (strcmp(name, "any") == 0)      return XCB_MOD_MASK_ANY;
 
     return 0;
 }
