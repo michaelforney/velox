@@ -10,6 +10,7 @@ add_executable(velox
     keyboard_mapping.c
     layout.c
     module.c
+    resource.c
     velox.c
     window.c
     work_area.c
@@ -43,6 +44,7 @@ install(FILES
     workspace.h
     window.h
     module.h
+    resource.h
     ewmh.h
     work_area.h
     keyboard_mapping.h

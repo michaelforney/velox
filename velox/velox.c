@@ -47,6 +47,7 @@
 #include "modifier.h"
 #include "keyboard_mapping.h"
 #include "atom.h"
+#include "resource.h"
 
 #include "module-private.h"
 #include "config_file-private.h"
@@ -1425,6 +1426,7 @@ void cleanup()
     cleanup_layouts();
     cleanup_work_area_modifiers();
     cleanup_hooks();
+    cleanup_resources();
 
     /* X cursors */
     if (!xcb_connection_has_error(c))
