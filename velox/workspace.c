@@ -60,7 +60,7 @@ void add_workspace(const char * name, const char * layout_names[])
     list_init(&workspace->layouts);
     for (; *layout_names != NULL; ++layout_names)
     {
-        entry = (struct velox_layout_entry *) malloc(sizeof(struct velox_layout_entry));
+        entry = malloc(sizeof(*entry));
         entry->layout = find_layout(*layout_names);
         list_append(&workspace->layouts, entry);
     }
@@ -83,7 +83,6 @@ void setup_workspaces()
         "grid",
         NULL
     };
-    struct velox_layout_entry * entry;
 
     /* TODO: Make this configurable */
 

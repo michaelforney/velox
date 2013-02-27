@@ -639,8 +639,8 @@ void previous_workspace()
 
 void toggle_focus_type()
 {
-    if (workspace->focus_type == TILE)    set_focus_type(FLOAT);
-    else                            set_focus_type(TILE);
+    if (workspace->focus_type == TILE)  set_focus_type(FLOAT);
+    else                                set_focus_type(TILE);
 }
 
 void set_layout(struct velox_link * link)
