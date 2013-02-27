@@ -40,7 +40,7 @@ static void __attribute__((destructor)) free_workspaces()
 void add_workspace(const char * name, const char * layout_names[])
 {
     struct velox_workspace * workspace;
-    struct velox_layout_entry * layout_entry;
+    struct velox_layout_entry * entry;
     char binding_name[128];
 
     /* Allocate a new workspace, then set its attributes */
@@ -50,23 +50,24 @@ void add_workspace(const char * name, const char * layout_names[])
     // workspace->id = 1 << workspace_count++;
     workspace->name = strdup(name);
 
-    INIT_LIST_HEAD(&workspace->tiled.windows);
-    workspace->tiled.focus = &workspace->tiled.windows;
+    list_init(&workspace->tiled.windows);
+    workspace->tiled.focus = &workspace->tiled.windows.head;
 
-    INIT_LIST_HEAD(&workspace->floated.windows);
+    list_init(&workspace->floated.windows);
 
     workspace->focus_type = TILE;
 
-    INIT_LIST_HEAD(&workspace->layouts);
+    list_init(&workspace->layouts);
     for (; *layout_names != NULL; ++layout_names)
     {
-        layout_entry = (struct velox_layout_entry *) malloc(sizeof(struct velox_layout_entry));
-        layout_entry->layout = find_layout(*layout_names);
-        list_add_tail(&layout_entry->head, &workspace->layouts);
+        entry = (struct velox_layout_entry *) malloc(sizeof(struct velox_layout_entry));
+        entry->layout = find_layout(*layout_names);
+        list_append(&workspace->layouts, entry);
     }
 
-    workspace->layout = workspace->layouts.next;
-    workspace->state = list_entry(workspace->layout, struct velox_layout_entry, head)->layout->default_state;
+    workspace->layout = list_first_link(&workspace->layouts);
+    workspace->state = link_entry(workspace->layout, struct velox_layout_entry)
+        ->layout->default_state;
 
     sprintf(binding_name, "set_workspace_%u", workspaces.size);
     add_key_binding("workspace", binding_name, &set_workspace, uint32_argument(workspaces.size - 1));
@@ -101,20 +102,21 @@ void cleanup_workspaces()
 {
     struct velox_workspace * workspace;
     struct velox_workspace_entry * workspace_entry, * workspace_temp;
-    struct velox_window_entry * window_entry, * window_temp;
-    struct velox_layout_entry * layout_entry, * layout_temp;
+    struct velox_window_entry * window_entry;
+    struct velox_layout_entry * layout_entry;
+    struct velox_link * tmp;
 
     vector_for_each(&workspaces, workspace)
     {
         /* Free the workspace's windows */
-        list_for_each_entry_safe(window_entry, window_temp, &workspace->tiled.windows, head)
+        list_for_each_entry_safe(&workspace->tiled.windows, window_entry, tmp)
         {
             free(window_entry->window);
             free(window_entry);
         }
 
         /* Free the workspace's layouts */
-        list_for_each_entry_safe(layout_entry, layout_temp, &workspace->layouts, head)
+        list_for_each_entry_safe(&workspace->layouts, layout_entry, tmp)
         {
             free(layout_entry);
         }

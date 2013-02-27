@@ -30,17 +30,17 @@ const uint16_t velox_hook_types = 10;
 void handle_floating(union velox_argument argument);
 void handle_fullscreen(union velox_argument argument);
 
-struct list_head * hooks;
+struct velox_list * hooks;
 
 void setup_hooks()
 {
     uint32_t index;
 
-    hooks = (struct list_head *) malloc(velox_hook_types * sizeof(struct list_head));
+    hooks = (struct velox_list *) malloc(velox_hook_types * sizeof(struct velox_list));
 
     for (index = 0; index < velox_hook_types; ++index)
     {
-        INIT_LIST_HEAD(&hooks[index]);
+        list_init(&hooks[index]);
     }
 
     // TODO: Should these be a part of some plugin instead?
@@ -54,13 +54,14 @@ void cleanup_hooks()
 
     if (hooks != NULL)
     {
-        struct list_head * pos, * n;
+        struct velox_hook_entry * hook;
+        struct velox_link * tmp;
 
         for (index = 0; index < velox_hook_types; ++index)
         {
-            list_for_each_safe(pos, n, &hooks[index])
+            list_for_each_entry_safe(&hooks[index], hook, tmp)
             {
-                free(list_entry(pos, struct velox_hook_entry, head));
+                free(hook);
             }
         }
 
@@ -74,14 +75,14 @@ void add_hook(velox_function_t hook, enum velox_hook_type type)
 
     entry = (struct velox_hook_entry *) malloc(sizeof(struct velox_hook_entry));
     entry->hook = hook;
-    list_add(&entry->head, &hooks[type]);
+    list_append(&hooks[type], entry);
 }
 
 void run_hooks(union velox_argument arg, enum velox_hook_type type)
 {
     struct velox_hook_entry * entry;
 
-    list_for_each_entry(entry, &hooks[type], head)
+    list_for_each_entry(&hooks[type], entry)
     {
         entry->hook(arg);
     }

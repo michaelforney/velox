@@ -46,7 +46,7 @@ struct velox_window
 struct velox_window_entry
 {
     struct velox_window * window;
-    struct list_head head;
+    struct velox_link DEFAULT_LINK_MEMBER;
 };
 
 bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);

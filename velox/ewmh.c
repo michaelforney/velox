@@ -202,7 +202,7 @@ static void update_clients_hook(union velox_argument argument)
 
     vector_clear(&client_list);
 
-    list_for_each_entry(entry, &workspace->tiled.windows, head)
+    list_for_each_entry(&workspace->tiled.windows, entry)
     {
         vector_add_value(&client_list, entry->window->window_id);
     }
@@ -235,26 +235,25 @@ static void handle_client_message(xcb_client_message_event_t * event)
 
     if (event->type == ewmh->_NET_ACTIVE_WINDOW)
     {
-        struct list_head * old_focus;
+        struct velox_link * old_focus;
 
         DEBUG_PRINT("window: 0x%x\n", event->data.data32[0])
 
         old_focus = workspace->tiled.focus;
 
         /* Assume the client message is valid */
-        for (workspace->tiled.focus = list_actual_next(workspace->tiled.focus, &workspace->tiled.windows);
+        for (workspace->tiled.focus = list_next(&workspace->tiled.windows, workspace->tiled.focus);
             workspace->tiled.focus != old_focus;
-            workspace->tiled.focus = list_actual_next(workspace->tiled.focus, &workspace->tiled.windows))
+            workspace->tiled.focus = list_next(&workspace->tiled.windows, workspace->tiled.focus))
         {
-            if (list_entry(
-                    workspace->tiled.focus, struct velox_window_entry, head
-                )->window->window_id == event->window)
+            if (link_entry(workspace->tiled.focus, struct velox_window_entry)
+                    ->window->window_id == event->window)
             {
                 break;
             }
         }
 
-        focus(list_entry(workspace->tiled.focus, struct velox_window_entry, head)->window->window_id);
+        focus(link_entry(workspace->tiled.focus, struct velox_window_entry)->window->window_id);
     }
 }
 

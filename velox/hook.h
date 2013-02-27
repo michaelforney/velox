@@ -27,7 +27,7 @@
 struct velox_hook_entry
 {
     velox_function_t hook;
-    struct list_head head;
+    struct velox_link DEFAULT_LINK_MEMBER;
 };
 
 enum velox_hook_type

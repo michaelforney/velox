@@ -149,13 +149,13 @@ static void window_title_item(struct pixmap * pixmap)
 {
     struct velox_window_entry * entry = NULL;
 
-    if (workspace->focus_type == TILE && !list_empty(&workspace->tiled.windows))
+    if (workspace->focus_type == TILE && !list_is_empty(&workspace->tiled.windows))
     {
-        entry = list_entry(workspace->tiled.focus, struct velox_window_entry, head);
+        entry = link_entry(workspace->tiled.focus, struct velox_window_entry);
     }
-    else if (!list_empty(&workspace->floated.windows))
+    else if (!list_is_empty(&workspace->floated.windows))
     {
-        entry = list_first_entry(&workspace->floated.windows, struct velox_window_entry, head);
+        entry = list_first(&workspace->floated.windows, struct velox_window_entry);
     }
 
     if (entry)

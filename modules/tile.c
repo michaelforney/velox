@@ -48,7 +48,8 @@ static struct velox_tile_layout_state default_state = {
     1       // Column count
 };
 
-static void tile_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
+static void tile_arrange(struct velox_area * area, struct velox_list * windows,
+    struct velox_layout_state * generic_state);
 
 static void increase_master_factor();
 static void decrease_master_factor();
@@ -127,7 +128,8 @@ void cleanup()
     printf("done\n");
 }
 
-static void tile_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state)
+static void tile_arrange(struct velox_area * area, struct velox_list * windows,
+    struct velox_layout_state * generic_state)
 {
     struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) generic_state;
 
@@ -156,10 +158,10 @@ static void tile_arrange(struct velox_area * area, struct list_head * windows, s
 
     DEBUG_ENTER
 
-    if (list_empty(windows)) return;
+    if (list_is_empty(windows)) return;
 
     /* Calculate number of windows */
-    list_for_each_entry(entry, windows, head) ++window_count;
+    list_for_each_entry(windows, entry) ++window_count;
 
     master_count = MIN(window_count, state->master_count);
     grid_count = window_count - master_count;
@@ -188,9 +190,9 @@ static void tile_arrange(struct velox_area * area, struct list_head * windows, s
 
     /* Arrange the master windows */
     DEBUG_PRINT("arranging masters\n")
-    entry = list_entry(windows->next, struct velox_window_entry, head);
+    entry = list_first(windows, struct velox_window_entry);
     for (index = 0; index < master_count;
-        entry = list_entry(entry->head.next, struct velox_window_entry, head))
+        entry = link_entry_next(entry))
     {
         velox_area_split_vertically(&master_area, master_count, index, &window_area);
         window_set_geometry(entry->window, &window_area);
@@ -208,8 +210,8 @@ static void tile_arrange(struct velox_area * area, struct list_head * windows, s
         if (column_index >= grid_count % column_count) row_count = grid_count / column_count;
         else row_count = grid_count / column_count + 1;
 
-        for (row_index = 0; row_index < row_count;
-            ++row_index, entry = list_entry(entry->head.next, struct velox_window_entry, head))
+        for (row_index = 0; row_index < row_count; ++row_index,
+            entry = link_entry_next(entry))
         {
             velox_area_split_vertically(&grid_column_area, row_count, row_index, &window_area);
             window_set_geometry(entry->window, &window_area);
@@ -224,9 +226,8 @@ static void increase_master_factor()
 {
     DEBUG_ENTER
 
-    if (strcmp(list_entry(
-            workspace->layout, struct velox_layout_entry, head
-        )->layout->identifier, "tile") == 0)
+    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
+        ->layout->identifier, "tile") == 0)
     {
         struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->master_factor = MIN(state->master_factor + 0.025, 1.0);
@@ -239,9 +240,8 @@ static void decrease_master_factor()
 {
     DEBUG_ENTER
 
-    if (strcmp(list_entry(
-            workspace->layout, struct velox_layout_entry, head
-        )->layout->identifier, "tile") == 0)
+    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
+        ->layout->identifier, "tile") == 0)
     {
         struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->master_factor = MAX(state->master_factor - 0.025, 0.0);
@@ -254,9 +254,8 @@ static void increase_master_count()
 {
     DEBUG_ENTER
 
-    if (strcmp(list_entry(
-            workspace->layout, struct velox_layout_entry, head
-        )->layout->identifier, "tile") == 0)
+    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
+        ->layout->identifier, "tile") == 0)
     {
         struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->master_count++;
@@ -269,9 +268,8 @@ static void decrease_master_count()
 {
     DEBUG_ENTER
 
-    if (strcmp(list_entry(
-            workspace->layout, struct velox_layout_entry, head
-        )->layout->identifier, "tile") == 0)
+    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
+        ->layout->identifier, "tile") == 0)
     {
         struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->master_count = MAX(state->master_count - 1, 0);
@@ -284,9 +282,8 @@ static void increase_column_count()
 {
     DEBUG_ENTER
 
-    if (strcmp(list_entry(
-            workspace->layout, struct velox_layout_entry, head
-        )->layout->identifier, "tile") == 0)
+    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
+        ->layout->identifier, "tile") == 0)
     {
         struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->column_count++;
@@ -299,9 +296,8 @@ static void decrease_column_count()
 {
     DEBUG_ENTER
 
-    if (strcmp(list_entry(
-            workspace->layout, struct velox_layout_entry, head
-        )->layout->identifier, "tile") == 0)
+    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
+        ->layout->identifier, "tile") == 0)
     {
         struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->column_count = MAX(state->column_count - 1, 1);

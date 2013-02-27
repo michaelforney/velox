@@ -37,12 +37,12 @@
 #include "binding-private.h"
 
 #define DO(type, name)                                                      \
-LIST_HEAD(name ## _event_handlers);                                         \
+VELOX_LIST(name ## _event_handlers);                                        \
                                                                             \
 struct name ## _event_handler_entry                                         \
 {                                                                           \
     name ## _event_handler_t handler;                                       \
-    struct list_head head;                                                  \
+    struct velox_link DEFAULT_LINK_MEMBER;                                  \
 };                                                                          \
                                                                             \
 void add_ ## name ## _event_handler(name ## _event_handler_t handler)       \
@@ -50,7 +50,7 @@ void add_ ## name ## _event_handler(name ## _event_handler_t handler)       \
     struct name ## _event_handler_entry * entry =                           \
         malloc(sizeof(struct name ## _event_handler_entry));                \
     entry->handler = handler;                                               \
-    list_add_tail(&entry->head, &name ## _event_handlers);                  \
+    list_append(&name ## _event_handlers, entry);                           \
 }
 #include "event_types.h"
 #undef DO
@@ -64,7 +64,7 @@ void handle_event(xcb_generic_event_t * event)
         {                                                                   \
             struct name ## _event_handler_entry * entry;                    \
                                                                             \
-            list_for_each_entry(entry, &name ## _event_handlers, head)      \
+            list_for_each_entry(&name ## _event_handlers, entry)            \
             {                                                               \
                 entry->handler((xcb_ ## name ## _event_t *) event);         \
             }                                                               \
@@ -165,12 +165,12 @@ static void enter_notify(xcb_enter_notify_event_t * event)
         window = NULL;
 
         /* Look through tiled windows */
-        list_for_each_entry(entry, &workspace->tiled.windows, head)
+        list_for_each_entry(&workspace->tiled.windows, entry)
         {
             if (entry->window->window_id == event->event)
             {
                 window = entry->window;
-                window->workspace->tiled.focus = &entry->head;
+                window->workspace->tiled.focus = &entry->link;
                 break;
             }
         }

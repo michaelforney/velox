@@ -36,10 +36,10 @@ struct velox_module
 struct velox_module_entry
 {
     struct velox_module * module;
-    struct list_head head;
+    struct velox_link DEFAULT_LINK_MEMBER;
 };
 
-extern struct list_head modules;
+extern struct velox_list modules;
 
 void load_module(const char * const path);
 void configure_module(const char * const name, yaml_document_t * document);

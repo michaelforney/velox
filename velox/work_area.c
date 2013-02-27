@@ -28,10 +28,10 @@
 struct modifier_entry
 {
     velox_work_area_modifier_t modifier;
-    struct list_head head;
+    struct velox_link DEFAULT_LINK_MEMBER;
 };
 
-LIST_HEAD(work_area_modifiers);
+VELOX_LIST(work_area_modifiers);
 
 void add_work_area_modifier(velox_work_area_modifier_t modifier)
 {
@@ -40,7 +40,7 @@ void add_work_area_modifier(velox_work_area_modifier_t modifier)
     entry = (struct modifier_entry *) malloc(sizeof(struct modifier_entry));
     entry->modifier = modifier;
 
-    list_add(&entry->head, &work_area_modifiers);
+    list_append(&work_area_modifiers, entry);
 }
 
 void calculate_work_area(const struct velox_area * screen_area, struct velox_area * work_area)
@@ -52,7 +52,7 @@ void calculate_work_area(const struct velox_area * screen_area, struct velox_are
 
     *work_area = *screen_area;
 
-    list_for_each_entry(entry, &work_area_modifiers, head)
+    list_for_each_entry(&work_area_modifiers, entry)
     {
         entry->modifier(screen_area, &modified_area);
 
@@ -67,9 +67,10 @@ void calculate_work_area(const struct velox_area * screen_area, struct velox_are
 
 void cleanup_work_area_modifiers()
 {
-    struct modifier_entry * entry, * n;
+    struct modifier_entry * entry;
+    struct velox_link * tmp;
 
-    list_for_each_entry_safe(entry, n, &work_area_modifiers, head)
+    list_for_each_entry_safe(&work_area_modifiers, entry, tmp)
     {
         free(entry);
     }

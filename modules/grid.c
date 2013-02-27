@@ -32,7 +32,8 @@
 
 const char name[] = "grid";
 
-static void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state);
+static void grid_arrange(struct velox_area * area, struct velox_list * windows,
+    struct velox_layout_state * generic_state);
 
 void setup()
 {
@@ -51,7 +52,8 @@ void cleanup()
     printf("done\n");
 }
 
-static void grid_arrange(struct velox_area * area, struct list_head * windows, struct velox_layout_state * generic_state)
+static void grid_arrange(struct velox_area * area, struct velox_list * windows,
+    struct velox_layout_state * generic_state)
 {
     /* For looping through the window list */
     struct velox_window_entry * entry;
@@ -74,16 +76,16 @@ static void grid_arrange(struct velox_area * area, struct list_head * windows, s
 
     DEBUG_ENTER
 
-    if (list_empty(windows)) return;
+    if (list_is_empty(windows)) return;
 
     /* Calculate number of windows */
-    list_for_each_entry(entry, windows, head) ++window_count;
+    list_for_each_entry(windows, entry) ++window_count;
 
     /* FIXME: Is this the best column count to use? */
     column_count = round(sqrt(window_count));
 
     /* Arrange the windows */
-    entry = list_entry(windows->next, struct velox_window_entry, head);
+    entry = list_first(windows, struct velox_window_entry);
     for (index = 0, column_index = 0; index < window_count; ++column_index)
     {
         velox_area_split_horizontally(area, column_count, column_index, &column_area);
@@ -92,7 +94,7 @@ static void grid_arrange(struct velox_area * area, struct list_head * windows, s
         else row_count = window_count / column_count + 1;
 
         for (row_index = 0; row_index < row_count;
-            ++row_index, entry = list_entry(entry->head.next, struct velox_window_entry, head))
+            ++row_index, entry = link_entry_next(entry))
         {
             velox_area_split_vertically(&column_area, row_count, row_index, &window_area);
             window_set_geometry(entry->window, &window_area);

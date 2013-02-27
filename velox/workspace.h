@@ -40,19 +40,19 @@ struct velox_workspace
 
     struct
     {
-        struct list_head windows;
-        struct list_head * focus;
+        struct velox_list windows;
+        struct velox_link * focus;
     } tiled;
 
     struct
     {
-        struct list_head windows;
+        struct velox_list windows;
     } floated;
 
     enum velox_workspace_focus_type focus_type;
 
-    struct list_head layouts;
-    struct list_head * layout;
+    struct velox_list layouts;
+    struct velox_link * layout;
     struct velox_layout_state state;
 };
 

@@ -33,7 +33,7 @@ struct velox_layout_state
 
 typedef void (* velox_arrange_t)(
     struct velox_area * area,
-    struct list_head * windows,
+    struct velox_list * windows,
     struct velox_layout_state * state
 );
 
@@ -47,7 +47,7 @@ struct velox_layout
 struct velox_layout_entry
 {
     struct velox_layout * layout;
-    struct list_head head;
+    struct velox_link link;
 };
 
 void setup_layouts();

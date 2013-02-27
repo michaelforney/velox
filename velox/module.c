@@ -26,7 +26,7 @@
 
 #include "module-private.h"
 
-LIST_HEAD(modules);
+VELOX_LIST(modules);
 
 void * open_module(const char * const name)
 {
@@ -119,7 +119,7 @@ void load_module(const char * const name)
     entry->module = module;
 
     /* Add the module to the list of modules */
-    list_add(&entry->head, &modules);
+    list_append(&modules, entry);
 }
 
 void configure_module(const char * const name, yaml_document_t * document)
@@ -128,7 +128,7 @@ void configure_module(const char * const name, yaml_document_t * document)
 
     /* Search through the list of loaded modules and configure the first one
      * that matches. */
-    list_for_each_entry(entry, &modules, head)
+    list_for_each_entry(&modules, entry)
     {
         if (strcmp(name, entry->module->name) == 0)
         {
@@ -148,7 +148,7 @@ void setup_modules()
     printf("\n** Initializing Modules **\n");
 
     /* Call the initialize function for each module */
-    list_for_each_entry(entry, &modules, head)
+    list_for_each_entry(&modules, entry)
     {
         entry->module->setup();
     }
@@ -156,12 +156,13 @@ void setup_modules()
 
 void cleanup_modules()
 {
-    struct velox_module_entry * entry, * n;
+    struct velox_module_entry * entry;
+    struct velox_link * tmp;
 
     printf("\n** Cleaning Up Modules **\n");
 
     /* Call the cleanup function, then close and free each module */
-    list_for_each_entry_safe(entry, n, &modules, head)
+    list_for_each_entry_safe(&modules, entry, tmp)
     {
         entry->module->cleanup();
 
