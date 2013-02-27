@@ -43,9 +43,9 @@ struct velox_tile_layout_state
 };
 
 static struct velox_tile_layout_state default_state = {
-    0.5,    // Master factor
-    1,      // Master count
-    1       // Column count
+    .master_factor = 0.5,
+    .master_count = 1,
+    .column_count = 1
 };
 
 static void tile_arrange(struct velox_area * area, struct velox_list * windows,
