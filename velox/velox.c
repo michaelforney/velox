@@ -643,26 +643,29 @@ void toggle_focus_type()
     else                            set_focus_type(TILE);
 }
 
+void set_layout(struct velox_link * link)
+{
+    struct velox_layout * layout;
+
+    workspace->layout = link;
+    workspace->state = link_entry(link, struct velox_layout_entry)->layout
+        ->default_state;
+
+    arrange();
+}
+
 void next_layout()
 {
     DEBUG_ENTER
 
-    workspace->layout = list_next(&workspace->layouts, workspace->layout);
-    workspace->state = link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->default_state;
-
-    arrange();
+    set_layout(list_next(&workspace->layouts, workspace->layout));
 }
 
 void previous_layout()
 {
     DEBUG_ENTER
 
-    workspace->layout = list_prev(&workspace->layouts, workspace->layout);
-    workspace->state = link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->default_state;
-
-    arrange();
+    set_layout(list_prev(&workspace->layouts, workspace->layout));
 }
 
 void focus_next()
