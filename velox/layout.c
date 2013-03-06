@@ -32,39 +32,20 @@
 
 uint32_t layout_resource_id;
 
-static void free_layout(void * data)
-{
-    struct velox_layout * layout = data;
-
-    free(layout->identifier);
-    free(layout);
-}
-
 void setup_layouts()
 {
-    layout_resource_id = resource_id("layout");
-    resource_set_destroy(layout_resource_id, &free_layout);
+    layout_resource_id = resource_type_id(LAYOUT_RESOURCE_NAME);
 }
 
-void add_layout(const char * const identifier, velox_arrange_t arrange,
-    struct velox_layout_state * default_state)
+void add_layout(struct velox_layout * layout)
 {
-    struct velox_layout * layout;
-
-    /* Create a new layout and set its fields */
-    layout = (struct velox_layout *) malloc(sizeof(struct velox_layout));
-
-    layout->identifier = strdup(identifier);
-    layout->arrange = arrange;
-    layout->default_state = *default_state;
-
     add_resource(layout_resource_id, layout);
 }
 
 struct velox_layout * find_layout(const char * identifier)
 {
     struct velox_layout ** layout;
-    const struct velox_vector * layouts = get_resources(layout_resource_id);
+    const struct velox_vector * layouts = resource_type_resources(layout_resource_id);
 
     vector_for_each(layouts, layout)
     {

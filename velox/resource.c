@@ -32,7 +32,7 @@ struct velox_vector resource_types;
 
 static void __attribute__((constructor)) initialize_resources()
 {
-    vector_initialize(&resource_types, sizeof(struct resource_type), 32);
+    vector_initialize(&resource_types, sizeof(void *), 32);
 }
 
 static void __attribute__((destructor)) free_resources()
@@ -40,7 +40,7 @@ static void __attribute__((destructor)) free_resources()
     vector_free(&resource_types);
 }
 
-uint32_t resource_id(const char * const name)
+uint32_t resource_type_id(const char * const name)
 {
     struct resource_type * type;
     uint32_t index;
@@ -59,12 +59,20 @@ uint32_t resource_id(const char * const name)
     return index;
 }
 
-void resource_set_destroy(uint32_t type_id, void (* destroy)(void *))
+void resource_type_set_destroy(uint32_t type_id, void (* destroy)(void *))
 {
     struct resource_type * type;
 
     type = vector_at(&resource_types, type_id);
     type->destroy = destroy;
+}
+
+const struct velox_vector * resource_type_resources(uint32_t type_id)
+{
+    struct resource_type * type;
+
+    type = vector_at(&resource_types, type_id);
+    return &type->resources;
 }
 
 void add_resource(uint32_t type_id, void * resource)
@@ -73,14 +81,6 @@ void add_resource(uint32_t type_id, void * resource)
 
     type = vector_at(&resource_types, type_id);
     vector_add_value(&type->resources, resource);
-}
-
-const struct velox_vector * get_resources(uint32_t type_id)
-{
-    struct resource_type * type;
-
-    type = vector_at(&resource_types, type_id);
-    return &type->resources;
 }
 
 void cleanup_resources()

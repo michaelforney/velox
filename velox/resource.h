@@ -23,13 +23,24 @@
 #include <stdint.h>
 #include <velox/list.h>
 
-uint32_t resource_id(const char * const name);
+/**
+ * Obtains a resource type ID from its name and size.
+ *
+ * @param name The name of the resource type.
+ */
+uint32_t resource_type_id(const char * const name);
 
-void resource_set_destroy(uint32_t type_id, void (* destroy)(void *));
+/**
+ * Sets the method used to destroy resources of a particular type.
+ */
+void resource_type_set_destroy(uint32_t type_id, void (* destroy)(void *));
+
+/**
+ * Gets a list of resources of a particular type.
+ */
+const struct velox_vector * resource_type_resources(uint32_t type_id);
 
 void add_resource(uint32_t type_id, void * resource);
-
-const struct velox_vector * get_resources(uint32_t type_id);
 
 void cleanup_resources();
 

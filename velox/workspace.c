@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "workspace.h"
 #include "velox.h"
@@ -62,12 +63,14 @@ void add_workspace(const char * name, const char * layout_names[])
     {
         entry = malloc(sizeof(*entry));
         entry->layout = find_layout(*layout_names);
+        assert(entry->layout);
         list_append(&workspace->layouts, entry);
     }
 
     workspace->layout = list_first_link(&workspace->layouts);
-    workspace->state = link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->default_state;
+    entry = link_entry(workspace->layout, struct velox_layout_entry);
+    memcpy(&workspace->state, entry->layout->default_state,
+        entry->layout->default_state_size);
 
     sprintf(binding_name, "set_workspace_%u", workspaces.size);
     add_key_binding("workspace", binding_name, &set_workspace, uint32_argument(workspaces.size - 1));

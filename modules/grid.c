@@ -35,13 +35,18 @@ const char name[] = "grid";
 static void grid_arrange(struct velox_area * area, struct velox_list * windows,
     struct velox_layout_state * generic_state);
 
+static struct velox_layout grid_layout = {
+    .identifier = "grid",
+    .arrange = &grid_arrange,
+    .default_state = NULL,
+    .default_state_size = 0
+};
+
 void setup()
 {
-    struct velox_layout_state state;
-
     printf("Grid Layout: Initializing...");
 
-    add_layout("grid", &grid_arrange, &state);
+    add_layout(&grid_layout);
 
     printf("done\n");
 }

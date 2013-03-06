@@ -48,8 +48,18 @@ static struct velox_tile_layout_state default_state = {
     .column_count = 1
 };
 
+_Static_assert(sizeof(struct velox_tile_layout_state)
+    <= sizeof(struct velox_layout_state), "velox_tile_layout_state too big");
+
 static void tile_arrange(struct velox_area * area, struct velox_list * windows,
     struct velox_layout_state * generic_state);
+
+static struct velox_layout tile_layout = {
+    .identifier = "tile",
+    .arrange = &tile_arrange,
+    .default_state = &default_state,
+    .default_state_size = sizeof(default_state)
+};
 
 static void increase_master_factor();
 static void decrease_master_factor();
@@ -107,7 +117,7 @@ bool setup()
 {
     printf("Tile Layout: Initializing...");
 
-    add_layout("tile", &tile_arrange, (struct velox_layout_state *) &default_state);
+    add_layout(&tile_layout);
 
     /* Layout modification */
     MODULE_KEY_BINDING(increase_master_factor, no_argument);

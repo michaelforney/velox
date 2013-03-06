@@ -26,22 +26,20 @@
 #include <velox/hashtable.h>
 #include <velox/window.h>
 
+#define LAYOUT_RESOURCE_NAME "layout"
+
 struct velox_layout_state
 {
     uint16_t pad[32];
 };
 
-typedef void (* velox_arrange_t)(
-    struct velox_area * area,
-    struct velox_list * windows,
-    struct velox_layout_state * state
-);
-
 struct velox_layout
 {
-    char * identifier;
-    velox_arrange_t arrange;
-    struct velox_layout_state default_state;
+    const char * identifier;
+    void (* arrange)(struct velox_area * area, struct velox_list * windows,
+        struct velox_layout_state * state);
+    void * default_state;
+    uint32_t default_state_size;
 };
 
 struct velox_layout_entry
@@ -52,8 +50,7 @@ struct velox_layout_entry
 
 void setup_layouts();
 
-void add_layout(const char * const identifier, velox_arrange_t arrange,
-    struct velox_layout_state * default_state);
+void add_layout(struct velox_layout * layout);
 
 struct velox_layout * find_layout();
 

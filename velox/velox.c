@@ -648,8 +648,9 @@ void set_layout(struct velox_link * link)
     struct velox_layout * layout;
 
     workspace->layout = link;
-    workspace->state = link_entry(link, struct velox_layout_entry)->layout
-        ->default_state;
+    layout = link_entry(link, struct velox_layout_entry)->layout;
+    memcpy(&workspace->state, layout->default_state,
+        layout->default_state_size);
 
     arrange();
 }
