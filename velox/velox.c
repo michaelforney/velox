@@ -45,19 +45,20 @@
 #include "debug.h"
 #include "list.h"
 #include "modifier.h"
-#include "keyboard_mapping.h"
-#include "atom.h"
 #include "resource.h"
 
 #include "module-private.h"
 #include "config_file-private.h"
 #include "hook-private.h"
 #include "layout-private.h"
-#include "ewmh-private.h"
-#include "event_handler-private.h"
 #include "work_area-private.h"
 #include "binding-private.h"
-#include "keyboard_mapping-private.h"
+
+#if WITH_X11
+#   include "x11/atom.h"
+#   include "x11/keyboard_mapping.h"
+#endif
+
 
 /* X variables */
 xcb_connection_t * c;

@@ -22,14 +22,14 @@
 #include <X11/Xlib.h> // For XStringToKeysym
 #include <xcb/xcb_keysyms.h>
 
-#include "binding.h"
 #include "hashtable.h"
 #include "velox.h"
 #include "config_file.h"
 #include "modifier.h"
-#include "keyboard_mapping.h"
 #include "hook.h"
 #include "debug.h"
+
+#include "x11/keyboard_mapping.h"
 
 #include "binding-private.h"
 

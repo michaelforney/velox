@@ -1,6 +1,6 @@
-/* velox: velox/event_handler-private.h
+/* velox: velox/x11/keyboard_mapping.c
  *
- * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
+ * Copyright (c) 2012 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -17,12 +17,20 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_EVENT_HANDLER_PRIVATE_H
-#define VELOX_EVENT_HANDLER_PRIVATE_H
+#include "velox.h"
+#include "keyboard_mapping.h"
 
-void handle_event(xcb_generic_event_t * event);
+xcb_key_symbols_t * keyboard_mapping;
 
-void setup_event_handlers();
+void setup_keyboard_mapping()
+{
+    keyboard_mapping = xcb_key_symbols_alloc(c);
+}
 
-#endif
+void cleanup_keyboard_mapping()
+{
+    xcb_key_symbols_free(keyboard_mapping);
+}
+
+// vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

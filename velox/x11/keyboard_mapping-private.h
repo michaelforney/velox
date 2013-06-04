@@ -1,4 +1,4 @@
-/* velox: velox/keyboard_mapping-private.h
+/* velox: velox/x11/keyboard_mapping-private.h
  *
  * Copyright (c) 2012 Michael Forney <mforney@mforney.org>
  *
@@ -17,8 +17,8 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_KEYBOARD_MAPPING_PRIVATE_H
-#define VELOX_KEYBOARD_MAPPING_PRIVATE_H
+#ifndef VELOX_X11_KEYBOARD_MAPPING_PRIVATE_H
+#define VELOX_X11_KEYBOARD_MAPPING_PRIVATE_H
 
 #include <xcb/xcb_keysyms.h>
 

@@ -1,4 +1,4 @@
-/* velox: velox/ewmh-private.h
+/* velox: velox/x11/event_handler-private.h
  *
  * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
@@ -17,13 +17,12 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_EWMH_PRIVATE_H
-#define VELOX_EWMH_PRIVATE_H
+#ifndef VELOX_EVENT_HANDLER_PRIVATE_H
+#define VELOX_EVENT_HANDLER_PRIVATE_H
 
-void setup_ewmh();
-void cleanup_ewmh();
+void handle_event(xcb_generic_event_t * event);
+
+void setup_event_handlers();
 
 #endif
-
-// vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

@@ -1,6 +1,6 @@
-/* velox: velox/keyboard_mapping.c
+/* velox: velox/x11/ewmh.h
  *
- * Copyright (c) 2012 Michael Forney <mforney@mforney.org>
+ * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -17,20 +17,14 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "velox.h"
-#include "keyboard_mapping.h"
+#ifndef VELOX_X11_EWMH_H
+#define VELOX_X11_EWMH_H
 
-xcb_key_symbols_t * keyboard_mapping;
+#include <xcb/xcb_ewmh.h>
 
-void setup_keyboard_mapping()
-{
-    keyboard_mapping = xcb_key_symbols_alloc(c);
-}
+extern xcb_ewmh_connection_t * ewmh;
 
-void cleanup_keyboard_mapping()
-{
-    xcb_key_symbols_free(keyboard_mapping);
-}
+#endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

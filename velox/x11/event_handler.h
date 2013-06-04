@@ -1,4 +1,4 @@
-/* velox: velox/event_handler.h
+/* velox: velox/x11/event_handler.h
  *
  * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
@@ -17,12 +17,17 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef VELOX_X11_EVENT_HANDLER_H
+#define VELOX_X11_EVENT_HANDLER_H
+
 #define DO(type, name) \
     typedef void (* name ## _event_handler_t)                               \
         (xcb_ ## name ## _event_t * event);                                 \
     void add_ ## name ## _event_handler(name ## _event_handler_t handler);
 #include "event_types.h"
 #undef DO
+
+#endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

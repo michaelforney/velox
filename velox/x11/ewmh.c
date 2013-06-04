@@ -1,4 +1,4 @@
-/* velox: velox/ewmh.c
+/* velox: velox/x11/ewmh.c
  *
  * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *

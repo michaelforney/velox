@@ -1,4 +1,4 @@
-/* velox: velox/atom.h
+/* velox: velox/x11/keyboard_mapping.h
  *
  * Copyright (c) 2012 Michael Forney <mforney@mforney.org>
  *
@@ -17,16 +17,12 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_ATOM_H
-#define VELOX_ATOM_H
+#ifndef VELOX_X11_KEYBOARD_MAPPING_H
+#define VELOX_X11_KEYBOARD_MAPPING_H
 
-#include <xcb/xcb.h>
+#include <xcb/xcb_keysyms.h>
 
-void setup_atoms();
-void register_atom(const char * const name, xcb_atom_t * atom);
-void sync_atoms();
-
-extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
+extern xcb_key_symbols_t * keyboard_mapping;
 
 #endif
 

@@ -25,8 +25,9 @@
 #include <velox/module.h>
 #include <velox/hook.h>
 #include <velox/ewmh.h>
-#include <velox/event_handler.h>
 #include <velox/debug.h>
+
+#include <velox/x11/event_handler.h>
 
 /* Icons */
 #include "bar_icons/clock.xbm"

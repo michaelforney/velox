@@ -1,4 +1,4 @@
-/* velox: velox/atom.c
+/* velox: velox/x11/atom.c
  *
  * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *

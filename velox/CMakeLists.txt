@@ -1,13 +1,9 @@
 # velox: velox/CMakeLists.txt
 
-add_executable(velox
-    atom.c
+set(VELOX_SOURCES
     binding.c
     config_file.c
-    event_handler.c
-    ewmh.c
     hook.c
-    keyboard_mapping.c
     layout.c
     module.c
     resource.c
@@ -19,7 +15,18 @@ add_executable(velox
     hashtable.c
 )
 
-include_directories(${velox_SOURCE_DIR})
+if(WITH_X11)
+    set(VELOX_SOURCES ${VELOX_SOURCES}
+        x11/atom.c
+        x11/event_handler.c
+        x11/ewmh.c
+        x11/keyboard_mapping.c
+    )
+endif(WITH_X11)
+
+add_executable(velox ${VELOX_SOURCES})
+
+include_directories(${velox_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(velox
     ${XCB_LIBRARIES}
@@ -34,7 +41,6 @@ target_link_libraries(velox
 install(TARGETS velox DESTINATION bin)
 
 install(FILES
-    atom.h
     config_file.h
     hook.h
     binding.h
@@ -45,9 +51,7 @@ install(FILES
     window.h
     module.h
     resource.h
-    ewmh.h
     work_area.h
-    keyboard_mapping.h
     function.h
     argument.h
     debug.h
@@ -60,4 +64,15 @@ install(FILES
 
     DESTINATION include/velox
 )
+
+if(WITH_X11)
+    install(FILES
+        x11/atom.h
+        x11/event_handler.h
+        x11/ewmh.h
+        x11/keyboard_mapping.h
+
+        DESTINATION include/velox/x11
+    )
+endif(WITH_X11)
 

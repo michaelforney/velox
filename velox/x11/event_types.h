@@ -1,4 +1,4 @@
-/* velox: velox/event_types.h
+/* velox: velox/x11/event_types.h
  *
  * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *

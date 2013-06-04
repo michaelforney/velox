@@ -1,4 +1,4 @@
-/* velox: velox/ewmh.h
+/* velox: velox/x11/ewmh-private.h
  *
  * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
@@ -17,12 +17,11 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_EWMH_H
-#define VELOX_EWMH_H
+#ifndef VELOX_X11_EWMH_PRIVATE_H
+#define VELOX_X11_EWMH_PRIVATE_H
 
-#include <xcb/xcb_ewmh.h>
-
-extern xcb_ewmh_connection_t * ewmh;
+void setup_ewmh();
+void cleanup_ewmh();
 
 #endif
 

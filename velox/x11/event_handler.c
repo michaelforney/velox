@@ -1,4 +1,4 @@
-/* velox: velox/event_handler.c
+/* velox: velox/x11/event_handler.c
  *
  * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
  *
