@@ -66,7 +66,7 @@ uint16_t border_width = 2;
 /* VELOX constants */
 const char wm_name[] = "velox";
 
-void setup()
+static void setup()
 {
     setup_hooks();
     setup_bindings();
