@@ -574,8 +574,6 @@ void spawn(char * const command[])
 
     if (fork() == 0)
     {
-        if (c) close(xcb_get_file_descriptor(c));
-
         setsid();
         execvp(command[0], command);
         exit(EXIT_SUCCESS);
