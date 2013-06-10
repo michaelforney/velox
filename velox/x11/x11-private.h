@@ -20,12 +20,12 @@
 #ifndef VELOX_X11_X11_PRIVATE_H
 #define VELOX_X11_X11_PRIVATE_H
 
-//extern int x11_fd;
+extern int x11_fd;
 
 void setup_x11();
 void cleanup_x11();
 
-//void handle_x11_data();
+void handle_x11_data();
 
 void manage_existing_windows();
 void manage(xcb_window_t window_id);

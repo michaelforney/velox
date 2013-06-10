@@ -275,7 +275,7 @@ void focus_x11_window(struct velox_window * window)
     xcb_flush(c);
 }
 
-static void handle_x11_data()
+void handle_x11_data()
 {
     xcb_generic_event_t * event;
 

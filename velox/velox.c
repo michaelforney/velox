@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <sys/epoll.h>
 
 #include "velox.h"
 #include "window.h"
@@ -53,6 +54,7 @@
 #   include "x11/x11-private.h"
 #endif
 
+#define ARRAY_LENGTH(array) (sizeof (array) / sizeof (array)[0])
 
 /* VELOX variables */
 volatile sig_atomic_t running = true;
@@ -72,7 +74,7 @@ static void setup()
     setup_bindings();
     setup_layouts();
 
-#ifdef WITH_X11
+#if WITH_X11
     setup_x11();
 #endif
 
@@ -599,21 +601,17 @@ void catch_chld(int signal)
 
 void run()
 {
+    struct epoll_event events[32];
+    struct epoll_event event;
+    int epoll_fd;
+    int count;
+    uint32_t index;
+    sigset_t blocked_set, empty_set;
     struct itimerval timer;
-    xcb_generic_event_t * event;
-    int connection_fd;
-    fd_set fd;
-    sigset_t blocked_set;
-    sigset_t empty_set;
 
     printf("\n** Main Event Loop **\n");
 
-    timer.it_interval.tv_usec = 0;
-    timer.it_interval.tv_sec = 1;
-    timer.it_value.tv_usec = 0;
-    timer.it_value.tv_sec = 1;
-
-    /* Initial signal masks */
+    /* Initialize signal masks */
     sigemptyset(&blocked_set);
     sigemptyset(&empty_set);
 
@@ -625,52 +623,48 @@ void run()
     signal(SIGINT, &catch_int);
     signal(SIGCHLD, &catch_chld);
 
+    epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+
+    if (epoll_fd == -1)
+        die("Could not create epoll file descriptor\n");
+
+    /* Start timer */
+    timer.it_interval.tv_usec = 0;
+    timer.it_interval.tv_sec = 1;
+    timer.it_value.tv_usec = 0;
+    timer.it_value.tv_sec = 1;
+
     setitimer(ITIMER_REAL, &timer, NULL);
 
-    /* Setup connection file descriptor set */
-    connection_fd = xcb_get_file_descriptor(c);
-
-    FD_ZERO(&fd);
-    FD_SET(connection_fd, &fd);
+#if WITH_X11
+    event.events = EPOLLIN;
+    event.data.ptr = &handle_x11_data;
+    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, x11_fd, &event);
+#endif
 
     /* Main event loop */
     while (running)
     {
-        while ((event = xcb_poll_for_event(c)))
+        count = epoll_pwait(epoll_fd, events, ARRAY_LENGTH(events), -1,
+            &empty_set);
+
+        if (count == -1)
         {
-            handle_event(event);
-            free(event);
-
-            if (clear_event_type)
+            if (errno == EINTR)
             {
-                xcb_aux_sync(c);
-
-                while ((event = xcb_poll_for_event(c)))
+                if (clock_tick_update)
                 {
-                    if ((event->response_type & ~0x80) == clear_event_type)
-                    {
-                        DEBUG_PRINT("dropping masked event\n")
-                    }
-                    else
-                    {
-                        handle_event(event);
-                    }
-
-                    free(event);
+                    clock_tick_update = false;
+                    run_hooks(NULL, VELOX_HOOK_CLOCK_TICK);
                 }
-
-                clear_event_type = 0;
             }
+
+            continue;
         }
 
-        if (pselect(connection_fd + 1, &fd, NULL, NULL, NULL, &empty_set) == -1
-            && errno == EINTR)
+        for (index = 0; index < count; ++index)
         {
-            if (clock_tick_update)
-            {
-                clock_tick_update = false;
-                run_hooks(NULL, VELOX_HOOK_CLOCK_TICK);
-            }
+            ((void (*)()) events[index].data.ptr)();
         }
     }
 }
