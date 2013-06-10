@@ -146,7 +146,6 @@ void set_workspace(union velox_argument argument)
     else
     {
         struct velox_window_entry * window_entry;
-        struct velox_loop * iterator;
         struct velox_window * window;
 
         /* Show the windows now visible */
