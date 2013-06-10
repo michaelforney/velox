@@ -49,11 +49,7 @@ struct velox_window_entry
     struct velox_link DEFAULT_LINK_MEMBER;
 };
 
-bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
-
 void window_set_geometry(struct velox_window * window, struct velox_area * area);
-
-void update_name_class(struct velox_window * window);
 
 #endif
 

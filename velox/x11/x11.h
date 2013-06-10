@@ -1,6 +1,6 @@
-/* velox: velox/window.c
+/* velox: velox/x11.h
  *
- * Copyright (c) 2009 Michael Forney <mforney@mforney.org>
+ * Copyright (c) 2013 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -17,25 +17,29 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
+#ifndef VELOX_X11_H
+#define VELOX_X11_H
 
-#include <xcb/xcb_atom.h>
+#include <xcb/xcb.h>
 
-#include "velox.h"
-#include "window.h"
-#include "debug.h"
+#include <velox/x11/window.h>
 
-void window_set_geometry(struct velox_window * window, struct velox_area * area)
-{
-    window->x = area->x;
-    window->y = area->y;
-    window->width = area->width - 2 * window->border_width;
-    window->height = area->height - 2 * window->border_width;
-}
+extern xcb_connection_t * c;
+extern xcb_screen_t * screen;
+
+extern uint32_t border_pixel;
+extern uint32_t border_focus_pixel;
+
+extern uint8_t clear_event_type;
+
+void kill_focused_window();
+
+void show_x11_window(struct velox_window * window);
+void hide_x11_window(struct velox_window * window);
+
+void focus_x11_window(struct velox_window * window);
+
+#endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

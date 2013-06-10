@@ -30,11 +30,13 @@
 #include "debug.h"
 #include "list.h"
 #include "keyboard_mapping.h"
+#include "x11/window.h"
 
 #include "velox-private.h"
 #include "hook-private.h"
 #include "ewmh-private.h"
 #include "binding-private.h"
+#include "x11/x11-private.h"
 
 #define DO(type, name)                                                      \
 VELOX_LIST(name ## _event_handlers);                                        \
@@ -136,7 +138,7 @@ static void button_press(xcb_button_press_event_t * event)
     {
         struct velox_window * window = lookup_window(event->event);
 
-        focus(event->event);
+        focus(window);
 
         if (window && window->floating)
         {
@@ -156,7 +158,7 @@ static void enter_notify(xcb_enter_notify_event_t * event)
 
     if (workspace->focus_type == FLOAT) return;
 
-    if (event->event == screen->root) focus(screen->root);
+    if (event->event == screen->root) focus(NULL);
     else
     {
         struct velox_window_entry * entry;
@@ -182,7 +184,7 @@ static void enter_notify(xcb_enter_notify_event_t * event)
 
             if (event->mode == XCB_NOTIFY_MODE_NORMAL && event->detail != XCB_NOTIFY_DETAIL_INFERIOR)
             {
-                focus(window->window_id);
+                focus(window);
             }
         }
     }

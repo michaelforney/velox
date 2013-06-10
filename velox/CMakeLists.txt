@@ -21,6 +21,8 @@ if(WITH_X11)
         x11/event_handler.c
         x11/ewmh.c
         x11/keyboard_mapping.c
+        x11/window.c
+        x11/x11.c
     )
 endif(WITH_X11)
 

@@ -253,7 +253,7 @@ static void handle_client_message(xcb_client_message_event_t * event)
             }
         }
 
-        focus(link_entry(workspace->tiled.focus, struct velox_window_entry)->window->window_id);
+        focus(link_entry(workspace->tiled.focus, struct velox_window_entry)->window);
     }
 }
 

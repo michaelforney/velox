@@ -1,6 +1,6 @@
-/* velox: velox/window.c
+/* velox: velox/x11-private.h
  *
- * Copyright (c) 2009 Michael Forney <mforney@mforney.org>
+ * Copyright (c) 2013 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -17,25 +17,25 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
+#ifndef VELOX_X11_X11_PRIVATE_H
+#define VELOX_X11_X11_PRIVATE_H
 
-#include <xcb/xcb_atom.h>
+//extern int x11_fd;
 
-#include "velox.h"
-#include "window.h"
-#include "debug.h"
+void setup_x11();
+void cleanup_x11();
 
-void window_set_geometry(struct velox_window * window, struct velox_area * area)
-{
-    window->x = area->x;
-    window->y = area->y;
-    window->width = area->width - 2 * window->border_width;
-    window->height = area->height - 2 * window->border_width;
-}
+//void handle_x11_data();
+
+void manage_existing_windows();
+void manage(xcb_window_t window_id);
+void unmanage(xcb_window_t window_id);
+
+void grab_buttons();
+
+struct velox_window * lookup_window(xcb_window_t window_id);
+
+#endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

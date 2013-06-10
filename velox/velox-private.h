@@ -24,12 +24,9 @@
 
 /* Bindings */
 void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
-void grab_buttons();
 
-void manage(xcb_window_t window_id);
-void unmanage(xcb_window_t window);
-void focus(xcb_window_t window_id);
-struct velox_window * lookup_window(xcb_window_t window_id);
+void focus(struct velox_window * window);
+void update_focus(struct velox_workspace * workspace);
 
 #endif
 
