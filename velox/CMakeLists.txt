@@ -35,6 +35,7 @@ target_link_libraries(velox
     ${XCB_UTIL_LIBRARIES}
     ${LIBYAML_LIBRARIES}
     ${X11_LIBRARIES}
+    ${XKBCOMMON_LIBRARIES}
     pthread
     dl
     m

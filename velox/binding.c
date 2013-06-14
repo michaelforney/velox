@@ -19,8 +19,7 @@
 
 #include <yaml.h>
 #include <assert.h>
-#include <X11/Xlib.h> // For XStringToKeysym
-#include <xcb/xcb_keysyms.h>
+#include <xkbcommon/xkbcommon.h>
 
 #include "hashtable.h"
 #include "velox.h"
@@ -81,8 +80,8 @@ static void parse_key(yaml_node_t * node, struct velox_bindable * bindable)
 {
     assert(node->type == YAML_SCALAR_NODE);
 
-    bindable->pressable.key = XStringToKeysym((const char *)
-        node->data.scalar.value);
+    bindable->pressable.key = xkb_keysym_from_name((const char *)
+        node->data.scalar.value, 0);
 }
 
 static void setup_configured_bindings(const char * filename,

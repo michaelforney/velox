@@ -23,11 +23,11 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DVELOX_DEBUG")
 
 find_package(PkgConfig REQUIRED)
 find_package(LibYAML REQUIRED)
+find_package(XKBCommon REQUIRED)
 
 if(WITH_X11)
     find_package(XCB REQUIRED)
     find_package(XCB-Util COMPONENTS Atom ICCCM Aux EWMH Image Keysyms REQUIRED)
-    find_package(X11 REQUIRED) # For XStringToKeysym
     add_definitions(-DWITH_X11)
 endif(WITH_X11)
 
