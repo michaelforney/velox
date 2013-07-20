@@ -144,7 +144,7 @@ static void tile_arrange(struct velox_area * area, struct velox_list * windows,
     struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) generic_state;
 
     /* For looping through the window list */
-    struct velox_window_entry * entry;
+    struct velox_window * window;
 
     /* Window counts */
     uint16_t window_count = 0;
@@ -171,7 +171,7 @@ static void tile_arrange(struct velox_area * area, struct velox_list * windows,
     if (list_is_empty(windows)) return;
 
     /* Calculate number of windows */
-    list_for_each_entry(windows, entry) ++window_count;
+    list_for_each_entry(windows, window) ++window_count;
 
     master_count = MIN(window_count, state->master_count);
     grid_count = window_count - master_count;
@@ -200,13 +200,13 @@ static void tile_arrange(struct velox_area * area, struct velox_list * windows,
 
     /* Arrange the master windows */
     DEBUG_PRINT("arranging masters\n")
-    entry = list_first(windows, struct velox_window_entry);
+    window = list_first(windows, struct velox_window);
     for (index = 0; index < master_count;
-        entry = link_entry_next(entry))
+        window = link_entry_next(window))
     {
         velox_area_split_vertically(&master_area, master_count, index, &window_area);
-        window_set_geometry(entry->window, &window_area);
-        arrange_window(entry->window);
+        window_set_geometry(window, &window_area);
+        arrange_window(window);
 
         ++index;
     }
@@ -221,11 +221,11 @@ static void tile_arrange(struct velox_area * area, struct velox_list * windows,
         else row_count = grid_count / column_count + 1;
 
         for (row_index = 0; row_index < row_count; ++row_index,
-            entry = link_entry_next(entry))
+            window = link_entry_next(window))
         {
             velox_area_split_vertically(&grid_column_area, row_count, row_index, &window_area);
-            window_set_geometry(entry->window, &window_area);
-            arrange_window(entry->window);
+            window_set_geometry(window, &window_area);
+            arrange_window(window);
 
             ++index;
         }

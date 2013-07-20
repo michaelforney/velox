@@ -196,16 +196,14 @@ static void remove_client_hook(union velox_argument argument)
 static void update_clients_hook(union velox_argument argument)
 {
     struct velox_workspace * workspace = (struct velox_workspace *) argument.pointer;
-    struct velox_window_entry * entry;
+    struct velox_window * window;
 
     DEBUG_ENTER
 
     vector_clear(&client_list);
 
-    list_for_each_entry(&workspace->tiled.windows, entry)
-    {
-        vector_add_value(&client_list, entry->window->window_id);
-    }
+    list_for_each_entry(&workspace->tiled.windows, window)
+        vector_add_value(&client_list, window->window_id);
 
     update_client_list();
 }
@@ -246,14 +244,14 @@ static void handle_client_message(xcb_client_message_event_t * event)
             workspace->tiled.focus != old_focus;
             workspace->tiled.focus = list_next(&workspace->tiled.windows, workspace->tiled.focus))
         {
-            if (link_entry(workspace->tiled.focus, struct velox_window_entry)
-                    ->window->window_id == event->window)
+            if (link_entry(workspace->tiled.focus,
+                           struct velox_window)->window_id == event->window)
             {
                 break;
             }
         }
 
-        focus(link_entry(workspace->tiled.focus, struct velox_window_entry)->window);
+        focus(link_entry(workspace->tiled.focus, struct velox_window));
     }
 }
 

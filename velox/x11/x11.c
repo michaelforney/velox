@@ -120,16 +120,14 @@ static void check_wm_running()
 struct velox_window * lookup_tiled_window(xcb_window_t window_id)
 {
     struct velox_workspace * workspace_pointer;
-    struct velox_window_entry * window_entry;
+    struct velox_window * window;
 
     vector_for_each(&workspaces, workspace_pointer)
     {
-        list_for_each_entry(&workspace_pointer->tiled.windows, window_entry)
+        list_for_each_entry(&workspace_pointer->tiled.windows, window)
         {
-            if (window_entry->window->window_id == window_id)
-            {
-                return window_entry->window;
-            }
+            if (window->window_id == window_id)
+                return window;
         }
     }
 
@@ -139,16 +137,14 @@ struct velox_window * lookup_tiled_window(xcb_window_t window_id)
 struct velox_window * lookup_floated_window(xcb_window_t window_id)
 {
     struct velox_workspace * workspace_pointer;
-    struct velox_window_entry * window_entry;
+    struct velox_window * window;
 
     vector_for_each(&workspaces, workspace_pointer)
     {
-        list_for_each_entry(&workspace_pointer->floated.windows, window_entry)
+        list_for_each_entry(&workspace_pointer->floated.windows, window)
         {
-            if (window_entry->window->window_id == window_id)
-            {
-                return window_entry->window;
-            }
+            if (window->window_id == window_id)
+                return window;
         }
     }
 
@@ -158,24 +154,20 @@ struct velox_window * lookup_floated_window(xcb_window_t window_id)
 struct velox_window * lookup_window(xcb_window_t window_id)
 {
     struct velox_workspace * workspace_pointer;
-    struct velox_window_entry * window_entry;
+    struct velox_window * window;
 
     vector_for_each(&workspaces, workspace_pointer)
     {
-        list_for_each_entry(&workspace_pointer->tiled.windows, window_entry)
+        list_for_each_entry(&workspace_pointer->tiled.windows, window)
         {
-            if (window_entry->window->window_id == window_id)
-            {
-                return window_entry->window;
-            }
+            if (window->window_id == window_id)
+                return window;
         }
 
-        list_for_each_entry(&workspace_pointer->floated.windows, window_entry)
+        list_for_each_entry(&workspace_pointer->floated.windows, window)
         {
-            if (window_entry->window->window_id == window_id)
-            {
-                return window_entry->window;
-            }
+            if (window->window_id == window_id)
+                return window;
         }
     }
 
@@ -312,7 +304,6 @@ void manage(xcb_window_t window_id)
     DEBUG_ENTER
 
     struct velox_window * window = NULL;
-    struct velox_window_entry * window_entry;
     xcb_get_property_cookie_t transient_for_cookie;
     xcb_get_property_reply_t * transient_for_reply = NULL;
     xcb_get_geometry_cookie_t geometry_cookie;
@@ -390,19 +381,13 @@ void manage(xcb_window_t window_id)
 
     if (window->floating)
     {
-        window_entry = (struct velox_window_entry *) malloc(sizeof(struct velox_window_entry));
-        window_entry->window = window;
-
-        list_append(&window->workspace->floated.windows, window_entry);
+        list_append(&window->workspace->floated.windows, window);
 
         window->workspace->focus_type = FLOAT;
     }
     else
     {
-        window_entry = (struct velox_window_entry *) malloc(sizeof(struct velox_window_entry));
-        window_entry->window = window;
-
-        list_append(&window->workspace->tiled.windows, window_entry);
+        list_append(&window->workspace->tiled.windows, window);
 
         window->workspace->tiled.focus =
             list_last_link(&window->workspace->tiled.windows);
@@ -436,7 +421,6 @@ void manage(xcb_window_t window_id)
 void unmanage(xcb_window_t window_id)
 {
     struct velox_workspace * workspace_pos;
-    struct velox_window_entry * window_entry;
     struct velox_window * window = NULL;
 
     DEBUG_ENTER
@@ -445,21 +429,18 @@ void unmanage(xcb_window_t window_id)
     vector_for_each(&workspaces, workspace_pos)
     {
         /* Look through the tiled windows */
-        list_for_each_entry(&workspace_pos->tiled.windows, window_entry)
+        list_for_each_entry(&workspace_pos->tiled.windows, window)
         {
-            if (window_entry->window->window_id == window_id)
+            if (window->window_id == window_id)
             {
-                window = window_entry->window;
-
                 /* Deal with special cases */
-                if (&window_entry->link == workspace_pos->tiled.focus)
+                if (&window->link == workspace_pos->tiled.focus)
                 {
                     workspace_pos->tiled.focus = list_next(&workspace_pos->tiled.windows,
                         workspace_pos->tiled.focus);
                 }
 
-                list_del(window_entry);
-                free(window_entry);
+                list_del(window);
 
                 /* If there are no more tiled windows, but floated windows
                  * still exist, switch the focus type to FLOAT */
@@ -475,14 +456,11 @@ void unmanage(xcb_window_t window_id)
             }
         }
 
-        list_for_each_entry(&workspace_pos->floated.windows, window_entry)
+        list_for_each_entry(&workspace_pos->floated.windows, window)
         {
-            if (window_entry->window->window_id == window_id)
+            if (window->window_id == window_id)
             {
-                window = window_entry->window;
-
-                list_del(window_entry);
-                free(window_entry);
+                list_del(window);
 
                 /* If there are no more floated windows, but tiled windows
                  * still exist, switch the focus type to TILE */

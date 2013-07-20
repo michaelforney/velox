@@ -148,20 +148,20 @@ static void clock_icon_item(struct pixmap * pixmap)
 
 static void window_title_item(struct pixmap * pixmap)
 {
-    struct velox_window_entry * entry = NULL;
+    struct velox_window * window = NULL;
 
     if (workspace->focus_type == TILE && !list_is_empty(&workspace->tiled.windows))
     {
-        entry = link_entry(workspace->tiled.focus, struct velox_window_entry);
+        window = link_entry(workspace->tiled.focus, struct velox_window);
     }
     else if (!list_is_empty(&workspace->floated.windows))
     {
-        entry = list_first(&workspace->floated.windows, struct velox_window_entry);
+        window = list_first(&workspace->floated.windows, struct velox_window);
     }
 
-    if (entry)
+    if (window)
     {
-        text_item(pixmap, entry->window->name);
+        text_item(pixmap, window->name);
     }
 }
 

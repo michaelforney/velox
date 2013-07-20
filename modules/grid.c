@@ -61,7 +61,7 @@ static void grid_arrange(struct velox_area * area, struct velox_list * windows,
     struct velox_layout_state * generic_state)
 {
     /* For looping through the window list */
-    struct velox_window_entry * entry;
+    struct velox_window * window;
 
     /* Window counts */
     uint16_t window_count = 0;
@@ -84,13 +84,13 @@ static void grid_arrange(struct velox_area * area, struct velox_list * windows,
     if (list_is_empty(windows)) return;
 
     /* Calculate number of windows */
-    list_for_each_entry(windows, entry) ++window_count;
+    list_for_each_entry(windows, window) ++window_count;
 
     /* FIXME: Is this the best column count to use? */
     column_count = round(sqrt(window_count));
 
     /* Arrange the windows */
-    entry = list_first(windows, struct velox_window_entry);
+    window = list_first(windows, struct velox_window);
     for (index = 0, column_index = 0; index < window_count; ++column_index)
     {
         velox_area_split_horizontally(area, column_count, column_index, &column_area);
@@ -99,11 +99,11 @@ static void grid_arrange(struct velox_area * area, struct velox_list * windows,
         else row_count = window_count / column_count + 1;
 
         for (row_index = 0; row_index < row_count;
-            ++row_index, entry = link_entry_next(entry))
+            ++row_index, window = link_entry_next(window))
         {
             velox_area_split_vertically(&column_area, row_count, row_index, &window_area);
-            window_set_geometry(entry->window, &window_area);
-            arrange_window(entry->window);
+            window_set_geometry(window, &window_area);
+            arrange_window(window);
 
             ++index;
         }

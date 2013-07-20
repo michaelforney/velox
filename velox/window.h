@@ -41,11 +41,7 @@ struct velox_window
     uint16_t border_width;
 
     bool floating;
-};
 
-struct velox_window_entry
-{
-    struct velox_window * window;
     struct velox_link DEFAULT_LINK_MEMBER;
 };
 

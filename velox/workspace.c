@@ -104,24 +104,19 @@ void cleanup_workspaces()
 {
     struct velox_workspace * workspace;
     struct velox_workspace_entry * workspace_entry, * workspace_temp;
-    struct velox_window_entry * window_entry;
+    struct velox_window * window;
     struct velox_layout_entry * layout_entry;
     struct velox_link * tmp;
 
     vector_for_each(&workspaces, workspace)
     {
         /* Free the workspace's windows */
-        list_for_each_entry_safe(&workspace->tiled.windows, window_entry, tmp)
-        {
-            free(window_entry->window);
-            free(window_entry);
-        }
+        list_for_each_entry_safe(&workspace->tiled.windows, window, tmp)
+            free(window);
 
         /* Free the workspace's layouts */
         list_for_each_entry_safe(&workspace->layouts, layout_entry, tmp)
-        {
             free(layout_entry);
-        }
 
         free(workspace->name);
     }

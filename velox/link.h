@@ -99,6 +99,25 @@ static inline void link_move_before(struct velox_link * link,
     link_add_before(dest, link);
 }
 
+static inline void link_swap(struct velox_link * link1,
+                             struct velox_link * link2)
+{
+    struct velox_link * tmp;
+
+    tmp = link1->next;
+    link1->next = link2->next == link1 ? link2 : link2->next;
+    link2->next = tmp == link2 ? link1 : tmp;
+
+    tmp = link1->prev;
+    link1->prev = link2->prev == link1 ? link2 : link2->prev;
+    link2->prev = tmp == link2 ? link1 : tmp;
+
+    link1->next->prev = link1;
+    link1->prev->next = link1;
+    link2->next->prev = link2;
+    link2->prev->next = link2;
+}
+
 static inline void link_cycle_next(struct velox_link ** link)
 {
     *link = (*link)->next;

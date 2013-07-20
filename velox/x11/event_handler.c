@@ -161,18 +161,16 @@ static void enter_notify(xcb_enter_notify_event_t * event)
     if (event->event == screen->root) focus(NULL);
     else
     {
-        struct velox_window_entry * entry;
         struct velox_window * window;
 
         window = NULL;
 
         /* Look through tiled windows */
-        list_for_each_entry(&workspace->tiled.windows, entry)
+        list_for_each_entry(&workspace->tiled.windows, window)
         {
-            if (entry->window->window_id == event->event)
+            if (window->window_id == event->event)
             {
-                window = entry->window;
-                window->workspace->tiled.focus = &entry->link;
+                window->workspace->tiled.focus = &window->link;
                 break;
             }
         }
@@ -197,8 +195,6 @@ static void leave_notify(xcb_leave_notify_event_t * event)
 
 static void destroy_notify(xcb_destroy_notify_event_t * event)
 {
-    struct velox_window_entry * entry;
-
     DEBUG_ENTER
     DEBUG_PRINT("window_id: 0x%x\n", event->event)
 
@@ -209,7 +205,6 @@ static void destroy_notify(xcb_destroy_notify_event_t * event)
 
 static void unmap_notify(xcb_unmap_notify_event_t * event)
 {
-    struct velox_window_entry * entry;
     struct velox_window * window;
 
     DEBUG_ENTER
