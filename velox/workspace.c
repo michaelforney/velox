@@ -80,24 +80,6 @@ void add_workspace(const char * name, const char * layout_names[])
 
 void setup_workspaces()
 {
-    struct velox_workspace * workspace;
-    const char * default_layouts[] = {
-        "tile",
-        "grid",
-        NULL
-    };
-
-    /* TODO: Make this configurable */
-
-    add_workspace("term",     default_layouts);
-    add_workspace("www",      default_layouts);
-    add_workspace("irc",      default_layouts);
-    add_workspace("im",       default_layouts);
-    add_workspace("code",     default_layouts);
-    add_workspace("mail",     default_layouts);
-    add_workspace("gfx",      default_layouts);
-    add_workspace("music",    default_layouts);
-    add_workspace("misc",     default_layouts);
 }
 
 void cleanup_workspaces()

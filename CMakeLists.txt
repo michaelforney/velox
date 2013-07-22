@@ -11,6 +11,7 @@ set(WITH_X11 TRUE)
 
 option(ENABLE_TILE          "Build the tile layout"         ON)
 option(ENABLE_GRID          "Build the grid layout"         ON)
+option(ENABLE_DESKTOP       "Build the desktop module"      ON)
 option(ENABLE_MPD           "Build the MPD module"          ON)
 option(ENABLE_SPAWN         "Build the spawn module"        ON)
 option(ENABLE_WALLPAPER     "Build the wallpaper module"    ON)

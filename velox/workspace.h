@@ -63,6 +63,7 @@ static inline struct velox_workspace * workspace_at(uint32_t index)
     return (struct velox_workspace *) vector_at(&workspaces, index);
 }
 
+void add_workspace(const char * name, const char * layout_names[]);
 void setup_workspaces();
 void cleanup_workspaces();
 

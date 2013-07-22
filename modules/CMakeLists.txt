@@ -9,6 +9,7 @@ set(VELOX_MODULES
     alsa
     bar
     pulseaudio
+    desktop
 )
 
 include_directories(${velox_SOURCE_DIR})
