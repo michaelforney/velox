@@ -317,7 +317,11 @@ void manage(xcb_window_t window_id)
     transient_for_cookie = xcb_icccm_get_wm_transient_for(c, window_id);
     geometry_cookie = xcb_get_geometry(c, window_id);
 
-    window = (struct velox_window *) malloc(sizeof(struct velox_window));
+    window = window_new();
+
+    if (!window)
+        return;
+
     DEBUG_PRINT("allocated window: %p\n", window)
     DEBUG_PRINT("window_id: 0x%x\n", window_id);
     window->window_id = window_id;

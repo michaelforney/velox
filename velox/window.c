@@ -29,6 +29,16 @@
 #include "window.h"
 #include "debug.h"
 
+struct velox_window * window_new()
+{
+    struct velox_window * window;
+
+    window = malloc(sizeof *window);
+    window->workspace = NULL;
+
+    return window;
+}
+
 void window_set_geometry(struct velox_window * window, struct velox_area * area)
 {
     window->x = area->x;

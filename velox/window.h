@@ -45,6 +45,8 @@ struct velox_window
     struct velox_link DEFAULT_LINK_MEMBER;
 };
 
+struct velox_window * window_new();
+
 void window_set_geometry(struct velox_window * window, struct velox_area * area);
 
 #endif
