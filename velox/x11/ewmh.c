@@ -324,7 +324,7 @@ void setup_ewmh()
     /* Client list updates */
     add_hook(add_client_hook, VELOX_HOOK_MANAGE_POST);
     add_hook(remove_client_hook, VELOX_HOOK_UNMANAGE);
-    add_hook(update_clients_hook, VELOX_HOOK_TAG_CHANGED);
+    add_hook(update_clients_hook, VELOX_HOOK_WORKSPACE_CHANGED);
 
     add_hook(desktop_geometry_hook, VELOX_HOOK_ROOT_RESIZED);
 

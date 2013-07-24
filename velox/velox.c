@@ -170,7 +170,7 @@ void set_workspace(union velox_argument argument)
             arrange();
         }
 
-        run_hooks(workspace, VELOX_HOOK_TAG_CHANGED);
+        run_hooks(workspace, VELOX_HOOK_WORKSPACE_CHANGED);
 
         xcb_flush(c);
     }

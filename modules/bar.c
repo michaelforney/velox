@@ -410,7 +410,7 @@ bool setup()
     xcb_flush(c);
 
     /* Register hooks and event handler */
-    add_hook(&redraw_hook, VELOX_HOOK_TAG_CHANGED);
+    add_hook(&redraw_hook, VELOX_HOOK_WORKSPACE_CHANGED);
     add_hook(&redraw_hook, VELOX_HOOK_CLOCK_TICK);
     add_hook(&redraw_hook, VELOX_HOOK_FOCUS_CHANGED);
     add_hook(&redraw_hook, VELOX_HOOK_WINDOW_NAME_CHANGED);
