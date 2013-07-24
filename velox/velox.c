@@ -191,7 +191,7 @@ void move_focus_to_workspace(union velox_argument argument)
             struct velox_window * window;
 
             window = link_entry(workspace->tiled.focus, struct velox_window);
-            next_focus = list_next(&workspace->tiled.windows, workspace->tiled.focus);
+            next_focus = list_next_link(&workspace->tiled.windows, workspace->tiled.focus);
 
             /* Move the focus from the old list to the new list */
             link_move_after(workspace->tiled.focus,
@@ -344,14 +344,14 @@ void next_layout()
 {
     DEBUG_ENTER
 
-    set_layout(list_next(&workspace->layouts, workspace->layout));
+    set_layout(list_next_link(&workspace->layouts, workspace->layout));
 }
 
 void previous_layout()
 {
     DEBUG_ENTER
 
-    set_layout(list_prev(&workspace->layouts, workspace->layout));
+    set_layout(list_prev_link(&workspace->layouts, workspace->layout));
 }
 
 void focus_next()
@@ -365,7 +365,7 @@ void focus_next()
             return;
         }
 
-        workspace->tiled.focus = list_next(&workspace->tiled.windows,
+        workspace->tiled.focus = list_next_link(&workspace->tiled.windows,
             workspace->tiled.focus);
 
         focus(link_entry(workspace->tiled.focus, struct velox_window));
@@ -399,7 +399,7 @@ void focus_previous()
             return;
         }
 
-        workspace->tiled.focus = list_prev(&workspace->tiled.windows,
+        workspace->tiled.focus = list_prev_link(&workspace->tiled.windows,
             workspace->tiled.focus);
 
         focus(link_entry(workspace->tiled.focus, struct velox_window));
@@ -433,7 +433,7 @@ void move_next()
         if (list_is_trivial(&workspace->tiled.windows)) return;
 
         first = link_entry(workspace->tiled.focus, struct velox_window);
-        second = link_entry(list_next(&workspace->tiled.windows,
+        second = link_entry(list_next_link(&workspace->tiled.windows,
             workspace->tiled.focus), struct velox_window);
 
         /* Swap the two windows */
@@ -454,7 +454,7 @@ void move_previous()
         if (list_is_trivial(&workspace->tiled.windows)) return;
 
         first = link_entry(workspace->tiled.focus, struct velox_window);
-        second = link_entry(list_prev(&workspace->tiled.windows,
+        second = link_entry(list_prev_link(&workspace->tiled.windows,
             workspace->tiled.focus), struct velox_window);
 
         /* Swap the two windows */
@@ -473,7 +473,7 @@ void toggle_floating()
         if (!list_is_empty(&workspace->tiled.windows))
         {
             window = link_entry(workspace->tiled.focus, struct velox_window);
-            workspace->tiled.focus = list_next(&workspace->tiled.windows,
+            workspace->tiled.focus = list_next_link(&workspace->tiled.windows,
                 workspace->tiled.focus);
 
             link_move_after(&window->link, &workspace->floated.windows.head);

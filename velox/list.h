@@ -64,17 +64,25 @@ static inline struct velox_link * list_last_link(struct velox_list * list)
 #define list_last(list, type, member...)                                    \
     link_entry(list_last_link(list), type, ##member)
 
-static inline struct velox_link * list_next(struct velox_list * list,
-    struct velox_link * link)
+static inline struct velox_link * list_next_link(struct velox_list * list,
+                                                 struct velox_link * link)
 {
     return link->next == &list->head ? link->next->next : link->next;
 }
 
-static inline struct velox_link * list_prev(struct velox_list * list,
-    struct velox_link * link)
+static inline struct velox_link * list_prev_link(struct velox_list * list,
+                                                 struct velox_link * link)
 {
     return link->prev == &list->head ? link->prev->prev : link->prev;
 }
+
+#define list_next(list, entry, member...)                                   \
+    link_entry(list_next_link(list, &(entry)->optional(DEFAULT_LINK_MEMBER, \
+               ##member)), typeof(*entry), ##member)
+
+#define list_prev(list, entry, member...)                                   \
+    link_entry(list_prev_link(list, &(entry)->optional(DEFAULT_LINK_MEMBER, \
+               ##member)), typeof(*entry), ##member)
 
 static inline bool list_is_empty(struct velox_list * list)
 {

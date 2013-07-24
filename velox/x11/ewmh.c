@@ -240,9 +240,9 @@ static void handle_client_message(xcb_client_message_event_t * event)
         old_focus = workspace->tiled.focus;
 
         /* Assume the client message is valid */
-        for (workspace->tiled.focus = list_next(&workspace->tiled.windows, workspace->tiled.focus);
+        for (workspace->tiled.focus = list_next_link(&workspace->tiled.windows, workspace->tiled.focus);
             workspace->tiled.focus != old_focus;
-            workspace->tiled.focus = list_next(&workspace->tiled.windows, workspace->tiled.focus))
+            workspace->tiled.focus = list_next_link(&workspace->tiled.windows, workspace->tiled.focus))
         {
             if (link_entry(workspace->tiled.focus,
                            struct velox_window)->window_id == event->window)

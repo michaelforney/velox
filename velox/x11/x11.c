@@ -440,7 +440,7 @@ void unmanage(xcb_window_t window_id)
                 /* Deal with special cases */
                 if (&window->link == workspace_pos->tiled.focus)
                 {
-                    workspace_pos->tiled.focus = list_next(&workspace_pos->tiled.windows,
+                    workspace_pos->tiled.focus = list_next_link(&workspace_pos->tiled.windows,
                         workspace_pos->tiled.focus);
                 }
 
