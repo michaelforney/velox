@@ -11,6 +11,9 @@ set(VELOX_SOURCES
     window.c
     work_area.c
     workspace.c
+    layer.c
+    bound_layer.c
+    free_layer.c
 
     hashtable.c
 )
