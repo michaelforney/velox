@@ -42,15 +42,14 @@ void configure(yaml_document_t * document)
     sequence = yaml_document_get_root_node(document);
     assert(sequence->type == YAML_SEQUENCE_NODE);
 
-    commands = (const char ***) malloc((sequence->data.sequence.items.top - sequence->data.sequence.items.start + 1) * sizeof(const char ***));
-    commands[
-        sequence->data.sequence.items.top -
-        sequence->data.sequence.items.start
-    ] = NULL;
+    commands = malloc((sequence->data.sequence.items.top
+                       - sequence->data.sequence.items.start + 1)
+                      * sizeof(const char **));
+    commands[sequence->data.sequence.items.top
+             - sequence->data.sequence.items.start] = NULL;
 
     for (item = sequence->data.sequence.items.start;
-        item < sequence->data.sequence.items.top;
-        ++item)
+         item < sequence->data.sequence.items.top; ++item)
     {
         yaml_node_pair_t * pair;
         yaml_node_t * key, * value;
@@ -79,26 +78,29 @@ void configure(yaml_document_t * document)
 
                 assert(value->type == YAML_SEQUENCE_NODE);
 
-                command = (const char **) malloc((value->data.sequence.items.top - value->data.sequence.items.start + 1) * sizeof(const char **));
-                command[
-                    value->data.sequence.items.top -
-                    value->data.sequence.items.start
-                ] = NULL;
+                command = malloc((value->data.sequence.items.top
+                                  - value->data.sequence.items.start + 1)
+                                 * sizeof(const char *));
+                command[value->data.sequence.items.top
+                        - value->data.sequence.items.start] = NULL;
 
                 for (command_item = value->data.sequence.items.start;
                     command_item < value->data.sequence.items.top;
                     ++command_item)
                 {
-                    command_node = yaml_document_get_node(document, *command_item);
+                    command_node = yaml_document_get_node(document,
+                                                          *command_item);
 
                     assert(command_node->type == YAML_SCALAR_NODE);
 
-                    command[command_item - value->data.sequence.items.start] = strdup((const char *) command_node->data.scalar.value);
+                    command[command_item - value->data.sequence.items.start] =
+                        strdup((const char *) command_node->data.scalar.value);
                 }
 
                 commands[item - sequence->data.sequence.items.start] = command;
             }
-            else if (strcmp((const char *) key->data.scalar.value, "binding") == 0)
+            else if (strcmp((const char *) key->data.scalar.value,
+                            "binding") == 0)
             {
                 assert(value->type == YAML_SCALAR_NODE);
 
@@ -106,7 +108,8 @@ void configure(yaml_document_t * document)
             }
         }
 
-        add_key_binding(name, binding, &spawn_command, pointer_argument(command));
+        add_key_binding(name, binding, &spawn_command,
+                        pointer_argument(command));
     }
 
     printf("done\n");
