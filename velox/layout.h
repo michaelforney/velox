@@ -39,7 +39,7 @@ struct velox_layout
 {
     const char * identifier;
     void (* arrange)(struct velox_area * area, struct velox_list * windows,
-        struct velox_layout_state * state);
+                     struct velox_layout_state * state);
     void * default_state;
     uint32_t default_state_size;
 };
