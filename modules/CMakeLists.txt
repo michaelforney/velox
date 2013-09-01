@@ -29,15 +29,15 @@ endforeach()
 
 if(ENABLE_MPD)
     target_link_libraries(mpd ${LIBMPDCLIENT_LIBRARIES})
-endif(ENABLE_MPD)
+endif()
 
 if(ENABLE_ALSA)
     target_link_libraries(alsa ${ALSA_LIBRARIES})
     include_directories(${ALSA_INCLUDE_DIR})
-endif(ENABLE_ALSA)
+endif()
 
 if(ENABLE_PULSEAUDIO)
     target_link_libraries(pulseaudio ${LIBPULSE_LIBRARIES})
     include_directories(${LibPulse_INCLUDE_DIR})
-endif(ENABLE_PULSEAUDIO)
+endif()
 
