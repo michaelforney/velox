@@ -20,6 +20,8 @@
 #ifndef VELOX_BINDING_PRIVATE
 #define VELOX_BINDING_PRIVATE
 
+#include <xkbcommon/xkbcommon.h>
+
 #include "binding.h"
 #include "vector.h"
 
@@ -27,7 +29,7 @@ struct velox_bindable
 {
     union
     {
-        xcb_keysym_t key;
+        xkb_keysym_t key;
         uint8_t button;
     } pressable;
 

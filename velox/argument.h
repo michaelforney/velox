@@ -20,13 +20,12 @@
 #ifndef VELOX_ARGUMENT
 #define VELOX_ARGUMENT
 
-#include <xcb/xcb.h>
+#include <stdint.h>
 
 union velox_argument
 {
     void * pointer;
     struct velox_window * window;
-    xcb_window_t window_id;
     uint32_t uint32;
     uint8_t uint8;
 };
@@ -44,11 +43,6 @@ static inline union velox_argument uint8_argument(uint8_t value)
 static inline union velox_argument pointer_argument(void * value)
 {
     return (union velox_argument) { .pointer = value };
-}
-
-static inline union velox_argument window_id_argument(xcb_window_t window_id)
-{
-    return (union velox_argument) { .window_id = window_id };
 }
 
 static const union velox_argument no_argument = { 0 };

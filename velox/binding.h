@@ -22,6 +22,12 @@
 
 #include <velox/function.h>
 
+enum velox_binding_type
+{
+    VELOX_KEY_BINDING = 0,
+    VELOX_BUTTON_BINDING
+};
+
 void add_key_binding(const char * group, const char * name,
     velox_function_t function, union velox_argument argument);
 

@@ -22,9 +22,6 @@
 
 #include <stdint.h>
 
-/* Bindings */
-void grab_keys(xcb_keycode_t min_keycode, xcb_keycode_t max_keycode);
-
 void focus(struct velox_window * window);
 void update_focus(struct velox_workspace * workspace);
 

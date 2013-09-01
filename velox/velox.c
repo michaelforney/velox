@@ -48,12 +48,6 @@
 #include "work_area-private.h"
 #include "binding-private.h"
 
-#if WITH_X11
-#   include "x11/x11.h"
-#   include "x11/atom.h"
-#   include "x11/x11-private.h"
-#endif
-
 #define ARRAY_LENGTH(array) (sizeof (array) / sizeof (array)[0])
 
 /* VELOX variables */
@@ -74,44 +68,13 @@ static void setup()
     setup_bindings();
     setup_layouts();
 
-#if WITH_X11
-    setup_x11();
-#endif
-
     load_config();
 
     setup_modules();
     setup_workspaces();
 
-#ifdef WITH_X11
-    sync_atoms();
-    grab_buttons();
-    run_hooks(NULL, VELOX_HOOK_KEYBOARD_MAPPING_CHANGED);
-#endif
-
     assert(workspaces.size > 0);
     workspace = workspace_at(0);
-}
-
-void show_window(struct velox_window * window)
-{
-#ifdef WITH_X11
-    show_x11_window(window);
-#endif
-}
-
-void hide_window(struct velox_window * window)
-{
-#ifdef WITH_X11
-    hide_x11_window(window);
-#endif
-}
-
-void focus(struct velox_window * window)
-{
-#ifdef WITH_X11
-    focus_x11_window(window);
-#endif
 }
 
 void update_focus(struct velox_workspace * workspace)
@@ -171,8 +134,6 @@ void set_workspace(union velox_argument argument)
         }
 
         run_hooks(workspace, VELOX_HOOK_WORKSPACE_CHANGED);
-
-        xcb_flush(c);
     }
 }
 
@@ -260,8 +221,6 @@ void move_focus_to_workspace(union velox_argument argument)
             }
         }
     }
-
-    xcb_flush(c);
 }
 
 void set_focus_type(enum velox_workspace_focus_type focus_type)
@@ -518,23 +477,13 @@ void arrange()
     calculate_work_area(&screen_area, &work_area);
     link_entry(workspace->layout, struct velox_layout_entry)->layout->arrange
         (&work_area, &workspace->tiled.windows, &workspace->state);
-
-    clear_event_type = XCB_ENTER_NOTIFY;
 }
 
 void restack()
 {
-    uint32_t mask = XCB_CONFIG_WINDOW_STACK_MODE;
-    uint32_t values[] = { XCB_STACK_MODE_ABOVE };
     struct velox_window * window;
 
-    /* Stack the floating windows */
-    list_for_each_entry_reverse(&workspace->floated.windows, window)
-    {
-        xcb_configure_window(c, window->window_id, mask, values);
-    }
-
-    clear_event_type = XCB_ENTER_NOTIFY;
+    /* XXX: restack windows */
 }
 
 void spawn(char * const command[])
@@ -603,12 +552,6 @@ void run()
 
     setitimer(ITIMER_REAL, &timer, NULL);
 
-#if WITH_X11
-    event.events = EPOLLIN;
-    event.data.ptr = &handle_x11_data;
-    epoll_ctl(epoll_fd, EPOLL_CTL_ADD, x11_fd, &event);
-#endif
-
     /* Main event loop */
     while (running)
     {
@@ -649,10 +592,6 @@ void cleanup()
     cleanup_work_area_modifiers();
     cleanup_hooks();
     cleanup_resources();
-
-#ifdef WITH_X11
-    cleanup_x11();
-#endif
 }
 
 void __attribute__((noreturn)) die(const char * const message, ...)
@@ -677,7 +616,6 @@ int main(int argc, char ** argv)
     printf("Velox Window Manager\n");
 
     setup();
-    manage_existing_windows();
     run_hooks(NULL, VELOX_HOOK_STARTUP);
     run();
     cleanup();

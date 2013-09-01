@@ -1,4 +1,4 @@
-/* velox: velox/x11/window.h
+/* velox: velox/operations-private.h
  *
  * Copyright (c) 2013 Michael Forney <mforney@mforney.org>
  *
@@ -17,17 +17,22 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_X11_WINDOW_H
-#define VELOX_X11_WINDOW_H
+#ifndef VELOX_OPERATIONS_PRIVATE_H
+#define VELOX_OPERATIONS_PRIVATE_H
 
-#include <stdbool.h>
-#include <xcb/xcb.h>
+#include <velox/binding.h>
 
-#include <velox/window.h>
+struct velox_binding;
+struct velox_window;
 
-bool window_has_protocol(xcb_window_t window, xcb_atom_t protocol);
+/* Window operations */
+void show_window(struct velox_window * window);
+void hide_window(struct velox_window * window);
+void focus_window(struct velox_window * window);
 
-void update_name_class(struct velox_window * window);
+/* Binding operations */
+void register_binding(enum velox_binding_type type,
+                      struct velox_binding * binding);
 
 #endif
 

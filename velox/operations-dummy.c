@@ -1,4 +1,4 @@
-/* velox: velox/x11.h
+/* velox: velox/operations-dummy.c
  *
  * Copyright (c) 2013 Michael Forney <mforney@mforney.org>
  *
@@ -17,29 +17,19 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_X11_H
-#define VELOX_X11_H
+#include "operations.h"
+#include "operations-private.h"
 
-#include <xcb/xcb.h>
+/* Window operations */
+void show_window(struct velox_window * window) { }
+void hide_window(struct velox_window * window) { }
+void focus_window(struct velox_window * window) { }
+void set_window_geometry(struct velox_window * window,
+                         struct velox_area * area) { }
 
-#include <velox/x11/window.h>
-
-extern xcb_connection_t * c;
-extern xcb_screen_t * screen;
-
-extern uint32_t border_pixel;
-extern uint32_t border_focus_pixel;
-
-extern uint8_t clear_event_type;
-
-void kill_focused_window();
-
-void show_x11_window(struct velox_window * window);
-void hide_x11_window(struct velox_window * window);
-
-void focus_x11_window(struct velox_window * window);
-
-#endif
+/* Binding operations */
+void register_binding(enum velox_binding_type type,
+                      struct velox_binding * binding) { }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
 

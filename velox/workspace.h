@@ -20,8 +20,6 @@
 #ifndef VELOX_WORKSPACE_H
 #define VELOX_WORKSPACE_H
 
-#include <xcb/xcb.h>
-
 #include <velox/layout.h>
 #include <velox/list.h>
 #include <velox/vector.h>

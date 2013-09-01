@@ -22,15 +22,11 @@
 
 #include <stdbool.h>
 
-#include <xcb/xcb.h>
-
 #include <velox/area.h>
 #include <velox/list.h>
 
 struct velox_window
 {
-    xcb_window_t window_id;
-
     char name[256];
     char class[256];
 

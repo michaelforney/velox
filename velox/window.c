@@ -23,8 +23,6 @@
 #include <string.h>
 #include <limits.h>
 
-#include <xcb/xcb_atom.h>
-
 #include "velox.h"
 #include "window.h"
 #include "debug.h"

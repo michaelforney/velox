@@ -7,7 +7,7 @@ set(VELOX_MODULES
     spawn
     mpd
     alsa
-    bar
+    #bar
     pulseaudio
     desktop
 )

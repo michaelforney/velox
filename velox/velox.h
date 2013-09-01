@@ -20,15 +20,10 @@
 #ifndef VELOX_VELOX_H
 #define VELOX_VELOX_H
 
-#include <xcb/xcb.h>
 #include <sys/param.h>
-
 #include <velox/window.h>
 #include <velox/workspace.h>
 #include <velox/binding.h>
-
-extern xcb_connection_t * c;
-extern xcb_screen_t * screen;
 
 extern struct velox_area screen_area;
 extern struct velox_area work_area;
@@ -36,11 +31,7 @@ extern uint16_t border_width;
 
 extern const char wm_name[];
 
-extern xcb_atom_t WM_PROTOCOLS, WM_DELETE_WINDOW, WM_STATE;
-
 extern struct velox_workspace * workspace;
-
-void synthetic_configure(struct velox_window * window);
 
 void arrange();
 void restack();

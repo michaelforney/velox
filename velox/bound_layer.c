@@ -23,11 +23,11 @@
 #include "work_area.h"
 #include "velox.h"
 #include "debug.h"
-#include "x11/x11.h"
 
 #include "velox-private.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 struct bound_layer
@@ -171,15 +171,6 @@ static void bound_layer_update(struct velox_layer * base)
     calculate_work_area(&screen_area, &work_area);
     layer->layout_entry->layout->arrange(&work_area, &layer->base.windows,
                                          &layer->layout_state);
-
-#if WITH_X11
-    xcb_flush(c);
-
-    /* We don't want to get enter notify events as a result of arranging the
-     * windows. If the cursor happens to cross window boundries, we want to
-     * keep focus as it is. */
-    clear_event_type = XCB_ENTER_NOTIFY;
-#endif
 }
 
 static void bound_layer_destroy(struct velox_layer * base)

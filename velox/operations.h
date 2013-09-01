@@ -1,6 +1,6 @@
-/* velox: velox/x11/event_handler.h
+/* velox: velox/operations.h
  *
- * Copyright (c) 2010 Michael Forney <mforney@mforney.org>
+ * Copyright (c) 2013 Michael Forney <mforney@mforney.org>
  *
  * This file is a part of velox.
  *
@@ -17,15 +17,15 @@
  * with velox.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VELOX_X11_EVENT_HANDLER_H
-#define VELOX_X11_EVENT_HANDLER_H
+#ifndef VELOX_OPERATIONS_H
+#define VELOX_OPERATIONS_H
 
-#define DO(type, name) \
-    typedef void (* name ## _event_handler_t)                               \
-        (xcb_ ## name ## _event_t * event);                                 \
-    void add_ ## name ## _event_handler(name ## _event_handler_t handler);
-#include "event_types.h"
-#undef DO
+struct velox_area;
+struct velox_window;
+
+/* Window operations */
+void set_window_geometry(struct velox_window * window,
+                         struct velox_area * area);
 
 #endif
 

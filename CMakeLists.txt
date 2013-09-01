@@ -4,11 +4,6 @@ cmake_minimum_required(VERSION 2.6)
 
 project(velox C)
 
-# Can't disable X11 at the moment.
-# option(WITH_X11             "Build the X11 backend"         ON)
-
-set(WITH_X11 TRUE)
-
 option(ENABLE_TILE          "Build the tile layout"         ON)
 option(ENABLE_GRID          "Build the grid layout"         ON)
 option(ENABLE_DESKTOP       "Build the desktop module"      ON)
@@ -25,12 +20,6 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DVELOX_DEBUG")
 find_package(PkgConfig REQUIRED)
 find_package(LibYAML REQUIRED)
 find_package(XKBCommon REQUIRED)
-
-if(WITH_X11)
-    find_package(XCB REQUIRED)
-    find_package(XCB-Util COMPONENTS Atom ICCCM Aux EWMH Image Keysyms REQUIRED)
-    add_definitions(-DWITH_X11)
-endif(WITH_X11)
 
 if(ENABLE_MPD)
     find_package(LibMPDClient REQUIRED)

@@ -28,8 +28,6 @@
 #include "hook.h"
 #include "debug.h"
 
-#include "x11/keyboard_mapping.h"
-
 #include "binding-private.h"
 
 /* Helper macros */
@@ -67,7 +65,7 @@ static void parse_button(yaml_node_t * node, struct velox_bindable * bindable)
 
     if (strcmp((const char *) node->data.scalar.value, "any")  == 0)
     {
-        bindable->pressable.button = XCB_BUTTON_INDEX_ANY;
+        /* XXX: any button */
     }
     else
     {
@@ -242,7 +240,9 @@ static void setup_key_bindings()
     add_key_binding("velox", STRING_SYMBOL(toggle_focus_type), no_argument);
 
     /* Window operations */
-    add_key_binding("velox", STRING_SYMBOL(kill_focused_window), no_argument);
+    /* XXX: Reimplement
+     * add_key_binding("velox", STRING_SYMBOL(kill_focused_window), no_argument);
+     */
     add_key_binding("velox", STRING_SYMBOL(toggle_floating), no_argument);
 
     /* Layout control */
@@ -258,8 +258,10 @@ static void setup_button_bindings()
     setup_configured_bindings("buttons.yaml", &parse_button, &configured_buttons);
 
     /* Floating windows */
-    add_button_binding("velox", STRING_SYMBOL(move_float));
-    add_button_binding("velox", STRING_SYMBOL(resize_float));
+    /* XXX: Reimplement
+     * add_button_binding("velox", STRING_SYMBOL(move_float), no_argument);
+     * add_button_binding("velox", STRING_SYMBOL(resize_float), no_argument);
+     */
 
     add_button_binding("velox", STRING_SYMBOL(next_workspace));
     add_button_binding("velox", STRING_SYMBOL(previous_workspace));
@@ -277,52 +279,10 @@ void add_button_binding(const char * group, const char * name,
     add_binding(&configured_buttons, &button_bindings, group, name, function, no_argument);
 }
 
-void grab_keys(union velox_argument argument)
-{
-    xcb_keycode_t * keycode;
-    struct velox_binding * binding;
-    uint8_t modifier_index;
-    uint8_t extra_modifiers_length = sizeof(extra_modifiers) / sizeof(uint16_t);
-
-    DEBUG_ENTER
-
-    xcb_ungrab_key(c, XCB_GRAB_ANY, screen->root, XCB_MOD_MASK_ANY);
-
-    vector_for_each(&key_bindings, binding)
-    {
-        xcb_keycode_t * keycodes = xcb_key_symbols_get_keycode(keyboard_mapping,
-            binding->bindable.pressable.key);
-
-        if (!keycodes) continue;
-
-        keycode = keycodes;
-
-        while (*keycode != XCB_NO_SYMBOL)
-        {
-            for (modifier_index = 0; modifier_index < extra_modifiers_length;
-                ++modifier_index)
-            {
-                xcb_grab_key(c, true, screen->root,
-                    binding->bindable.modifiers | extra_modifiers[modifier_index],
-                    *keycode, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC);
-            }
-
-            ++keycode;
-        }
-
-        free(keycodes);
-    }
-
-    xcb_flush(c);
-}
-
 void setup_bindings()
 {
     setup_key_bindings();
     setup_button_bindings();
-
-    /* Add binding related hooks */
-    add_hook(&grab_keys, VELOX_HOOK_KEYBOARD_MAPPING_CHANGED);
 }
 
 void cleanup_bindings()

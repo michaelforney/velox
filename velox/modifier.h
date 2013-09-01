@@ -23,21 +23,10 @@
 #include <yaml.h>
 #include <assert.h>
 
-/* Macros */
-#define CLEAN_MASK(mask) (mask & ~(MOD_MASK_NUMLOCK | XCB_MOD_MASK_LOCK))
-
 /* Static functions */
 static inline uint16_t modifier_value(const char * name)
 {
-    if (strcmp(name, "shift") == 0)         return XCB_MOD_MASK_SHIFT;
-    else if (strcmp(name, "lock") == 0)     return XCB_MOD_MASK_LOCK;
-    else if (strcmp(name, "control") == 0)  return XCB_MOD_MASK_CONTROL;
-    else if (strcmp(name, "1") == 0)        return XCB_MOD_MASK_1;
-    else if (strcmp(name, "2") == 0)        return XCB_MOD_MASK_2;
-    else if (strcmp(name, "3") == 0)        return XCB_MOD_MASK_3;
-    else if (strcmp(name, "logo") == 0)     return XCB_MOD_MASK_4;
-    else if (strcmp(name, "5") == 0)        return XCB_MOD_MASK_5;
-    else if (strcmp(name, "any") == 0)      return XCB_MOD_MASK_ANY;
+    /* XXX: modifiers */
 
     return 0;
 }
@@ -62,15 +51,6 @@ static uint16_t parse_modifiers(yaml_document_t * document, yaml_node_t * node)
 
     return modifiers;
 }
-
-/* Key binding constants */
-#define MOD_MASK_NUMLOCK XCB_MOD_MASK_2
-static const uint16_t extra_modifiers[] = {
-    0,
-    MOD_MASK_NUMLOCK,
-    XCB_MOD_MASK_LOCK,
-    MOD_MASK_NUMLOCK | XCB_MOD_MASK_LOCK
-};
 
 #endif
 
