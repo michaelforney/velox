@@ -2,19 +2,19 @@
 
 set(VELOX_SOURCES
     binding.c
+    bound_layer.c
     config_file.c
+    free_layer.c
     hook.c
+    layer.c
     layout.c
     module.c
+    operations-dummy.c
     resource.c
     velox.c
     window.c
     work_area.c
     workspace.c
-    layer.c
-    bound_layer.c
-    free_layer.c
-    operations-dummy.c
 
     hashtable.c
 )
