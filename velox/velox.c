@@ -316,6 +316,8 @@ void run()
     sigset_t blocked_set, empty_set;
     struct itimerval timer;
 
+    run_hooks(NULL, VELOX_HOOK_STARTUP);
+
     printf("\n** Main Event Loop **\n");
 
     /* Initialize signal masks */
@@ -407,7 +409,6 @@ int main(int argc, char ** argv)
     printf("Velox Window Manager\n");
 
     setup();
-    run_hooks(NULL, VELOX_HOOK_STARTUP);
     run();
     cleanup();
 
