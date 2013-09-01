@@ -69,7 +69,7 @@ static void parse_button(yaml_node_t * node, struct velox_bindable * bindable)
     }
     else
     {
-        bindable->pressable.button = strtoul((const char *)
+        bindable->button = strtoul((const char *)
             node->data.scalar.value, NULL, 10);
     }
 }
@@ -78,7 +78,7 @@ static void parse_key(yaml_node_t * node, struct velox_bindable * bindable)
 {
     assert(node->type == YAML_SCALAR_NODE);
 
-    bindable->pressable.key = xkb_keysym_from_name((const char *)
+    bindable->key = xkb_keysym_from_name((const char *)
         node->data.scalar.value, 0);
 }
 

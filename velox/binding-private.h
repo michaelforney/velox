@@ -31,7 +31,7 @@ struct velox_bindable
     {
         xkb_keysym_t key;
         uint8_t button;
-    } pressable;
+    };
 
     uint16_t modifiers;
 };
