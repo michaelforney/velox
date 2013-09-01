@@ -14,14 +14,18 @@ set(VELOX_MODULES
 
 include_directories(${velox_SOURCE_DIR})
 
+macro(VELOX_MODULE _name)
+    add_library(${_name} MODULE ${ARGN})
+    set_target_properties(${_name} PROPERTIES PREFIX "")
+    install(TARGETS ${_name} DESTINATION lib${LIB_SUFFIX}/velox/modules)
+endmacro()
+
 foreach(module ${VELOX_MODULES})
     string(TOUPPER ${module} module_upper)
     if(ENABLE_${module_upper})
-        add_library(${module} MODULE ${module}.c)
-        set_target_properties(${module} PROPERTIES PREFIX "")
-        install(TARGETS ${module} DESTINATION lib${LIB_SUFFIX}/velox/modules)
-    endif(ENABLE_${module_upper})
-endforeach(module)
+        velox_module(${module} ${module}.c)
+    endif()
+endforeach()
 
 if(ENABLE_MPD)
     target_link_libraries(mpd ${LIBMPDCLIENT_LIBRARIES})
