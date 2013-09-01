@@ -19,7 +19,6 @@
 
 #include <yaml.h>
 #include <assert.h>
-#include <xkbcommon/xkbcommon.h>
 
 #include "hashtable.h"
 #include "velox.h"

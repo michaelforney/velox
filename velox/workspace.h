@@ -20,10 +20,10 @@
 #ifndef VELOX_WORKSPACE_H
 #define VELOX_WORKSPACE_H
 
+#include <velox/layer.h>
 #include <velox/layout.h>
 #include <velox/list.h>
 #include <velox/vector.h>
-#include <velox/layer.h>
 
 struct velox_workspace
 {

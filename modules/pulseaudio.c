@@ -26,7 +26,6 @@
 #include <velox/module.h>
 #include <velox/debug.h>
 
-
 const char name[] = "pulseaudio";
 
 //const uint8_t max_sinks = 16;

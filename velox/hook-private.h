@@ -20,8 +20,6 @@
 #ifndef VELOX_HOOK_PRIVATE_H
 #define VELOX_HOOK_PRIVATE_H
 
-#include "window.h"
-
 void setup_hooks();
 void cleanup_hooks();
 

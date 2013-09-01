@@ -48,10 +48,11 @@ static inline uint32_t next_power_of_two(uint32_t n)
  *
  * @param item_size The size of each item in the vector.
  * @param initial_capacity The initial capacity (in number of items) of the new
- * vector.
+ *                         vector.
  */
 static inline void vector_initialize(struct velox_vector * vector,
-    uint32_t item_size, uint32_t initial_capacity)
+                                     uint32_t item_size,
+                                     uint32_t initial_capacity)
 {
     vector->size = 0;
     vector->item_size = item_size;
@@ -86,7 +87,7 @@ static inline void * vector_add(struct velox_vector * vector)
  */
 #define vector_add_value(vector, value)                                     \
 {                                                                           \
-    *((typeof(value) *) vector_add(vector)) = value;                      \
+    *((typeof(value) *) vector_add(vector)) = value;                        \
 }
 
 /**
@@ -96,7 +97,7 @@ static inline void * vector_add(struct velox_vector * vector)
  * @param index The location of the value to remove
  */
 static inline void vector_remove_at(struct velox_vector * vector,
-    uint32_t index)
+                                    uint32_t index)
 {
     void * position = vector->data + index * vector->item_size;
     if (index < vector->size - 1)
@@ -135,7 +136,7 @@ static inline void vector_remove_at(struct velox_vector * vector,
  * @param iterator The iterator of which to calculate position.
  */
 static inline uint32_t vector_position(const struct velox_vector * vector,
-    void * iterator)
+                                       void * iterator)
 {
     return (iterator - vector->data) / vector->item_size;
 }

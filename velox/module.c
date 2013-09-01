@@ -39,13 +39,13 @@ void * open_module(const char * const name)
 
     if (getenv("VELOX_PLUGIN_PATH") != NULL)
     {
-        snprintf(search_path, sizeof(search_path), "%s", getenv("VELOX_PLUGIN_PATH"));
+        snprintf(search_path, sizeof(search_path), "%s",
+                 getenv("VELOX_PLUGIN_PATH"));
     }
     else
     {
-        snprintf(search_path, sizeof(search_path), "%s/.velox/modules:/usr/lib/velox/modules",
-            getenv("HOME")
-        );
+        snprintf(search_path, sizeof(search_path),
+                 "%s/.velox/modules:/usr/lib/velox/modules", getenv("HOME"));
     }
 
     start = search_path;
@@ -67,7 +67,8 @@ void * open_module(const char * const name)
             start = end + 1;
         }
 
-        snprintf(module_path, sizeof(module_path), "%s/%s.so", directory_path, name);
+        snprintf(module_path, sizeof(module_path), "%s/%s.so",
+                 directory_path, name);
 
         printf("    %s...", module_path);
 
@@ -99,7 +100,7 @@ void load_module(const char * const name)
     assert(module_handle);
 
     /* Allocate a new module */
-    module = (struct velox_module *) malloc(sizeof(struct velox_module));
+    module = malloc(sizeof *module);
 
     /* Lookup the appropriate symbols */
     module->handle = module_handle;
@@ -115,7 +116,7 @@ void load_module(const char * const name)
 
     printf("Loaded module: %s\n", module->name);
 
-    entry = (struct velox_module_entry *) malloc(sizeof(struct velox_module_entry));
+    entry = malloc(sizeof *entry);
     entry->module = module;
 
     /* Add the module to the list of modules */
