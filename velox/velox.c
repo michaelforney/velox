@@ -157,40 +157,24 @@ void move_focus_to_workspace(union velox_argument argument)
 
 void next_workspace()
 {
-    struct velox_workspace * workspace_iterator;
-    uint8_t index;
+    uint8_t index = vector_position(&workspaces, active_workspace);
 
     DEBUG_ENTER
 
-    vector_for_each_with_index(&workspaces, workspace_iterator, index)
-    {
-        if (workspace_iterator == active_workspace) break;
-    }
-
     if (++index == workspaces.size)
-    {
         index = 0;
-    }
 
     set_workspace(uint8_argument(index));
 }
 
 void previous_workspace()
 {
-    struct velox_workspace * workspace_iterator;
-    uint8_t index;
+    uint8_t index = vector_position(&workspaces, active_workspace);
 
     DEBUG_ENTER
 
-    vector_for_each_with_index(&workspaces, workspace_iterator, index)
-    {
-        if (workspace_iterator == active_workspace) break;
-    }
-
-    if (index-- == 0)
-    {
+    if (index == 0)
         index = workspaces.size - 1;
-    }
 
     set_workspace(uint8_argument(index));
 }
