@@ -95,6 +95,8 @@ void cleanup_resources()
             if (type->destroy)
                 type->destroy(resource);
         }
+
+        vector_free(&type->resources);
     }
 }
 
