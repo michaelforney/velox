@@ -22,6 +22,8 @@
 #include <velox/velox.h>
 #include <velox/workspace.h>
 #include <velox/hook.h>
+#include <velox/bound_layer.h>
+#include <velox/free_layer.h>
 
 static void handle_floating(union velox_argument argument);
 static void handle_fullscreen(union velox_argument argument);
@@ -56,14 +58,17 @@ bool setup()
     uint32_t index;
     const char * workspace_names[] =
         { "term", "www", "irc", "im", "code", "mail", "gfx", "music", "misc" };
-    const char * default_layouts[] = { "tile", "grid", NULL };
+    const char * layout_names[] = { "tile", "grid" };
+    struct velox_layer * layers[2];
 
     printf("Desktop: Initializing...");
 
     /* Workspaces */
     for (index = 0; index < ARRAY_LENGTH(workspace_names); ++index)
     {
-        add_workspace(workspace_names[index], default_layouts);
+        layers[0] = bound_layer_new(layout_names, ARRAY_LENGTH(layout_names));
+        layers[1] = free_layer_new();
+        add_workspace(workspace_names[index], layers, ARRAY_LENGTH(layers));
     }
 
     /* Hooks */

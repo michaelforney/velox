@@ -23,12 +23,7 @@
 #include <velox/layout.h>
 #include <velox/list.h>
 #include <velox/vector.h>
-
-enum velox_workspace_focus_type
-{
-    TILE,
-    FLOAT
-};
+#include <velox/layer.h>
 
 struct velox_workspace
 {
@@ -36,22 +31,8 @@ struct velox_workspace
     // uint64_t id;
     char * name;
 
-    struct
-    {
-        struct velox_list windows;
-        struct velox_link * focus;
-    } tiled;
-
-    struct
-    {
-        struct velox_list windows;
-    } floated;
-
-    enum velox_workspace_focus_type focus_type;
-
-    struct velox_list layouts;
-    struct velox_link * layout;
-    struct velox_layout_state state;
+    struct velox_list layers;
+    struct velox_window * focus;
 };
 
 extern struct velox_vector workspaces;
@@ -61,9 +42,25 @@ static inline struct velox_workspace * workspace_at(uint32_t index)
     return (struct velox_workspace *) vector_at(&workspaces, index);
 }
 
-void add_workspace(const char * name, const char * layout_names[]);
+void add_workspace(const char * name, struct velox_layer * layers[],
+                   uint32_t num_layers);
 void setup_workspaces();
 void cleanup_workspaces();
+
+void workspace_add_window(struct velox_workspace * workspace,
+                          struct velox_window * window);
+void workspace_remove_window(struct velox_workspace * workspace,
+                             struct velox_window * window);
+void workspace_set_focus(struct velox_workspace * workspace,
+                         struct velox_window * window);
+struct velox_layer * workspace_find_layer(struct velox_workspace * workspace,
+                                          layer_predicate_t pred);
+void workspace_show(struct velox_workspace * workspace);
+void workspace_hide(struct velox_workspace * workspace);
+void workspace_focus_next(struct velox_workspace * workspace);
+void workspace_focus_prev(struct velox_workspace * workspace);
+void workspace_swap_next(struct velox_workspace * workspace);
+void workspace_swap_prev(struct velox_workspace * workspace);
 
 #endif
 

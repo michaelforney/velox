@@ -29,6 +29,7 @@
 #include <velox/layout.h>
 #include <velox/debug.h>
 #include <velox/area.h>
+#include <velox/operations.h>
 
 const char name[] = "grid";
 
@@ -102,8 +103,7 @@ static void grid_arrange(struct velox_area * area, struct velox_list * windows,
             ++row_index, window = link_entry_next(window))
         {
             velox_area_split_vertically(&column_area, row_count, row_index, &window_area);
-            window_set_geometry(window, &window_area);
-            arrange_window(window);
+            set_window_geometry(window, &window_area);
 
             ++index;
         }

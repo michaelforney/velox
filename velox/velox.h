@@ -25,6 +25,8 @@
 #include <velox/workspace.h>
 #include <velox/binding.h>
 
+#define ARRAY_LENGTH(array) (sizeof (array) / sizeof (array)[0])
+
 extern struct velox_area screen_area;
 extern struct velox_area work_area;
 extern uint16_t border_width;
@@ -33,13 +35,11 @@ extern const char wm_name[];
 
 extern struct velox_workspace * active_workspace;
 
-void arrange();
-void restack();
-
 void spawn(char * const cmd[]);
 void spawn_terminal();
 void spawn_dmenu();
 
+void commit_focus();
 void focus_next();
 void focus_previous();
 void focus(struct velox_window * window);
@@ -65,7 +65,6 @@ void move_focus_to_workspace(union velox_argument argument);
 void next_workspace();
 void previous_workspace();
 
-void set_focus_type(enum velox_workspace_focus_type focus_type);
 void toggle_focus_type();
 
 #endif

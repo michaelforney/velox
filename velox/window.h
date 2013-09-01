@@ -25,12 +25,15 @@
 #include <velox/area.h>
 #include <velox/list.h>
 
+struct velox_layer;
+
 struct velox_window
 {
     char name[256];
     char class[256];
 
     struct velox_workspace * workspace;
+    struct velox_layer * layer;
 
     int16_t x, y;
     uint16_t width, height;

@@ -54,8 +54,6 @@ void add_layout(struct velox_layout * layout);
 
 struct velox_layout * find_layout();
 
-void arrange_window(struct velox_window * window);
-
 #endif
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

@@ -31,6 +31,8 @@
 #include <velox/layout.h>
 #include <velox/debug.h>
 #include <velox/area.h>
+#include <velox/bound_layer.h>
+#include <velox/operations.h>
 
 const char name[] = "tile";
 
@@ -205,8 +207,7 @@ static void tile_arrange(struct velox_area * area, struct velox_list * windows,
         window = link_entry_next(window))
     {
         velox_area_split_vertically(&master_area, master_count, index, &window_area);
-        window_set_geometry(window, &window_area);
-        arrange_window(window);
+        set_window_geometry(window, &window_area);
 
         ++index;
     }
@@ -224,95 +225,107 @@ static void tile_arrange(struct velox_area * area, struct velox_list * windows,
             window = link_entry_next(window))
         {
             velox_area_split_vertically(&grid_column_area, row_count, row_index, &window_area);
-            window_set_geometry(window, &window_area);
-            arrange_window(window);
+            set_window_geometry(window, &window_area);
 
             ++index;
         }
     }
 }
 
+static bool get_layer(struct velox_layer ** layer,
+                      struct velox_tile_layout_state ** state)
+{
+    if ((*layer = workspace_find_layer(active_workspace, &layer_is_bound))
+        && strcmp(bound_layer_get_layout(*layer)->identifier, "tile") == 0)
+    {
+        *state = (void *) bound_layer_get_layout_state(*layer);
+        return true;
+    }
+
+    return false;
+}
+
 static void increase_master_factor()
 {
+    struct velox_layer * layer;
+    struct velox_tile_layout_state * state;
+
     DEBUG_ENTER
 
-    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->identifier, "tile") == 0)
+    if (get_layer(&layer, &state))
     {
-        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->master_factor = MIN(state->master_factor + 0.025, 1.0);
-
-        arrange();
+        layer_update(layer);
     }
 }
 
 static void decrease_master_factor()
 {
+    struct velox_layer * layer;
+    struct velox_tile_layout_state * state;
+
     DEBUG_ENTER
 
-    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->identifier, "tile") == 0)
+    if (get_layer(&layer, &state))
     {
-        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->master_factor = MAX(state->master_factor - 0.025, 0.0);
-
-        arrange();
+        layer_update(layer);
     }
 }
 
 static void increase_master_count()
 {
+    struct velox_layer * layer;
+    struct velox_tile_layout_state * state;
+
     DEBUG_ENTER
 
-    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->identifier, "tile") == 0)
+    if (get_layer(&layer, &state))
     {
-        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
-        state->master_count++;
-
-        arrange();
+        ++state->master_count;
+        layer_update(layer);
     }
 }
 
 static void decrease_master_count()
 {
+    struct velox_layer * layer;
+    struct velox_tile_layout_state * state;
+
     DEBUG_ENTER
 
-    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->identifier, "tile") == 0)
+    if (get_layer(&layer, &state))
     {
-        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->master_count = MAX(state->master_count - 1, 0);
-
-        arrange();
+        layer_update(layer);
     }
 }
 
 static void increase_column_count()
 {
+    struct velox_layer * layer;
+    struct velox_tile_layout_state * state;
+
     DEBUG_ENTER
 
-    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->identifier, "tile") == 0)
+    if (get_layer(&layer, &state))
     {
-        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
-        state->column_count++;
-
-        arrange();
+        ++state->column_count;
+        layer_update(layer);
     }
 }
 
 static void decrease_column_count()
 {
+    struct velox_layer * layer;
+    struct velox_tile_layout_state * state;
+
     DEBUG_ENTER
 
-    if (strcmp(link_entry(workspace->layout, struct velox_layout_entry)
-        ->layout->identifier, "tile") == 0)
+    if (get_layer(&layer, &state))
     {
-        struct velox_tile_layout_state * state = (struct velox_tile_layout_state *) (&workspace->state);
         state->column_count = MAX(state->column_count - 1, 1);
-
-        arrange();
+        layer_update(layer);
     }
 }
 
