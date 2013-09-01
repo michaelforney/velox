@@ -71,10 +71,6 @@ bool setup()
         add_workspace(workspace_names[index], layers, ARRAY_LENGTH(layers));
     }
 
-    /* Hooks */
-    add_hook(&handle_floating, VELOX_HOOK_MANAGE_PRE);
-    add_hook(&handle_fullscreen, VELOX_HOOK_MANAGE_PRE);
-
     printf("done\n");
 
     return true;
@@ -84,37 +80,6 @@ void cleanup()
 {
     printf("Desktop: Cleaning up...");
     printf("done\n");
-}
-
-/* Manage hooks */
-static void handle_floating(union velox_argument argument)
-{
-    struct velox_window * window = (struct velox_window *) argument.pointer;
-
-    /* TODO: Make download konqueror windows floating */
-    if (strcmp(window->name, "MPlayer") == 0)
-    {
-        window->floating = true;
-    }
-    else if (strcmp(window->name, "xclock") == 0)
-    {
-        window->floating = true;
-    }
-}
-
-static void handle_fullscreen(union velox_argument argument)
-{
-    struct velox_window * window = (struct velox_window *) argument.pointer;
-
-    /*
-    if (window->width == screen_area.width && window->height == screen_area.height)
-    {
-        window->x = 0;
-        window->y = 0;
-        window->border_width = 0;
-        window->floating = true;
-    }
-    */
 }
 
 // vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8
