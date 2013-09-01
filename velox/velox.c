@@ -285,7 +285,7 @@ void spawn(char * const command[])
     {
         setsid();
         execvp(command[0], command);
-        exit(EXIT_SUCCESS);
+        exit(EXIT_FAILURE);
     }
 }
 
