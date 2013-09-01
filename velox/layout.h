@@ -22,11 +22,13 @@
 
 #include <stdint.h>
 
-#include <velox/area.h>
-#include <velox/hashtable.h>
-#include <velox/window.h>
+#include <velox/link.h>
 
 #define LAYOUT_RESOURCE_NAME "layout"
+
+struct velox_area;
+struct velox_layout;
+struct velox_list;
 
 struct velox_layout_state
 {
