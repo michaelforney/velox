@@ -80,7 +80,7 @@ void * open_module(const char * const name)
         }
         else
         {
-            printf("not found\n");
+            printf("not found\n\t%s\n", dlerror());
         }
     }
 
