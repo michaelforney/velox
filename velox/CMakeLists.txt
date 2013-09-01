@@ -8,6 +8,7 @@ set(VELOX_SOURCES
     hook.c
     layer.c
     layout.c
+    manage.c
     module.c
     operations-dummy.c
     resource.c
