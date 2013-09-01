@@ -31,7 +31,7 @@ extern uint16_t border_width;
 
 extern const char wm_name[];
 
-extern struct velox_workspace * workspace;
+extern struct velox_workspace * active_workspace;
 
 void arrange();
 void restack();

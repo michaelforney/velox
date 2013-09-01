@@ -53,7 +53,7 @@
 /* VELOX variables */
 volatile sig_atomic_t running = true;
 volatile sig_atomic_t clock_tick_update = true;
-struct velox_workspace * workspace = NULL;
+struct velox_workspace * active_workspace = NULL;
 struct velox_area screen_area;
 struct velox_area work_area;
 
@@ -74,7 +74,7 @@ static void setup()
     setup_workspaces();
 
     assert(workspaces.size > 0);
-    workspace = workspace_at(0);
+    active_workspace = workspace_at(0);
 }
 
 void update_focus(struct velox_workspace * workspace)
@@ -250,7 +250,7 @@ void next_workspace()
 
     vector_for_each_with_index(&workspaces, workspace_iterator, index)
     {
-        if (workspace_iterator == workspace) break;
+        if (workspace_iterator == active_workspace) break;
     }
 
     if (++index == workspaces.size)
@@ -270,7 +270,7 @@ void previous_workspace()
 
     vector_for_each_with_index(&workspaces, workspace_iterator, index)
     {
-        if (workspace_iterator == workspace) break;
+        if (workspace_iterator == active_workspace) break;
     }
 
     if (index-- == 0)
