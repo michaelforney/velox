@@ -1,0 +1,6 @@
+datadir=@DATADIR@/velox
+
+Name: velox
+Description: A tiling window manager
+Version: @VERSION@
+

@@ -1,9 +1,0 @@
-# velox.desktop
-
-[Desktop Entry] 
-Encoding=UTF-8
-Name=velox
-Comment=Simple tiling window manager
-TryExec=velox
-Exec=velox
-

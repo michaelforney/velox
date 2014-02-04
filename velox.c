@@ -1,0 +1,270 @@
+/* velox: velox.c
+ *
+ * Copyright (c) 2014 Michael Forney
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#include "velox.h"
+#include "config.h"
+#include "layout.h"
+#include "screen.h"
+#include "tag.h"
+#include "window.h"
+
+#include <stdlib.h>
+#include <swc.h>
+#include <unistd.h>
+#include <wayland-server.h>
+#include <xkbcommon/xkbcommon.h>
+
+struct velox velox;
+unsigned border_width = 2;
+
+static void new_window(struct swc_window * swc)
+{
+    struct window * window;
+
+    if (!(window = window_new(swc)))
+        return;
+}
+
+static void new_screen(struct swc_screen * swc)
+{
+    struct screen * screen, * existing_screen;
+
+    if (!(screen = screen_new(swc)))
+        return;
+
+    wl_list_for_each(existing_screen, &velox.screens, link)
+    {
+    }
+
+    velox.active_screen = screen;
+    wl_list_insert(&velox.screens, &screen->link);
+}
+
+const struct swc_manager manager = { &new_window, &new_screen };
+
+void manage(struct window * window)
+{
+    struct tag * tag;
+
+    /* TODO: Add support for rules to automatically assign a tag to certain
+     * windows. */
+
+    wl_list_insert(&velox.hidden_windows, &window->link);
+    tag = wl_container_of(velox.active_screen->tags.next, tag, link);
+    window_set_tag(window, tag);
+    if (window->tag->screen)
+        screen_set_focus(window->tag->screen, window);
+    update();
+}
+
+void unmanage(struct window * window)
+{
+    struct screen * screen = window->tag->screen;
+    window_set_tag(window, NULL);
+    wl_list_remove(&window->link);
+    if (screen)
+        screen_arrange(screen);
+}
+
+void arrange()
+{
+    struct screen * screen;
+
+    wl_list_for_each(screen, &velox.screens, link)
+        screen_arrange(screen);
+}
+
+void update()
+{
+    struct screen * screen;
+    struct window * window;
+
+    /* Arrange the windows first so that they aren't shown before they are the
+     * correct size. */
+    arrange();
+
+    wl_list_for_each(screen, &velox.screens, link)
+    {
+        wl_list_for_each(window, &screen->windows, link)
+        {
+            window_show(window);
+        }
+    }
+
+    wl_list_for_each(window, &velox.hidden_windows, link)
+        window_hide(window);
+}
+
+struct tag * next_tag(uint32_t * tags)
+{
+    unsigned index = __builtin_ffsl(*tags);
+    struct tag * tag;
+
+    if (index == 0)
+        return NULL;
+
+    tag = velox.tags[index - 1];
+    *tags &= ~tag->mask;
+
+    return tag;
+}
+
+struct tag * find_unused_tag()
+{
+    struct tag * tag;
+
+    if (wl_list_empty(&velox.unused_tags))
+        return NULL;
+
+    tag = wl_container_of(velox.unused_tags.next, tag, link);
+    return tag;
+}
+
+/**** Actions ****/
+static void focus_next(struct config_node * node)
+{
+    screen_focus_next(velox.active_screen);
+}
+
+static void focus_prev(struct config_node * node)
+{
+    screen_focus_prev(velox.active_screen);
+}
+
+static void zoom(struct config_node * node)
+{
+    struct screen * screen = velox.active_screen;
+    struct wl_list * link;
+
+    if (!screen->focus)
+        return;
+
+    /* Move the focus to the beginning of the window list, or if it is already
+     * there, the window after the focus. */
+    link = &screen->focus->link;
+
+    if (screen->windows.next == link)
+    {
+        if (link->next == &screen->windows)
+            return;
+
+        link = link->next;
+    }
+
+    wl_list_remove(link);
+    wl_list_insert(&screen->windows, link);
+    arrange();
+}
+
+static void kill_focused_window(struct config_node * node)
+{
+    /* TODO: Implement */
+}
+
+static void layout_next(struct config_node * node)
+{
+    struct screen * screen = velox.active_screen;
+    struct wl_list * link;
+
+    if ((link = screen->layout->link.next) == &screen->layouts)
+        link = link->next;
+    screen->layout = wl_container_of(link, screen->layout, link);
+    screen_arrange(screen);
+}
+
+static void quit(struct config_node * node)
+{
+    wl_display_terminate(velox.display);
+}
+
+static CONFIG_ACTION(focus_next, &focus_next);
+static CONFIG_ACTION(focus_prev, &focus_prev);
+static CONFIG_ACTION(zoom, &zoom);
+static CONFIG_ACTION(kill_focused_window, &kill_focused_window);
+static CONFIG_ACTION(layout_next, &layout_next);
+static CONFIG_ACTION(quit, &quit);
+
+static void add_config_nodes()
+{
+    wl_list_insert(config_root, &focus_next_action.link);
+    wl_list_insert(config_root, &focus_prev_action.link);
+    wl_list_insert(config_root, &zoom_action.link);
+    wl_list_insert(config_root, &kill_focused_window_action.link);
+    wl_list_insert(config_root, &layout_next_action.link);
+    wl_list_insert(config_root, &quit_action.link);
+
+    layout_add_config_nodes();
+    tag_add_config_nodes();
+    window_add_config_nodes();
+}
+
+int main(int argc, char * argv[])
+{
+    int index;
+    char tag_name[] = "1";
+
+    velox.display = wl_display_create();
+
+    if (!velox.display)
+        goto error0;
+
+    if (wl_display_add_socket(velox.display, NULL) != 0)
+        goto error1;
+
+    velox.event_loop = wl_display_get_event_loop(velox.display);
+    wl_list_init(&velox.screens);
+    wl_list_init(&velox.hidden_windows);
+    wl_list_init(&velox.unused_tags);
+    add_config_nodes();
+
+    for (index = 0; index < NUM_TAGS; ++index, ++tag_name[0])
+    {
+        if (!(velox.tags[index] = tag_new(index, tag_name)))
+            goto error2;
+    }
+
+    /* Mark tags as unused in reverse order, so that they are claimed in
+     * ascending order. */
+    for (index = NUM_TAGS - 1; index >= 0; --index)
+        tag_add(velox.tags[index], NULL);
+
+    if (!swc_initialize(velox.display, NULL, &manager))
+        goto error2;
+
+    if (!config_parse())
+        goto error2;
+
+    wl_display_run(velox.display);
+    swc_finalize();
+
+    return EXIT_SUCCESS;
+
+  error2:
+    while (index > 0)
+        tag_destroy(velox.tags[--index]);
+  error1:
+    wl_display_destroy(velox.display);
+  error0:
+    return EXIT_FAILURE;
+}
+

@@ -1,6 +1,0 @@
-Authors of velox
-================
-
-* Michael Forney <[mforney@mforney.org](mailto:mforney@mforney.org)>
-    - Main code
-
