@@ -39,6 +39,8 @@ struct velox
     struct wl_list hidden_windows;
     struct wl_list unused_tags;
     struct tag * tags[NUM_TAGS];
+
+    struct wl_global * global;
 };
 
 extern struct velox velox;

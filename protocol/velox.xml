@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <protocol name="velox">
+    <interface name="velox" version="1">
+        <enum name="error">
+            <entry name="invalid_screen" value="0"
+                   summary="the screen is invalid" />
+        </enum>
+
+        <request name="get_screen">
+            <arg name="screen" type="object" interface="swc_screen" />
+            <arg name="velox_screen" type="new_id" interface="velox_screen" />
+        </request>
+    </interface>
+
     <interface name="velox_screen" version="1">
         <event name="focus">
             <arg name="title" type="string" allow-null="true" />

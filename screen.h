@@ -51,7 +51,6 @@ struct screen
     unsigned num_windows;
     struct window * focus;
 
-    struct wl_global * global;
     struct wl_list resources;
 };
 
@@ -66,6 +65,10 @@ void screen_set_focus(struct screen * screen, struct window * window);
 
 void screen_add_windows(struct screen * screen);
 void screen_remove_windows(struct screen * screen);
+
+/* Wayland interface */
+struct wl_resource * screen_bind(struct screen * screen,
+                                 struct wl_client * client, uint32_t id);
 
 #endif
 

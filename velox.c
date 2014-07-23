@@ -27,6 +27,7 @@
 #include "screen.h"
 #include "tag.h"
 #include "window.h"
+#include "protocol/velox-server-protocol.h"
 
 #include <stdlib.h>
 #include <swc.h>
@@ -61,6 +62,31 @@ static void new_screen(struct swc_screen * swc)
 }
 
 const struct swc_manager manager = { &new_window, &new_screen };
+
+static void get_screen(struct wl_client * client, struct wl_resource * resource,
+                       struct wl_resource * screen_resource, uint32_t id)
+{
+    struct screen * screen;
+    struct swc_screen * swc_screen = wl_resource_get_user_data(screen_resource);
+
+    wl_list_for_each(screen, &velox.screens, link)
+    {
+        if (screen->swc == swc_screen)
+            goto found;
+    }
+
+    wl_resource_post_error(resource, VELOX_ERROR_INVALID_SCREEN,
+                           "Invalid screen resource");
+    return;
+
+  found:
+    if (!screen_bind(screen, client, id))
+        wl_client_post_no_memory(client);
+}
+
+static const struct velox_interface velox_implementation = {
+    .get_screen = &get_screen,
+};
 
 void manage(struct window * window)
 {
@@ -218,6 +244,23 @@ static void add_config_nodes()
     window_add_config_nodes();
 }
 
+static void bind_velox(struct wl_client * client, void * data,
+                       uint32_t version, uint32_t id)
+{
+    struct wl_resource * resource;
+
+    if (version >= 1)
+        version = 1;
+
+    if (!(resource = wl_resource_create(client, &velox_interface, version, id)))
+    {
+        wl_client_post_no_memory(client);
+        return;
+    }
+
+    wl_resource_set_implementation(resource, &velox_implementation, NULL, NULL);
+}
+
 int main(int argc, char * argv[])
 {
     int index;
@@ -229,6 +272,12 @@ int main(int argc, char * argv[])
         goto error0;
 
     if (wl_display_add_socket(velox.display, NULL) != 0)
+        goto error1;
+
+    velox.global = wl_global_create(velox.display, &velox_interface, 1, NULL,
+                                    &bind_velox);
+
+    if (!velox.global)
         goto error1;
 
     velox.event_loop = wl_display_get_event_loop(velox.display);
@@ -262,6 +311,7 @@ int main(int argc, char * argv[])
   error2:
     while (index > 0)
         tag_destroy(velox.tags[--index]);
+    wl_global_destroy(velox.global);
   error1:
     wl_display_destroy(velox.display);
   error0:

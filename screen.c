@@ -76,28 +76,6 @@ static void send_focus(struct screen * screen, struct wl_resource * resource)
                                                     : NULL);
 }
 
-static void bind_screen(struct wl_client * client, void * data,
-                     uint32_t version, uint32_t id)
-{
-    struct screen * screen = data;
-    struct wl_resource * resource;
-
-    if (version >= 1)
-        version = 1;
-
-    resource = wl_resource_create(client, &velox_screen_interface, version, id);
-
-    if (!resource)
-    {
-        wl_client_post_no_memory(client);
-        return;
-    }
-
-    wl_resource_set_destructor(resource, &remove_resource);
-    wl_list_insert(&screen->resources, wl_resource_get_link(resource));
-    send_focus(screen, resource);
-}
-
 struct screen * screen_new(struct swc_screen * swc)
 {
     struct screen * screen;
@@ -108,18 +86,11 @@ struct screen * screen_new(struct swc_screen * swc)
     if (!(screen = malloc(sizeof *screen)))
         goto error0;
 
-    wl_list_init(&screen->resources);
-    screen->global = wl_global_create(velox.display, &velox_screen_interface, 1,
-                                      screen, &bind_screen);
-
-    if (!screen->global)
-        goto error1;
-
     wl_list_init(&screen->layouts);
     for (index = 0; index < ARRAY_LENGTH(default_layouts); ++index)
     {
         if (!(layout = default_layouts[index]()))
-            goto error2;
+            goto error1;
         wl_list_insert(screen->layouts.prev, &layout->link);
     }
     screen->layout = wl_container_of(screen->layouts.next, layout, link);
@@ -136,14 +107,13 @@ struct screen * screen_new(struct swc_screen * swc)
     screen->swc = swc;
     screen->event_listener.notify = &screen_event;
     wl_signal_add(&swc->event_signal, &screen->event_listener);
+    wl_list_init(&screen->resources);
 
     return screen;
 
-  error2:
+  error1:
     wl_list_for_each_safe(layout, tmp, &screen->layouts, link)
         free(layout);
-  error1:
-    wl_global_destroy(screen->global);
   error0:
     return NULL;
 }
@@ -308,5 +278,22 @@ void screen_set_tags(struct screen * screen, uint32_t mask)
     while ((tag = next_tag(&added)))
         tag_add(tag, screen);
     screen_add_windows(screen);
+}
+
+struct wl_resource * screen_bind(struct screen * screen,
+                                 struct wl_client * client, uint32_t id)
+{
+    struct wl_resource * resource;
+
+    resource = wl_resource_create(client, &velox_screen_interface, 1, id);
+
+    if (!resource)
+        return NULL;
+
+    wl_list_insert(&screen->resources, wl_resource_get_link(resource));
+    wl_resource_set_destructor(resource, &remove_resource);
+    send_focus(screen, resource);
+
+    return resource;
 }
 
