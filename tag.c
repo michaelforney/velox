@@ -108,6 +108,7 @@ static void bind_tag(struct wl_client * client, void * data,
     wl_resource_set_destructor(resource, &remove_resource);
     wl_list_insert(&tag->resources, wl_resource_get_link(resource));
     velox_tag_send_name(resource, tag->name);
+    tag_send_screen(tag, client, resource, NULL);
 }
 
 struct tag * tag_new(unsigned index, const char * name)
@@ -173,7 +174,7 @@ void tag_destroy(struct tag * tag)
 
 void tag_add(struct tag * tag, struct screen * screen)
 {
-    struct wl_resource * resource, * screen_resource;
+    struct wl_resource * resource;
 
     assert(tag->screen == NULL);
 
@@ -188,13 +189,7 @@ void tag_add(struct tag * tag, struct screen * screen)
     }
 
     wl_resource_for_each(resource, &tag->resources)
-    {
-        screen_resource = tag->screen
-            ? wl_resource_find_for_client(&tag->screen->resources,
-                                          wl_resource_get_client(resource))
-            : NULL;
-        velox_tag_send_screen(resource, screen_resource);
-    }
+        tag_send_screen(tag, wl_resource_get_client(resource), resource, NULL);
 }
 
 void tag_remove(struct tag * tag, struct screen * screen)
@@ -217,5 +212,22 @@ void tag_set(struct tag * tag, struct screen * screen)
 
     tag_remove(tag, tag->screen);
     tag_add(tag, screen);
+}
+
+void tag_send_screen(struct tag * tag, struct wl_client * client,
+                     struct wl_resource * tag_resource,
+                     struct wl_resource * screen_resource)
+{
+    if (!tag_resource)
+        tag_resource = wl_resource_find_for_client(&tag->resources, client);
+
+    if (!screen_resource)
+    {
+        screen_resource = tag->screen
+            ? wl_resource_find_for_client(&tag->screen->resources, client)
+            : NULL;
+    }
+
+    velox_tag_send_screen(tag_resource, screen_resource);
 }
 

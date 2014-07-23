@@ -284,6 +284,7 @@ struct wl_resource * screen_bind(struct screen * screen,
                                  struct wl_client * client, uint32_t id)
 {
     struct wl_resource * resource;
+    struct tag * tag;
 
     resource = wl_resource_create(client, &velox_screen_interface, 1, id);
 
@@ -293,6 +294,9 @@ struct wl_resource * screen_bind(struct screen * screen,
     wl_list_insert(&screen->resources, wl_resource_get_link(resource));
     wl_resource_set_destructor(resource, &remove_resource);
     send_focus(screen, resource);
+
+    wl_list_for_each(tag, &screen->tags, link)
+        tag_send_screen(tag, client, NULL, resource);
 
     return resource;
 }

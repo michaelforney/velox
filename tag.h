@@ -76,5 +76,15 @@ void tag_remove(struct tag * tag, struct screen * screen);
  */
 void tag_set(struct tag * tag, struct screen * screen);
 
+/**
+ * Send a screen event for this tag.
+ *
+ * Either tag_resource, screen_resource, or both may be NULL in which case the
+ * correct resource is found using client.
+ */
+void tag_send_screen(struct tag * tag, struct wl_client * client,
+                     struct wl_resource * tag_resource,
+                     struct wl_resource * screen_resource);
+
 #endif
 
