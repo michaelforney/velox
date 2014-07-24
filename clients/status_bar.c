@@ -574,6 +574,7 @@ static void run()
         {
             wl_list_for_each(screen, &screens, link)
                 draw(&screen->status_bar);
+            need_draw = false;
         }
 
         wl_display_flush(display);
