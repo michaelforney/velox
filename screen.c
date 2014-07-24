@@ -301,3 +301,11 @@ struct wl_resource * screen_bind(struct screen * screen,
     return resource;
 }
 
+void screen_focus_title_notify(struct screen * screen)
+{
+    struct wl_resource * resource;
+
+    wl_resource_for_each(resource, &screen->resources)
+        send_focus(screen, resource);
+}
+

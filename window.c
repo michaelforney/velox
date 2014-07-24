@@ -117,6 +117,12 @@ static void window_event(struct wl_listener * listener, void * data)
                 unmanage(window);
             free(window);
             break;
+        case SWC_WINDOW_TITLE_CHANGED:
+            /* If this window focused on a screen, make sure bound clients are
+             * aware of this title change. */
+            if (window->tag->screen && window->tag->screen->focus == window)
+                screen_focus_title_notify(window->tag->screen);
+            break;
         case SWC_WINDOW_STATE_CHANGED:
             if (window->swc->state)
                 manage(window);
