@@ -14,7 +14,7 @@ VERSION_MINOR   := 1
 VERSION         := $(VERSION_MAJOR).$(VERSION_MINOR)
 
 TARGETS         := velox.pc velox
-SUBDIRS         := protocol
+SUBDIRS         := protocol clients
 CLEAN_FILES     := $(TARGETS)
 
 VELOX_PACKAGES  = swc xkbcommon
