@@ -186,7 +186,7 @@ static const struct style selected = { .bg = 0xff338833, .fg = 0xffffffff };
 
 static bool running, need_draw;
 static char clock_text[32];
-static struct item_data divider_data = { .width = spacing + 2 };
+static struct item_data divider_data = { .width = 14 };
 static struct text_item_data clock_data = { .text = clock_text };
 
 static void __attribute__((noreturn)) die(const char * const format, ...)
