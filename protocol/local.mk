@@ -6,6 +6,8 @@ PROTOCOL_EXTENSIONS =                                       \
     $(dir)/velox.xml                                        \
     $(call pkgconfig,swc,variable=datadir,DATADIR)/swc.xml
 
+$(dir)_PACKAGES = wayland-server
+
 protocol = $(foreach extension,$(1),protocol/$(extension)-protocol.o)
 client_protocol = $(foreach extension,$(1),protocol/$(extension)-client-protocol.h)
 
