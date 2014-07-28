@@ -412,7 +412,7 @@ static void draw(struct status_bar * bar)
     wl_surface_damage(bar->surface, 0, 0, bar->width, bar->height);
     wld_flush(wld.renderer);
     wld_swap(bar->wld_surface);
-};
+}
 
 static void setup()
 {
@@ -606,7 +606,7 @@ static void cleanup()
     fprintf(stderr, "done\n");
 }
 
-int main(int argc, const char * argv[])
+int main(int argc, char * argv[])
 {
     setup();
     run();
