@@ -3,6 +3,9 @@
 .PHONY: build-$(dir)
 build-$(dir): $($(dir)_TARGETS)
 
+.PHONY: install-$(dir)
+install-$(dir):
+
 .deps/$(dir): | .deps
 	@mkdir "$@"
 

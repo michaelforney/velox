@@ -6,6 +6,7 @@ PREFIX          ?= /usr/local
 BINDIR          ?= $(PREFIX)/bin
 DATADIR         ?= $(PREFIX)/share
 LIBDIR          ?= $(PREFIX)/lib
+LIBEXECDIR      ?= $(PREFIX)/libexec
 PKGCONFIGDIR    ?= $(LIBDIR)/pkgconfig
 
 PKG_CONFIG      ?= pkg-config
@@ -93,11 +94,13 @@ velox.pc: velox.pc.in
 	    -e "s:@DATADIR@:$(DATADIR):"    \
 	    $< > $@
 
-$(foreach dir,BIN PKGCONFIG,$(DESTDIR)$($(dir)DIR)) $(DESTDIR)$(DATADIR)/velox:
+$(foreach dir,BIN PKGCONFIG,$(DESTDIR)$($(dir)DIR)) \
+$(foreach dir,DATA LIBEXEC,$(DESTDIR)$($(dir)DIR)/velox):
 	mkdir -p $@
 
 .PHONY: install
-install: $(TARGETS) | $(DESTDIR)$(BINDIR) $(DESTDIR)$(PKGCONFIGDIR)
+install: $(SUBDIRS:%=install-%) $(TARGETS) \
+       | $(DESTDIR)$(BINDIR) $(DESTDIR)$(PKGCONFIGDIR)
 	install -m 755 velox $(DESTDIR)$(BINDIR)
 	install -m 644 velox.pc $(DESTDIR)$(PKGCONFIGDIR)
 
