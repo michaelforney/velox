@@ -28,7 +28,7 @@ endef
 $(eval $(foreach extension,$(PROTOCOL_EXTENSIONS),$(call protocol_rules,$(extension))))
 
 install-$(dir): | $(DESTDIR)$(DATADIR)/velox
-	install -m0644 protocol/velox.xml "$(DESTDIR)$(DATADIR)/velox"
+	install -m 644 protocol/velox.xml $(DESTDIR)$(DATADIR)/velox
 
 include common.mk
 

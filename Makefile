@@ -74,7 +74,7 @@ include $(foreach dir,$(SUBDIRS),$(dir)/local.mk)
 build: $(SUBDIRS:%=build-%) $(TARGETS)
 
 .deps:
-	@mkdir "$@"
+	@mkdir $@
 
 %.o: %.c | .deps
 	$(compile) $(VELOX_PACKAGE_CFLAGS)
@@ -92,12 +92,12 @@ velox.pc: velox.pc.in
 	    $< > $@
 
 $(DESTDIR)$(PKGCONFIGDIR):
-	mkdir -p "$@"
+	mkdir -p $@
 
 .PHONY: install
 install: $(TARGETS) | $(DESTDIR)$(PKGCONFIGDIR)
-	install -m0644 velox.pc "$(DESTDIR)$(PKGCONFIGDIR)"
-	install -m0755 velox "$(DESTDIR)$(BINDIR)"
+	install -m 644 velox.pc $(DESTDIR)$(PKGCONFIGDIR)
+	install -m 755 velox $(DESTDIR)$(BINDIR)
 
 .PHONY: clean
 clean:
