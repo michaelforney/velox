@@ -6,8 +6,10 @@ build-$(dir): $($(dir)_TARGETS)
 .deps/$(dir): | .deps
 	@mkdir "$@"
 
+$(dir)/%: dir := $(dir)
+
 $(dir)/%.o: $(dir)/%.c | .deps/$(dir)
-	$(compile) -I. $($(@D)_PACKAGE_CFLAGS)
+	$(compile) -I. $($(dir)_PACKAGE_CFLAGS)
 
 ifdef $(dir)_PACKAGES
     ifndef $(dir)_PACKAGE_CFLAGS
