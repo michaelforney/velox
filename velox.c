@@ -30,6 +30,7 @@
 #include "protocol/velox-server-protocol.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <swc.h>
 #include <unistd.h>
 #include <wayland-server.h>
@@ -244,6 +245,23 @@ static void add_config_nodes()
     window_add_config_nodes();
 }
 
+static void start_clients()
+{
+    const char * dir, * status_bar = "status_bar";
+
+    if (!(dir = getenv("VELOX_LIBEXEC")))
+        dir = VELOX_LIBEXEC;
+
+    char status_bar_path[strlen(dir) + 1 + strlen(status_bar) + 1];
+    sprintf(status_bar_path, "%s/%s", dir, status_bar);
+
+    if (fork() == 0)
+    {
+        execl(status_bar_path, status_bar);
+        exit(EXIT_FAILURE);
+    }
+}
+
 static void bind_velox(struct wl_client * client, void * data,
                        uint32_t version, uint32_t id)
 {
@@ -302,6 +320,8 @@ int main(int argc, char * argv[])
 
     if (!config_parse())
         goto error2;
+
+    start_clients();
 
     wl_display_run(velox.display);
     swc_finalize();
