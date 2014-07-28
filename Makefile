@@ -3,6 +3,8 @@
 include config.mk
 
 PREFIX          ?= /usr/local
+BINDIR          ?= $(PREFIX)/bin
+DATADIR         ?= $(PREFIX)/share
 LIBDIR          ?= $(PREFIX)/lib
 PKGCONFIGDIR    ?= $(LIBDIR)/pkgconfig
 
@@ -91,13 +93,13 @@ velox.pc: velox.pc.in
 	    -e "s:@DATADIR@:$(DATADIR):"    \
 	    $< > $@
 
-$(DESTDIR)$(PKGCONFIGDIR):
+$(foreach dir,BIN PKGCONFIG,$(DESTDIR)$($(dir)DIR)) $(DESTDIR)$(DATADIR)/velox:
 	mkdir -p $@
 
 .PHONY: install
-install: $(TARGETS) | $(DESTDIR)$(PKGCONFIGDIR)
-	install -m 644 velox.pc $(DESTDIR)$(PKGCONFIGDIR)
+install: $(TARGETS) | $(DESTDIR)$(BINDIR) $(DESTDIR)$(PKGCONFIGDIR)
 	install -m 755 velox $(DESTDIR)$(BINDIR)
+	install -m 644 velox.pc $(DESTDIR)$(PKGCONFIGDIR)
 
 .PHONY: clean
 clean:
