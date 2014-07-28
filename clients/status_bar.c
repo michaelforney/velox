@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <poll.h>
-#include <sys/time.h>
 #include <sys/signalfd.h>
 #include <time.h>
 #include <wayland-client.h>
@@ -184,6 +183,7 @@ static const char * const font_name = "Terminus:pixelsize=14";
 static const struct style normal = { .bg = 0xff1a1a1a, .fg = 0xff999999 };
 static const struct style selected = { .bg = 0xff338833, .fg = 0xffffffff };
 
+static timer_t timer;
 static bool running, need_draw;
 static char clock_text[32];
 static struct item_data divider_data = { .width = 14 };
@@ -427,6 +427,9 @@ static void setup()
     wl_list_init(&screens);
     wl_list_init(&tags);
 
+    if (timer_create(CLOCK_MONOTONIC, NULL, &timer) != 0)
+        die("Failed to create timer: %s", strerror(errno));
+
     if (!(display = wl_display_connect(NULL)))
         die("Failed to connect to display");
 
@@ -526,7 +529,7 @@ static void setup()
 static void run()
 {
     sigset_t signals;
-    struct itimerval timer = {
+    struct itimerspec timer_value = {
         .it_interval = { 1, 0 },
         .it_value = { 0, 1 }
     };
@@ -542,7 +545,7 @@ static void run()
     fds[1].fd = signalfd(-1, &signals, SFD_CLOEXEC);
     fds[1].events = POLLIN;
 
-    setitimer(ITIMER_REAL, &timer, NULL);
+    timer_settime(timer, 0, &timer_value, NULL);
     running = true;
 
     while (true)
