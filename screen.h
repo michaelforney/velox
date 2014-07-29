@@ -42,7 +42,7 @@ struct screen
     struct wl_list link;
 
     struct wl_list tags;
-    uint32_t mask;
+    uint32_t mask, last_mask;
 
     struct wl_list layouts;
     struct layout * layout;

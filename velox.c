@@ -219,6 +219,15 @@ static void layout_next(struct config_node * node)
     screen_arrange(screen);
 }
 
+static void previous_tags(struct config_node * node)
+{
+    uint32_t mask = velox.active_screen->last_mask;
+
+    velox.active_screen->last_mask = velox.active_screen->mask;
+    screen_set_tags(velox.active_screen, mask);
+    update();
+}
+
 static void quit(struct config_node * node)
 {
     wl_display_terminate(velox.display);
@@ -229,6 +238,7 @@ static CONFIG_ACTION(focus_prev, &focus_prev);
 static CONFIG_ACTION(zoom, &zoom);
 static CONFIG_ACTION(kill_focused_window, &kill_focused_window);
 static CONFIG_ACTION(layout_next, &layout_next);
+static CONFIG_ACTION(previous_tags, &previous_tags);
 static CONFIG_ACTION(quit, &quit);
 
 static void add_config_nodes()
@@ -238,6 +248,7 @@ static void add_config_nodes()
     wl_list_insert(config_root, &zoom_action.link);
     wl_list_insert(config_root, &kill_focused_window_action.link);
     wl_list_insert(config_root, &layout_next_action.link);
+    wl_list_insert(config_root, &previous_tags_action.link);
     wl_list_insert(config_root, &quit_action.link);
 
     layout_add_config_nodes();

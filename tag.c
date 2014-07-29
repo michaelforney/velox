@@ -65,6 +65,7 @@ static void activate(struct config_node * node)
     struct tag * tag = wl_container_of(node, tag, config.activate);
     struct screen * screen = velox.active_screen;
 
+    screen->last_mask = screen->mask;
     screen_set_tags(screen, tag->mask);
     update();
 }

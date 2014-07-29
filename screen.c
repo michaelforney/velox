@@ -99,6 +99,7 @@ struct screen * screen_new(struct swc_screen * swc)
     screen->mask = 0;
     if ((tag = find_unused_tag()))
         tag_set(tag, screen);
+    screen->last_mask = screen->mask;
 
     wl_list_init(&screen->windows);
     screen->num_windows = 0;
