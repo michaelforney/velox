@@ -330,7 +330,7 @@ int main(int argc, char * argv[])
         goto error2;
 
     if (!config_parse())
-        goto error2;
+        goto error3;
 
     start_clients();
 
@@ -339,6 +339,8 @@ int main(int argc, char * argv[])
 
     return EXIT_SUCCESS;
 
+  error3:
+    swc_finalize();
   error2:
     while (index > 0)
         tag_destroy(velox.tags[--index]);
