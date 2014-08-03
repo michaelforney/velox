@@ -268,7 +268,7 @@ static void start_clients()
 
     if (fork() == 0)
     {
-        execl(status_bar_path, status_bar);
+        execl(status_bar_path, status_bar, NULL);
         exit(EXIT_FAILURE);
     }
 }
