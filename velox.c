@@ -203,9 +203,10 @@ static void zoom(struct config_node * node)
     arrange();
 }
 
-static void kill_focused_window(struct config_node * node)
+static void close_focused_window(struct config_node * node)
 {
-    /* TODO: Implement */
+    if (velox.active_screen->focus)
+        swc_window_close(velox.active_screen->focus->swc);
 }
 
 static void layout_next(struct config_node * node)
@@ -236,7 +237,7 @@ static void quit(struct config_node * node)
 static CONFIG_ACTION(focus_next, &focus_next);
 static CONFIG_ACTION(focus_prev, &focus_prev);
 static CONFIG_ACTION(zoom, &zoom);
-static CONFIG_ACTION(kill_focused_window, &kill_focused_window);
+static CONFIG_ACTION(close_focused_window, &close_focused_window);
 static CONFIG_ACTION(layout_next, &layout_next);
 static CONFIG_ACTION(previous_tags, &previous_tags);
 static CONFIG_ACTION(quit, &quit);
@@ -246,7 +247,7 @@ static void add_config_nodes()
     wl_list_insert(config_root, &focus_next_action.link);
     wl_list_insert(config_root, &focus_prev_action.link);
     wl_list_insert(config_root, &zoom_action.link);
-    wl_list_insert(config_root, &kill_focused_window_action.link);
+    wl_list_insert(config_root, &close_focused_window_action.link);
     wl_list_insert(config_root, &layout_next_action.link);
     wl_list_insert(config_root, &previous_tags_action.link);
     wl_list_insert(config_root, &quit_action.link);

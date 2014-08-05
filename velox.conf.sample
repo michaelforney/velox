@@ -24,7 +24,7 @@ action spawn_run        spawn   dmenu_run-wl -b -fn Terminus:pixelsize=14 -nb "#
 key j           mod                 focus_next
 key k           mod                 focus_prev
 key Return      mod                 zoom
-key c           mod,shift           kill_focused_window
+key c           mod,shift           close_focused_window
 key space       mod                 layout_next
 key Tab         mod                 previous_tags
 key q           mod,shift           quit
