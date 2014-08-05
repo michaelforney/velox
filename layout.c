@@ -31,10 +31,12 @@
 #include <swc.h>
 #include <sys/param.h>
 
+const unsigned master_max = 16;
+
 struct tile_layout
 {
     struct layout base;
-    uint8_t master_size;
+    unsigned master_size;
     unsigned num_masters, num_columns;
 };
 
@@ -110,7 +112,7 @@ static void tile_arrange(struct layout * base, struct screen * screen,
 
     if (screen->num_windows > layout->num_masters)
     {
-        master_width = area->width * layout->master_size / UINT8_MAX;
+        master_width = area->width * layout->master_size / master_max;
         grid_width = area->width - master_width;
     }
     else
@@ -167,7 +169,7 @@ void increase_master_size(struct config_node * node)
 
     if (layout)
     {
-        layout->master_size = MIN(layout->master_size + 16, UINT8_MAX);
+        layout->master_size = MIN(layout->master_size + 1, master_max);
         arrange();
     }
 }
@@ -178,7 +180,7 @@ void decrease_master_size(struct config_node * node)
 
     if (layout)
     {
-        layout->master_size = MAX(layout->master_size - 16, 0);
+        layout->master_size = MAX(layout->master_size - 1, 0);
         arrange();
     }
 }
@@ -235,7 +237,7 @@ struct layout * tile_layout_new()
         goto error0;
 
     layout->base.arrange = &tile_arrange;
-    layout->master_size = UINT8_MAX / 2;
+    layout->master_size = master_max / 2;
     layout->num_masters = 1;
     layout->num_columns = 1;
 
