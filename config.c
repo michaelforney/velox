@@ -149,6 +149,7 @@ static void spawn(struct config_node * node)
 
     if (fork() == 0)
     {
+        close(0); close(1); close(2);
         execl("/bin/sh", "sh", "-c", action->command, NULL);
         exit(EXIT_FAILURE);
     }
