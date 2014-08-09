@@ -39,14 +39,6 @@
 struct velox velox;
 unsigned border_width = 2;
 
-static void new_window(struct swc_window * swc)
-{
-    struct window * window;
-
-    if (!(window = window_new(swc)))
-        return;
-}
-
 static void new_screen(struct swc_screen * swc)
 {
     struct screen * screen;
@@ -58,7 +50,18 @@ static void new_screen(struct swc_screen * swc)
     wl_list_insert(&velox.screens, &screen->link);
 }
 
-const struct swc_manager manager = { &new_window, &new_screen };
+static void new_window(struct swc_window * swc)
+{
+    struct window * window;
+
+    if (!(window = window_new(swc)))
+        return;
+}
+
+const struct swc_manager manager = {
+    .new_screen = &new_screen,
+    .new_window = &new_window,
+};
 
 static void get_screen(struct wl_client * client, struct wl_resource * resource,
                        struct wl_resource * screen_resource, uint32_t id)
