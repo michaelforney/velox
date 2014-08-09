@@ -49,14 +49,10 @@ static void new_window(struct swc_window * swc)
 
 static void new_screen(struct swc_screen * swc)
 {
-    struct screen * screen, * existing_screen;
+    struct screen * screen;
 
     if (!(screen = screen_new(swc)))
         return;
-
-    wl_list_for_each(existing_screen, &velox.screens, link)
-    {
-    }
 
     velox.active_screen = screen;
     wl_list_insert(&velox.screens, &screen->link);
