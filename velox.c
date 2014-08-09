@@ -132,9 +132,7 @@ void update()
     wl_list_for_each(screen, &velox.screens, link)
     {
         wl_list_for_each(window, &screen->windows, link)
-        {
             window_show(window);
-        }
     }
 
     wl_list_for_each(window, &velox.hidden_windows, link)
