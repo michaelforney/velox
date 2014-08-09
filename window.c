@@ -156,7 +156,7 @@ struct window * window_new(struct swc_window * swc)
     window->tag = NULL;
     wl_signal_add(&swc->event_signal, &window->event_listener);
 
-    return NULL;
+    return window;
 }
 
 void window_set_tag(struct window * window, struct tag * tag)
