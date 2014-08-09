@@ -56,6 +56,8 @@ static void new_window(struct swc_window * swc)
 
     if (!(window = window_new(swc)))
         return;
+
+    manage(window);
 }
 
 const struct swc_manager manager = {

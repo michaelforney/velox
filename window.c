@@ -113,30 +113,19 @@ static void window_event(struct wl_listener * listener, void * data)
     switch (event->type)
     {
         case SWC_WINDOW_DESTROYED:
-            if (window->swc->state)
-                unmanage(window);
+            unmanage(window);
+            wl_list_remove(&window->event_listener.link);
             free(window);
             break;
         case SWC_WINDOW_TITLE_CHANGED:
-            if (!window->swc->state)
-                return;
             /* If this window focused on a screen, make sure bound clients are
              * aware of this title change. */
             if (window->tag->screen && window->tag->screen->focus == window)
                 screen_focus_title_notify(window->tag->screen);
             break;
-        case SWC_WINDOW_STATE_CHANGED:
-            if (window->swc->state)
-                manage(window);
-            else
-                unmanage(window);
-            break;
         case SWC_WINDOW_ENTERED:
-            if (window->swc->state)
-            {
-                window_focus(window);
-                window->tag->screen->focus = window;
-            }
+            window_focus(window);
+            window->tag->screen->focus = window;
             break;
         case SWC_WINDOW_PARENT_CHANGED:
             /* TODO: Implement */
