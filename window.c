@@ -103,35 +103,43 @@ void window_add_config_nodes()
     wl_list_insert(config_root, &window_group.link);
 }
 
-static void window_event(struct wl_listener * listener, void * data)
+static void destroy(void * data)
 {
-    struct swc_event * event = data;
-    struct window * window;
+    struct window * window = data;
 
-    window = wl_container_of(listener, window, event_listener);
-
-    switch (event->type)
-    {
-        case SWC_WINDOW_DESTROYED:
-            unmanage(window);
-            wl_list_remove(&window->event_listener.link);
-            free(window);
-            break;
-        case SWC_WINDOW_TITLE_CHANGED:
-            /* If this window focused on a screen, make sure bound clients are
-             * aware of this title change. */
-            if (window->tag->screen && window->tag->screen->focus == window)
-                screen_focus_title_notify(window->tag->screen);
-            break;
-        case SWC_WINDOW_ENTERED:
-            window_focus(window);
-            window->tag->screen->focus = window;
-            break;
-        case SWC_WINDOW_PARENT_CHANGED:
-            /* TODO: Implement */
-            break;
-    }
+    unmanage(window);
+    free(window);
 }
+
+static void title_changed(void * data)
+{
+    struct window * window = data;
+
+    /* If this window focused on a screen, make sure bound clients are
+     * aware of this title change. */
+    if (window->tag->screen && window->tag->screen->focus == window)
+        screen_focus_title_notify(window->tag->screen);
+}
+
+static void parent_changed(void * data)
+{
+    /* TODO: Implement */
+}
+
+static void entered(void * data)
+{
+    struct window * window = data;
+
+    window_focus(window);
+    window->tag->screen->focus = window;
+}
+
+static const struct swc_window_handler window_handler = {
+    .destroy = &destroy,
+    .title_changed = &title_changed,
+    .parent_changed = &parent_changed,
+    .entered = &entered,
+};
 
 struct window * window_new(struct swc_window * swc)
 {
@@ -141,9 +149,8 @@ struct window * window_new(struct swc_window * swc)
         return NULL;
 
     window->swc = swc;
-    window->event_listener.notify = &window_event;
     window->tag = NULL;
-    wl_signal_add(&swc->event_signal, &window->event_listener);
+    swc_window_set_handler(swc, &window_handler, window);
 
     return window;
 }

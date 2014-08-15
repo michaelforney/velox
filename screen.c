@@ -37,20 +37,17 @@ static struct layout * (* default_layouts[])() = {
     &grid_layout_new,
 };
 
-static void screen_event(struct wl_listener * listener, void * data)
+static void usable_geometry_changed(void * data)
 {
-    struct swc_event * event = data;
-    struct screen * screen = NULL;
+    struct screen * screen = data;
 
-    screen = wl_container_of(listener, screen, event_listener);
-
-    switch (event->type)
-    {
-        case SWC_SCREEN_USABLE_GEOMETRY_CHANGED:
-            screen_arrange(screen);
-            break;
-    }
+    screen_arrange(screen);
 }
+
+
+static const struct swc_screen_handler screen_handler = {
+    .usable_geometry_changed = &usable_geometry_changed,
+};
 
 static void add_window(struct screen * screen, struct window * window)
 {
@@ -106,9 +103,8 @@ struct screen * screen_new(struct swc_screen * swc)
     screen->focus = NULL;
 
     screen->swc = swc;
-    screen->event_listener.notify = &screen_event;
-    wl_signal_add(&swc->event_signal, &screen->event_listener);
     wl_list_init(&screen->resources);
+    swc_screen_set_handler(swc, &screen_handler, screen);
 
     return screen;
 
