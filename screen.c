@@ -44,9 +44,17 @@ static void usable_geometry_changed(void * data)
     screen_arrange(screen);
 }
 
+static void entered(void * data)
+{
+    struct screen * screen = data;
+
+    velox.active_screen = screen;
+    window_focus(screen->focus);
+}
 
 static const struct swc_screen_handler screen_handler = {
     .usable_geometry_changed = &usable_geometry_changed,
+    .entered = &entered,
 };
 
 static void add_window(struct screen * screen, struct window * window)
