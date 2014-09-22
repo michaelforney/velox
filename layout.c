@@ -33,7 +33,7 @@
 
 const unsigned master_max = 16;
 
-struct tile_layout
+struct tall_layout
 {
     struct layout base;
     unsigned master_size;
@@ -56,9 +56,9 @@ static struct
                            increase_num_masters, decrease_num_masters,
                            increase_num_columns, decrease_num_columns;
     } config;
-} tile = {
+} tall = {
     .config = {
-        { "tile", CONFIG_NODE_TYPE_GROUP },
+        { "tall", CONFIG_NODE_TYPE_GROUP },
         { "increase_master_size", CONFIG_NODE_TYPE_ACTION,
             { .action.run = &increase_master_size } },
         { "decrease_master_size", CONFIG_NODE_TYPE_ACTION,
@@ -76,27 +76,27 @@ static struct
 
 void layout_add_config_nodes()
 {
-    wl_list_init(&tile.config.group.group);
-    wl_list_insert(&tile.config.group.group,
-                   &tile.config.increase_master_size.link);
-    wl_list_insert(&tile.config.group.group,
-                   &tile.config.decrease_master_size.link);
-    wl_list_insert(&tile.config.group.group,
-                   &tile.config.increase_num_masters.link);
-    wl_list_insert(&tile.config.group.group,
-                   &tile.config.decrease_num_masters.link);
-    wl_list_insert(&tile.config.group.group,
-                   &tile.config.increase_num_columns.link);
-    wl_list_insert(&tile.config.group.group,
-                   &tile.config.decrease_num_columns.link);
-    wl_list_insert(config_root, &tile.config.group.link);
+    wl_list_init(&tall.config.group.group);
+    wl_list_insert(&tall.config.group.group,
+                   &tall.config.increase_master_size.link);
+    wl_list_insert(&tall.config.group.group,
+                   &tall.config.decrease_master_size.link);
+    wl_list_insert(&tall.config.group.group,
+                   &tall.config.increase_num_masters.link);
+    wl_list_insert(&tall.config.group.group,
+                   &tall.config.decrease_num_masters.link);
+    wl_list_insert(&tall.config.group.group,
+                   &tall.config.increase_num_columns.link);
+    wl_list_insert(&tall.config.group.group,
+                   &tall.config.decrease_num_columns.link);
+    wl_list_insert(config_root, &tall.config.group.link);
 }
 
-/* Tile layout */
-static void tile_arrange(struct layout * base, struct screen * screen,
+/* Tall layout */
+static void tall_arrange(struct layout * base, struct screen * screen,
                          const struct swc_rectangle * area)
 {
-    struct tile_layout * layout = (void *) base;
+    struct tall_layout * layout = (void *) base;
     struct window * window;
     struct swc_rectangle window_area;
     unsigned num_masters, num_grids, num_rows, num_columns,
@@ -156,16 +156,16 @@ static void tile_arrange(struct layout * base, struct screen * screen,
     }
 }
 
-static struct tile_layout * tile_layout(struct layout * base)
+static struct tall_layout * tall_layout(struct layout * base)
 {
-    if (base->arrange != &tile_arrange)
+    if (base->arrange != &tall_arrange)
         return NULL;
     return (void *) base;
 }
 
 void increase_master_size(struct config_node * node)
 {
-    struct tile_layout * layout = tile_layout(velox.active_screen->layout);
+    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
 
     if (layout)
     {
@@ -176,7 +176,7 @@ void increase_master_size(struct config_node * node)
 
 void decrease_master_size(struct config_node * node)
 {
-    struct tile_layout * layout = tile_layout(velox.active_screen->layout);
+    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
 
     if (layout)
     {
@@ -187,7 +187,7 @@ void decrease_master_size(struct config_node * node)
 
 void increase_num_masters(struct config_node * node)
 {
-    struct tile_layout * layout = tile_layout(velox.active_screen->layout);
+    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
 
     if (layout)
     {
@@ -198,7 +198,7 @@ void increase_num_masters(struct config_node * node)
 
 void decrease_num_masters(struct config_node * node)
 {
-    struct tile_layout * layout = tile_layout(velox.active_screen->layout);
+    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
 
     if (layout)
     {
@@ -209,7 +209,7 @@ void decrease_num_masters(struct config_node * node)
 
 void increase_num_columns(struct config_node * node)
 {
-    struct tile_layout * layout = tile_layout(velox.active_screen->layout);
+    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
 
     if (layout)
     {
@@ -220,7 +220,7 @@ void increase_num_columns(struct config_node * node)
 
 void decrease_num_columns(struct config_node * node)
 {
-    struct tile_layout * layout = tile_layout(velox.active_screen->layout);
+    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
 
     if (layout)
     {
@@ -229,14 +229,14 @@ void decrease_num_columns(struct config_node * node)
     }
 }
 
-struct layout * tile_layout_new()
+struct layout * tall_layout_new()
 {
-    struct tile_layout * layout;
+    struct tall_layout * layout;
 
     if (!(layout = malloc(sizeof *layout)))
         goto error0;
 
-    layout->base.arrange = &tile_arrange;
+    layout->base.arrange = &tall_arrange;
     layout->master_size = master_max / 2;
     layout->num_masters = 1;
     layout->num_columns = 1;

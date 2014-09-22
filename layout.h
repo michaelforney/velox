@@ -36,7 +36,7 @@ struct layout
     struct wl_list link;
 };
 
-struct layout * tile_layout_new();
+struct layout * tall_layout_new();
 struct layout * grid_layout_new();
 
 void layout_add_config_nodes();

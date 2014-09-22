@@ -29,12 +29,12 @@ key space       mod                 layout_next
 key Tab         mod                 previous_tags
 key q           mod,shift           quit
 
-key h           mod                 tile.decrease_master_size
-key l           mod                 tile.increase_master_size
-key h           mod,shift           tile.increase_num_masters
-key l           mod,shift           tile.decrease_num_masters
-key h           mod,ctrl            tile.increase_num_columns
-key l           mod,ctrl            tile.decrease_num_columns
+key h           mod                 tall.decrease_master_size
+key l           mod                 tall.increase_master_size
+key h           mod,shift           tall.increase_num_masters
+key l           mod,shift           tall.decrease_num_masters
+key h           mod,ctrl            tall.increase_num_columns
+key l           mod,ctrl            tall.decrease_num_columns
 
 key Return      mod,shift           spawn_terminal
 key r           mod                 spawn_run
