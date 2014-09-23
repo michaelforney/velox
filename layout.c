@@ -33,11 +33,39 @@
 
 const unsigned master_max = 16;
 
+struct layout_impl
+{
+    void (* begin)(struct layout * layout, const struct swc_rectangle * area,
+                   unsigned num_windows);
+    void (* arrange)(struct layout * layout, struct window * window);
+};
+
+struct col
+{
+    struct swc_rectangle tile;
+    const struct swc_rectangle * area;
+    unsigned num_rows, row_index;
+    void (* next)(struct col * col);
+};
+
+struct grid
+{
+    struct col col;
+    unsigned num_windows, num_cols, col_index;
+};
+
 struct tall_layout
 {
     struct layout base;
-    unsigned master_size;
-    unsigned num_masters, num_columns;
+    unsigned num_masters, num_columns, master_size;
+    struct grid grid;
+    struct swc_rectangle grid_area;
+};
+
+struct grid_layout
+{
+    struct layout base;
+    struct grid grid;
 };
 
 static void increase_master_size(struct config_node * node);
@@ -92,73 +120,112 @@ void layout_add_config_nodes()
     wl_list_insert(config_root, &tall.config.group.link);
 }
 
-/* Tall layout */
-static void tall_arrange(struct layout * base, struct screen * screen,
-                         const struct swc_rectangle * area)
+static void tile(struct col * col, struct window * window)
 {
-    struct tall_layout * layout = (void *) base;
-    struct window * window;
-    struct swc_rectangle window_area;
-    unsigned num_masters, num_grids, num_rows, num_columns,
-             row_index, column_index, master_width, grid_width;
+    col->tile.y = col->area->y + border_width
+        + col->row_index * col->area->height / col->num_rows;
+    swc_window_set_geometry(window->swc, &col->tile);
 
-    num_masters = MIN(screen->num_windows, layout->num_masters);
-    num_grids = screen->num_windows - num_masters;
-
-    if (num_masters == 0)
+    if (++col->row_index < col->num_rows)
         return;
 
-    window = wl_container_of(screen->windows.next, window, link);
+    col->row_index = 0;
+    col->next(col);
+}
 
-    if (screen->num_windows > layout->num_masters)
+static void grid_next(struct col * col)
+{
+    struct grid * grid = wl_container_of(col, grid, col);
+
+    ++grid->col_index;
+
+    if (grid->col_index == grid->num_windows % grid->num_cols)
+    {
+        --col->num_rows;
+        col->tile.height = col->area->height / col->num_rows - 2 * border_width;
+    }
+
+    col->tile.x = col->area->x + border_width
+        + col->area->width * grid->col_index / grid->num_cols;
+}
+
+static void grid(struct grid * grid, const struct swc_rectangle * area,
+                 unsigned num_windows, unsigned num_cols)
+{
+    if (num_windows == 0)
+        return;
+
+    grid->num_windows = num_windows;
+    grid->num_cols = num_cols;
+    grid->col.num_rows = num_windows / num_cols + (num_windows % num_cols > 0);
+    grid->col.row_index = 0;
+    grid->col_index = 0;
+    grid->col.tile.x = area->x + border_width;
+    grid->col.tile.width = area->width / num_cols - 2 * border_width;
+    grid->col.tile.height = area->height / grid->col.num_rows
+        - 2 * border_width;
+    grid->col.area = area;
+    grid->col.next = &grid_next;
+}
+
+/* Tall layout */
+static void tall_next_col(struct col * col)
+{
+    struct tall_layout * layout = wl_container_of(col, layout, grid.col);
+
+    grid(&layout->grid, &layout->grid_area, layout->grid.num_windows,
+               MIN(layout->grid.num_windows, layout->num_columns));
+}
+
+static void tall_begin(struct layout * base, const struct swc_rectangle * area,
+                       unsigned num_windows)
+{
+    struct tall_layout * layout = (void *) base;
+    unsigned master_width;
+
+    layout->grid.col.num_rows = MIN(num_windows, layout->num_masters);
+
+    if (layout->grid.col.num_rows == 0)
+        return;
+
+    layout->grid.num_windows = num_windows - layout->grid.col.num_rows;
+
+    if (num_windows > layout->num_masters)
     {
         master_width = area->width * layout->master_size / master_max;
-        grid_width = area->width - master_width;
+        layout->grid_area.x = area->x + master_width;
+        layout->grid_area.y = area->y;
+        layout->grid_area.height = area->height;
+        layout->grid_area.width = area->width - master_width;
     }
     else
         master_width = area->width;
 
-    window_area.x = area->x + border_width;
-    window_area.width = master_width - 2 * border_width;
-    window_area.height = area->height / num_masters - 2 * border_width;
-
-    for (row_index = 0; row_index < num_masters; ++row_index)
-    {
-        window_area.y = area->y + border_width
-            + row_index * area->height / num_masters;
-        swc_window_set_geometry(window->swc, &window_area);
-        window = wl_container_of(window->link.next, window, link);
-    }
-
-    if (num_grids == 0)
-        return;
-
-    num_columns = MIN(num_grids, layout->num_columns);
-    num_rows = num_grids / num_columns + 1;
-
-    for (column_index = 0; column_index < num_columns; ++column_index)
-    {
-        if (column_index == num_grids % num_columns)
-            --num_rows;
-
-        window_area.x = area->x + master_width + border_width
-            + column_index * grid_width / num_columns;
-        window_area.width = grid_width / num_columns - 2 * border_width;
-        window_area.height = area->height / num_rows - 2 * border_width;
-
-        for (row_index = 0; row_index < num_rows; ++row_index)
-        {
-            window_area.y = area->y + border_width
-                + row_index * area->height / num_rows;
-            swc_window_set_geometry(window->swc, &window_area);
-            window = wl_container_of(window->link.next, window, link);
-        }
-    }
+    layout->grid.col.tile = (struct swc_rectangle) {
+        .x = area->x + border_width,
+        .width = master_width - 2 * border_width,
+        .height = area->height / layout->grid.col.num_rows - 2 * border_width,
+    };
+    layout->grid.col.row_index = 0;
+    layout->grid.col.area = area;
+    layout->grid.col.next = &tall_next_col;
 }
+
+static void tall_arrange(struct layout * base, struct window * window)
+{
+    struct tall_layout * layout = (void *) base;
+
+    tile(&layout->grid.col, window);
+}
+
+static const struct layout_impl tall_impl = {
+    .begin = &tall_begin,
+    .arrange = &tall_arrange,
+};
 
 static struct tall_layout * tall_layout(struct layout * base)
 {
-    if (base->arrange != &tall_arrange)
+    if (base->impl != &tall_impl)
         return NULL;
     return (void *) base;
 }
@@ -236,7 +303,7 @@ struct layout * tall_layout_new()
     if (!(layout = malloc(sizeof *layout)))
         goto error0;
 
-    layout->base.arrange = &tall_arrange;
+    layout->base.impl = &tall_impl;
     layout->master_size = master_max / 2;
     layout->num_masters = 1;
     layout->num_columns = 1;
@@ -248,52 +315,49 @@ struct layout * tall_layout_new()
 }
 
 /* Grid layout */
-static void grid_arrange(struct layout * layout, struct screen * screen,
-                         const struct swc_rectangle * area)
+static void grid_begin(struct layout * base, const struct swc_rectangle * area,
+                       unsigned num_windows)
 {
-    struct window * window;
-    unsigned num_columns, num_rows, column_index, row_index;
-    struct swc_rectangle window_area;
+    struct grid_layout * layout = (void *) base;
 
-    if (screen->num_windows == 0) return;
-
-    num_columns = ceil(sqrt(screen->num_windows));
-    num_rows = screen->num_windows / num_columns + 1;
-    window = wl_container_of(screen->windows.next, window, link);
-
-    for (column_index = 0; &window->link != &screen->windows; ++column_index)
-    {
-        if (column_index == screen->num_windows % num_columns)
-            --num_rows;
-
-        window_area.x = area->x + border_width
-            + area->width * column_index / num_columns;
-        window_area.width = area->width / num_columns - 2 * border_width;
-        window_area.height = area->height / num_rows - 2 * border_width;
-
-        for (row_index = 0; row_index < num_rows; ++row_index)
-        {
-            window_area.y = area->y + border_width
-                + area->height * row_index / num_rows;
-
-            swc_window_set_geometry(window->swc, &window_area);
-            window = wl_container_of(window->link.next, window, link);
-        }
-    }
+    grid(&layout->grid, area, num_windows, ceil(sqrt(num_windows)));
 }
+
+static void grid_arrange(struct layout * base, struct window * window)
+{
+    struct grid_layout * layout = (void *) base;
+
+    tile(&layout->grid.col, window);
+}
+
+static const struct layout_impl grid_impl = {
+    .begin = &grid_begin,
+    .arrange = &grid_arrange,
+};
 
 struct layout * grid_layout_new()
 {
-    struct layout * layout;
+    struct grid_layout * layout;
 
     if (!(layout = malloc(sizeof *layout)))
         goto error0;
 
-    layout->arrange = &grid_arrange;
+    layout->base.impl = &grid_impl;
 
-    return layout;
+    return &layout->base;
 
   error0:
     return NULL;
+}
+
+void layout_begin(struct layout * layout, const struct swc_rectangle * area,
+                  unsigned num_windows)
+{
+    layout->impl->begin(layout, area, num_windows);
+}
+
+void layout_arrange(struct layout * layout, struct window * window)
+{
+    layout->impl->arrange(layout, window);
 }
 

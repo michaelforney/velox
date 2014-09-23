@@ -27,12 +27,12 @@
 #include <wayland-server.h>
 
 struct screen;
+struct window;
 struct swc_rectangle;
 
 struct layout
 {
-    void (* arrange)(struct layout * layout, struct screen * screen,
-                     const struct swc_rectangle * area);
+    const struct layout_impl * impl;
     struct wl_list link;
 };
 
@@ -40,6 +40,10 @@ struct layout * tall_layout_new();
 struct layout * grid_layout_new();
 
 void layout_add_config_nodes();
+
+void layout_begin(struct layout * layout, const struct swc_rectangle * area,
+                  unsigned num_windows);
+void layout_arrange(struct layout * layout, struct window * window);
 
 #endif
 

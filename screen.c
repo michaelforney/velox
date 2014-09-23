@@ -125,8 +125,12 @@ struct screen * screen_new(struct swc_screen * swc)
 
 void screen_arrange(struct screen * screen)
 {
-    screen->layout->arrange(screen->layout, screen,
-                            &screen->swc->usable_geometry);
+    struct window * window;
+
+    layout_begin(screen->layout, &screen->swc->usable_geometry,
+                 screen->num_windows);
+    wl_list_for_each(window, &screen->windows, link)
+        layout_arrange(screen->layout, window);
 }
 
 void screen_add_windows(struct screen * screen)
