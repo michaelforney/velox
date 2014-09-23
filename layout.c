@@ -232,74 +232,68 @@ static struct tall_layout * tall_layout(struct layout * base)
 
 void increase_master_size(struct config_node * node)
 {
-    struct tall_layout * layout
-        = tall_layout(velox.active_screen->layout[TILE]);
+    struct tall_layout * layout;
 
-    if (layout)
-    {
-        layout->master_size = MIN(layout->master_size + 1, master_max);
-        arrange();
-    }
+    if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+        return;
+
+    layout->master_size = MIN(layout->master_size + 1, master_max);
+    arrange();
 }
 
 void decrease_master_size(struct config_node * node)
 {
-    struct tall_layout * layout
-        = tall_layout(velox.active_screen->layout[TILE]);
+    struct tall_layout * layout;
 
-    if (layout)
-    {
-        layout->master_size = MAX(layout->master_size - 1, 0);
-        arrange();
-    }
+    if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+        return;
+
+    layout->master_size = MAX(layout->master_size - 1, 0);
+    arrange();
 }
 
 void increase_num_masters(struct config_node * node)
 {
-    struct tall_layout * layout
-        = tall_layout(velox.active_screen->layout[TILE]);
+    struct tall_layout * layout;
 
-    if (layout)
-    {
-        ++layout->num_masters;
-        arrange();
-    }
+    if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+        return;
+
+    ++layout->num_masters;
+    arrange();
 }
 
 void decrease_num_masters(struct config_node * node)
 {
-    struct tall_layout * layout
-        = tall_layout(velox.active_screen->layout[TILE]);
+    struct tall_layout * layout;
 
-    if (layout)
-    {
-        layout->num_masters = MAX(layout->num_masters - 1, 1);
-        arrange();
-    }
+    if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+        return;
+
+    layout->num_masters = MAX(layout->num_masters - 1, 1);
+    arrange();
 }
 
 void increase_num_columns(struct config_node * node)
 {
-    struct tall_layout * layout
-        = tall_layout(velox.active_screen->layout[TILE]);
+    struct tall_layout * layout;
 
-    if (layout)
-    {
-        ++layout->num_columns;
-        arrange();
-    }
+    if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+        return;
+
+    ++layout->num_columns;
+    arrange();
 }
 
 void decrease_num_columns(struct config_node * node)
 {
-    struct tall_layout * layout
-        = tall_layout(velox.active_screen->layout[TILE]);
+    struct tall_layout * layout;
 
-    if (layout)
-    {
-        layout->num_columns = MAX(layout->num_columns - 1, 1);
-        arrange();
-    }
+    if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+        return;
+
+    layout->num_columns = MAX(layout->num_columns - 1, 1);
+    arrange();
 }
 
 struct layout * tall_layout_new()
