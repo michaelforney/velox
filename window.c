@@ -178,19 +178,6 @@ struct window * window_new(struct swc_window * swc)
     return window;
 }
 
-void window_set_tag(struct window * window, struct tag * tag)
-{
-    struct tag * original_tag = window->tag;
-
-    window->tag = tag;
-
-    if (original_tag && original_tag->screen)
-        screen_remove_windows(original_tag->screen);
-
-    if (tag && tag->screen)
-        screen_add_windows(tag->screen);
-}
-
 void window_focus(struct window * window)
 {
     /* This will become stale if the focused window is destroyed. However, we
@@ -223,6 +210,19 @@ void window_show(struct window * window)
 void window_hide(struct window * window)
 {
     swc_window_hide(window->swc);
+}
+
+void window_set_tag(struct window * window, struct tag * tag)
+{
+    struct tag * original_tag = window->tag;
+
+    window->tag = tag;
+
+    if (original_tag && original_tag->screen)
+        screen_remove_windows(original_tag->screen);
+
+    if (tag && tag->screen)
+        screen_add_windows(tag->screen);
 }
 
 void window_set_layer(struct window * window, int layer)
