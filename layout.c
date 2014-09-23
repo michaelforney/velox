@@ -232,7 +232,8 @@ static struct tall_layout * tall_layout(struct layout * base)
 
 void increase_master_size(struct config_node * node)
 {
-    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
+    struct tall_layout * layout
+        = tall_layout(velox.active_screen->layout[TILE]);
 
     if (layout)
     {
@@ -243,7 +244,8 @@ void increase_master_size(struct config_node * node)
 
 void decrease_master_size(struct config_node * node)
 {
-    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
+    struct tall_layout * layout
+        = tall_layout(velox.active_screen->layout[TILE]);
 
     if (layout)
     {
@@ -254,7 +256,8 @@ void decrease_master_size(struct config_node * node)
 
 void increase_num_masters(struct config_node * node)
 {
-    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
+    struct tall_layout * layout
+        = tall_layout(velox.active_screen->layout[TILE]);
 
     if (layout)
     {
@@ -265,7 +268,8 @@ void increase_num_masters(struct config_node * node)
 
 void decrease_num_masters(struct config_node * node)
 {
-    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
+    struct tall_layout * layout
+        = tall_layout(velox.active_screen->layout[TILE]);
 
     if (layout)
     {
@@ -276,7 +280,8 @@ void decrease_num_masters(struct config_node * node)
 
 void increase_num_columns(struct config_node * node)
 {
-    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
+    struct tall_layout * layout
+        = tall_layout(velox.active_screen->layout[TILE]);
 
     if (layout)
     {
@@ -287,7 +292,8 @@ void increase_num_columns(struct config_node * node)
 
 void decrease_num_columns(struct config_node * node)
 {
-    struct tall_layout * layout = tall_layout(velox.active_screen->layout);
+    struct tall_layout * layout
+        = tall_layout(velox.active_screen->layout[TILE]);
 
     if (layout)
     {
@@ -345,6 +351,37 @@ struct layout * grid_layout_new()
     layout->base.impl = &grid_impl;
 
     return &layout->base;
+
+  error0:
+    return NULL;
+}
+
+/* Stack layout */
+static void stack_begin(struct layout * layout,
+                        const struct swc_rectangle * area, unsigned num_windows)
+{
+}
+
+static void stack_arrange(struct layout * layout, struct window * window)
+{
+    /* TODO: Place window on top of stack when swc adds support for this. */
+}
+
+static const struct layout_impl stack_impl = {
+    .begin = &stack_begin,
+    .arrange = &stack_arrange,
+};
+
+struct layout * stack_layout_new()
+{
+    struct layout * layout;
+
+    if (!(layout = malloc(sizeof *layout)))
+        goto error0;
+
+    layout->impl = &stack_impl;
+
+    return layout;
 
   error0:
     return NULL;

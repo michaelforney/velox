@@ -30,6 +30,14 @@ struct screen;
 struct window;
 struct swc_rectangle;
 
+enum layer
+{
+    TILE,
+    STACK,
+
+    NUM_LAYERS
+};
+
 struct layout
 {
     const struct layout_impl * impl;
@@ -38,6 +46,8 @@ struct layout
 
 struct layout * tall_layout_new();
 struct layout * grid_layout_new();
+
+struct layout * stack_layout_new();
 
 void layout_add_config_nodes();
 

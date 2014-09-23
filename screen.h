@@ -25,6 +25,7 @@
 #define VELOX_SCREEN_H
 
 #include "tag.h"
+#include "layout.h"
 
 #include <wayland-server.h>
 
@@ -45,10 +46,10 @@ struct screen
     uint32_t mask, last_mask;
 
     struct wl_list layouts;
-    struct layout * layout;
+    struct layout * layout[NUM_LAYERS];
 
     struct wl_list windows;
-    unsigned num_windows;
+    unsigned num_windows[NUM_LAYERS];
     struct window * focus;
 
     struct wl_list resources;

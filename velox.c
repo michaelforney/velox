@@ -211,11 +211,12 @@ static void close_focused_window(struct config_node * node)
 static void layout_next(struct config_node * node)
 {
     struct screen * screen = velox.active_screen;
+    struct layout ** layout = &screen->layout[TILE];
     struct wl_list * link;
 
-    if ((link = screen->layout->link.next) == &screen->layouts)
+    if ((link = (*layout)->link.next) == &screen->layouts)
         link = link->next;
-    screen->layout = wl_container_of(link, screen->layout, link);
+    *layout = wl_container_of(link, *layout, link);
     screen_arrange(screen);
 }
 

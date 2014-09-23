@@ -54,8 +54,11 @@ static void begin_move(struct config_node * node)
 {
     struct window * focus = velox.active_screen->focus;
 
-    if (focus)
-        swc_window_begin_move(focus->swc);
+    if (!focus)
+        return;
+
+    window_set_layer(focus, STACK);
+    swc_window_begin_move(focus->swc);
 }
 
 static void end_move(struct config_node * node)
@@ -70,8 +73,11 @@ static void begin_resize(struct config_node * node)
 {
     struct window * focus = velox.active_screen->focus;
 
-    if (focus)
-        swc_window_begin_resize(focus->swc, SWC_WINDOW_EDGE_AUTO);
+    if (!focus)
+        return;
+
+    window_set_layer(focus, STACK);
+    swc_window_begin_resize(focus->swc, SWC_WINDOW_EDGE_AUTO);
 }
 
 static void end_resize(struct config_node * node)
@@ -134,11 +140,27 @@ static void entered(void * data)
     window->tag->screen->focus = window;
 }
 
+static void move(void * data)
+{
+    struct window * window = data;
+
+    window_set_layer(window, STACK);
+}
+
+static void resize(void * data)
+{
+    struct window * window = data;
+
+    window_set_layer(window, STACK);
+}
+
 static const struct swc_window_handler window_handler = {
     .destroy = &destroy,
     .title_changed = &title_changed,
     .parent_changed = &parent_changed,
     .entered = &entered,
+    .move = &move,
+    .resize = &resize,
 };
 
 struct window * window_new(struct swc_window * swc)
@@ -151,6 +173,7 @@ struct window * window_new(struct swc_window * swc)
     window->swc = swc;
     window->tag = NULL;
     swc_window_set_handler(swc, &window_handler, window);
+    window_set_layer(window, TILE);
 
     return window;
 }
@@ -200,5 +223,29 @@ void window_show(struct window * window)
 void window_hide(struct window * window)
 {
     swc_window_hide(window->swc);
+}
+
+void window_set_layer(struct window * window, int layer)
+{
+    int old_layer = window->layer;
+
+    window->layer = layer;
+
+    switch (layer)
+    {
+        case TILE:
+            swc_window_set_tiled(window->swc);
+            break;
+        case STACK:
+            swc_window_set_stacked(window->swc);
+            break;
+    }
+
+    if (window->tag && window->tag->screen)
+    {
+        --window->tag->screen->num_windows[old_layer];
+        ++window->tag->screen->num_windows[layer];
+        update();
+    }
 }
 

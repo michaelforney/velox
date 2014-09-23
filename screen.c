@@ -30,6 +30,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <swc.h>
 
 static struct layout * (* default_layouts[])() = {
@@ -63,7 +64,7 @@ static void add_window(struct screen * screen, struct window * window)
      * of windows. */
     wl_list_remove(&window->link);
     wl_list_insert(screen->windows.prev, &window->link);
-    ++screen->num_windows;
+    ++screen->num_windows[window->layer];
 }
 
 static void remove_window(struct screen * screen, struct window * window)
@@ -72,7 +73,7 @@ static void remove_window(struct screen * screen, struct window * window)
      * list of hidden windows. */
     wl_list_remove(&window->link);
     wl_list_insert(velox.hidden_windows.prev, &window->link);
-    --screen->num_windows;
+    --screen->num_windows[window->layer];
 }
 
 static void send_focus(struct screen * screen, struct wl_resource * resource)
@@ -98,7 +99,9 @@ struct screen * screen_new(struct swc_screen * swc)
             goto error1;
         wl_list_insert(screen->layouts.prev, &layout->link);
     }
-    screen->layout = wl_container_of(screen->layouts.next, layout, link);
+    screen->layout[TILE] = wl_container_of(screen->layouts.next, layout, link);
+    if (!(screen->layout[STACK] = stack_layout_new()))
+        goto error1;
 
     wl_list_init(&screen->tags);
     screen->mask = 0;
@@ -107,7 +110,7 @@ struct screen * screen_new(struct swc_screen * swc)
     screen->last_mask = screen->mask;
 
     wl_list_init(&screen->windows);
-    screen->num_windows = 0;
+    memset(screen->num_windows, 0, sizeof screen->num_windows);
     screen->focus = NULL;
 
     screen->swc = swc;
@@ -127,10 +130,12 @@ void screen_arrange(struct screen * screen)
 {
     struct window * window;
 
-    layout_begin(screen->layout, &screen->swc->usable_geometry,
-                 screen->num_windows);
+    layout_begin(screen->layout[TILE], &screen->swc->usable_geometry,
+                 screen->num_windows[TILE]);
+    layout_begin(screen->layout[STACK], &screen->swc->usable_geometry,
+                 screen->num_windows[STACK]);
     wl_list_for_each(window, &screen->windows, link)
-        layout_arrange(screen->layout, window);
+        layout_arrange(screen->layout[window->layer], window);
 }
 
 void screen_add_windows(struct screen * screen)
@@ -194,7 +199,7 @@ void screen_remove_windows(struct screen * screen)
             screen_set_focus(screen, NULL);
             wl_list_insert_list(&velox.hidden_windows, &screen->windows);
             wl_list_init(&screen->windows);
-            screen->num_windows = 0;
+            memset(screen->num_windows, 0, sizeof screen->num_windows);
             return;
         }
     }

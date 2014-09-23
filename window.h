@@ -34,6 +34,7 @@ struct window
     struct wl_listener event_listener;
     struct wl_list link;
 
+    int layer;
     struct tag * tag;
 };
 
@@ -45,6 +46,7 @@ void window_show(struct window * window);
 void window_hide(struct window * window);
 
 void window_set_tag(struct window * window, struct tag * tag);
+void window_set_layer(struct window * window, int layer);
 
 #endif
 
