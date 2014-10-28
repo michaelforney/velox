@@ -66,8 +66,8 @@ endif
 compile     = $(call quiet,CC) $(FINAL_CPPFLAGS) $(FINAL_CFLAGS) -c -o $@ $< \
               -MMD -MP -MF .deps/$(basename $<).d -MT $(basename $@).o
 link        = $(call quiet,CCLD,$(CC)) $(LDFLAGS) -o $@ $^
-pkgconfig   = $(sort $(foreach pkg,$(1),$(if $($(pkg)_$(3)),$($(pkg)_$(3)), \
-                                           $(shell $(PKG_CONFIG) --$(2) $(pkg)))))
+pkgconfig   = $(foreach pkg,$(1),$(if $($(pkg)_$(3)),$($(pkg)_$(3)), \
+                                      $(shell $(PKG_CONFIG) --$(2) $(pkg))))
 
 .PHONY: all
 all: build
