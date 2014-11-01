@@ -29,7 +29,6 @@ VELOX_SOURCES   =               \
     util.c                      \
     velox.c                     \
     window.c                    \
-    protocol/swc-protocol.c     \
     protocol/velox-protocol.c
 
 ifeq ($(if $(V),$(V),0), 0)
