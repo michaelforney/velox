@@ -347,7 +347,7 @@ void text_draw(struct status_bar * bar, struct item * item,
     struct text_item_data * data = (void *) item->data;
 
     wld_draw_text(wld.renderer, wld.font, normal.fg,
-                  x, y + wld.font->ascent + 1, data->text, NULL);
+                  x, y + wld.font->ascent + 1, data->text, -1, NULL);
 }
 
 void divider_draw(struct status_bar * bar, struct item * item,
@@ -368,7 +368,8 @@ void tag_draw(struct status_bar * bar, struct item * item,
     wld_fill_rectangle(wld.renderer, style->bg, x, y,
                        item->data->width, bar->height);
     wld_draw_text(wld.renderer, wld.font, style->fg,
-                  x + spacing / 2, y + wld.font->ascent + 1, tag->name_data.text, NULL);
+                  x + spacing / 2, y + wld.font->ascent + 1,
+                  tag->name_data.text, -1, NULL);
 }
 
 static void draw(struct status_bar * bar)
