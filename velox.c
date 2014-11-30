@@ -29,9 +29,11 @@
 #include "window.h"
 #include "protocol/velox-server-protocol.h"
 
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <swc.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <wayland-server.h>
 #include <xkbcommon/xkbcommon.h>
@@ -274,6 +276,13 @@ static void start_clients()
     }
 }
 
+static int handle_chld(int num, void * data)
+{
+    /* Clean up zombie processes. */
+    while (waitpid(-1, NULL, WNOHANG) > 0);
+    return 0;
+}
+
 static void bind_velox(struct wl_client * client, void * data,
                        uint32_t version, uint32_t id)
 {
@@ -311,6 +320,7 @@ int main(int argc, char * argv[])
         goto error1;
 
     velox.event_loop = wl_display_get_event_loop(velox.display);
+    wl_event_loop_add_signal(velox.event_loop, SIGCHLD, &handle_chld, NULL);
     wl_list_init(&velox.screens);
     wl_list_init(&velox.hidden_windows);
     wl_list_init(&velox.unused_tags);
