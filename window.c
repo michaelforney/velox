@@ -129,7 +129,12 @@ static void title_changed(void * data)
 
 static void parent_changed(void * data)
 {
-    /* TODO: Implement */
+    struct window * window = data;
+
+    if (window->swc->parent)
+        window_set_layer(window, STACK);
+
+    /* TODO: We should probably center this window in the parent. */
 }
 
 static void entered(void * data)
