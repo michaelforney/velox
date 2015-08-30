@@ -236,12 +236,15 @@ window_hide(struct window *window)
 void
 window_set_tag(struct window *window, struct tag *tag)
 {
-	struct tag *original_tag = window->tag;
+	struct tag *old_tag = window->tag;
+
+	if (tag == old_tag)
+		return;
 
 	window->tag = tag;
 
-	if (original_tag && original_tag->screen)
-		screen_remove_windows(original_tag->screen);
+	if (old_tag && old_tag->screen)
+		screen_remove_windows(old_tag->screen);
 
 	if (tag && tag->screen)
 		screen_add_windows(tag->screen);
@@ -251,6 +254,9 @@ void
 window_set_layer(struct window *window, int layer)
 {
 	int old_layer = window->layer;
+
+	if (layer == old_layer)
+		return;
 
 	window->layer = layer;
 
