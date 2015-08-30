@@ -88,6 +88,14 @@ static void end_resize(struct config_node * node)
         swc_window_end_resize(focus->swc);
 }
 
+static void switch_layer(struct config_node * node)
+{
+    struct window * focus = velox.active_screen->focus;
+
+    if (focus)
+        window_set_layer(focus, (focus->layer + 1) % NUM_LAYERS);
+}
+
 static CONFIG_GROUP(window);
 static CONFIG_PROPERTY(border_width, &border_width_set);
 static CONFIG_PROPERTY(border_color_active, &border_color_active_set);
@@ -96,6 +104,7 @@ static CONFIG_ACTION(begin_move, &begin_move);
 static CONFIG_ACTION(end_move, &end_move);
 static CONFIG_ACTION(begin_resize, &begin_resize);
 static CONFIG_ACTION(end_resize, &end_resize);
+static CONFIG_ACTION(switch_layer, &switch_layer);
 
 void window_add_config_nodes()
 {
@@ -106,6 +115,7 @@ void window_add_config_nodes()
     wl_list_insert(&window_group.group, &end_move_action.link);
     wl_list_insert(&window_group.group, &begin_resize_action.link);
     wl_list_insert(&window_group.group, &end_resize_action.link);
+    wl_list_insert(&window_group.group, &switch_layer_action.link);
     wl_list_insert(config_root, &window_group.link);
 }
 

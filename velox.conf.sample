@@ -29,6 +29,8 @@ key space       mod                 layout_next
 key Tab         mod                 previous_tags
 key q           mod,shift           quit
 
+key g           mod                 window.switch_layer
+
 key h           mod                 tall.decrease_master_size
 key l           mod                 tall.increase_master_size
 key h           mod,shift           tall.increase_num_masters
