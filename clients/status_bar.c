@@ -532,34 +532,11 @@ run()
 	}
 }
 
-static void
-cleanup()
-{
-	struct screen *screen;
-
-	fprintf(stderr, "status bar: Cleaning up...");
-
-	wld_font_close(wld.font);
-	wld_font_destroy_context(wld.font_context);
-
-	wl_list_for_each (screen, &screens, link) {
-		swc_panel_destroy(screen->status_bar.panel);
-		wld_destroy_surface(screen->status_bar.wld_surface);
-		wl_surface_destroy(screen->status_bar.surface);
-	}
-
-	swc_panel_manager_destroy(panel_manager);
-	wl_compositor_destroy(compositor);
-
-	fprintf(stderr, "done\n");
-}
-
 int
 main(int argc, char *argv[])
 {
 	setup();
 	run();
-	cleanup();
 
 	return EXIT_SUCCESS;
 }
