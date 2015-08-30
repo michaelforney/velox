@@ -40,15 +40,13 @@ border_width_set(struct config_node *node, const char *value)
 }
 
 static bool
-border_color_active_set(struct config_node *node,
-                        const char *value)
+border_color_active_set(struct config_node *node, const char *value)
 {
 	return config_set_unsigned(&border_color_active, value, 16);
 }
 
 static bool
-border_color_inactive_set(struct config_node *node,
-                          const char *value)
+border_color_inactive_set(struct config_node *node, const char *value)
 {
 	return config_set_unsigned(&border_color_inactive, value, 16);
 }
@@ -142,8 +140,8 @@ title_changed(void *data)
 {
 	struct window *window = data;
 
-	/* If this window focused on a screen, make sure bound clients are
-     * aware of this title change. */
+	/* If this window focused on a screen, make sure bound clients are aware of
+	 * this title change. */
 	if (window->tag->screen && window->tag->screen->focus == window)
 		screen_focus_title_notify(window->tag->screen);
 }
@@ -194,21 +192,20 @@ window_new(struct swc_window *swc)
 void
 window_focus(struct window *window)
 {
-	/* This will become stale if the focused window is destroyed. However, we
-     * make sure to change the focus of a screen in screen_remove_windows when
-     * its focus is removed (before it is actually destroyed). */
+	/* This will become stale if the focused window is destroyed. However, we make
+	 * sure to change the focus of a screen in screen_remove_windows when its
+	 * focus is removed (before it is actually destroyed). */
 	static struct window *focused_window;
 
-	if (focused_window) {
-		swc_window_set_border(focused_window->swc,
-		                      border_color_inactive, border_width);
-	}
+	if (focused_window)
+		swc_window_set_border(focused_window->swc, border_color_inactive, border_width);
 
 	if (window) {
 		swc_window_set_border(window->swc, border_color_active, border_width);
 		swc_window_focus(window->swc);
-	} else
+	} else {
 		swc_window_focus(NULL);
+	}
 
 	focused_window = window;
 }

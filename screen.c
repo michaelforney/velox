@@ -64,7 +64,7 @@ static void
 add_window(struct screen *screen, struct window *window)
 {
 	/* Remove the window from hidden window list and add it to the screen's list
-     * of windows. */
+	 * of windows. */
 	wl_list_remove(&window->link);
 	wl_list_insert(screen->windows.prev, &window->link);
 	++screen->num_windows[window->layer];
@@ -73,8 +73,8 @@ add_window(struct screen *screen, struct window *window)
 static void
 remove_window(struct screen *screen, struct window *window)
 {
-	/* Remove the window from the screen's list of windows, and add it to the
-     * list of hidden windows. */
+	/* Remove the window from the screen's list of windows, and add it to the list
+	 * of hidden windows. */
 	wl_list_remove(&window->link);
 	wl_list_insert(velox.hidden_windows.prev, &window->link);
 	--screen->num_windows[window->layer];
@@ -83,8 +83,7 @@ remove_window(struct screen *screen, struct window *window)
 static void
 send_focus(struct screen *screen, struct wl_resource *resource)
 {
-	velox_screen_send_focus(resource, screen->focus ? screen->focus->swc->title
-	                                                : NULL);
+	velox_screen_send_focus(resource, screen->focus ? screen->focus->swc->title : NULL);
 }
 
 struct screen *
@@ -136,10 +135,8 @@ screen_arrange(struct screen *screen)
 {
 	struct window *window;
 
-	layout_begin(screen->layout[TILE], &screen->swc->usable_geometry,
-	             screen->num_windows[TILE]);
-	layout_begin(screen->layout[STACK], &screen->swc->usable_geometry,
-	             screen->num_windows[STACK]);
+	layout_begin(screen->layout[TILE], &screen->swc->usable_geometry, screen->num_windows[TILE]);
+	layout_begin(screen->layout[STACK], &screen->swc->usable_geometry, screen->num_windows[STACK]);
 	wl_list_for_each (window, &screen->windows, link)
 		layout_arrange(screen->layout[window->layer], window);
 }
@@ -165,10 +162,9 @@ screen_remove_windows(struct screen *screen)
 	struct window *window, *tmp;
 
 	/* If we will be removing the focus, try to find a new focus nearby the old
-     * one. */
+	 * one. */
 	if (screen->focus && !(screen->focus->tag && screen->mask & screen->focus->tag->mask)) {
-		struct wl_list *forward = screen->focus->link.next,
-		               *backward = screen->focus->link.prev;
+		struct wl_list *forward = screen->focus->link.next, *backward = screen->focus->link.prev;
 
 		while (true) {
 			if (forward != &screen->windows) {
@@ -193,8 +189,8 @@ screen_remove_windows(struct screen *screen)
 				backward = backward->next;
 			}
 
-			/* If there is no suitable candidate for focus, we can just remove
-             * all the windows and set the focus to NULL. */
+			/* If there is no suitable candidate for focus, we can just remove all the
+			 * windows and set the focus to NULL. */
 			screen_set_focus(screen, NULL);
 			wl_list_insert_list(&velox.hidden_windows, &screen->windows);
 			wl_list_init(&screen->windows);
@@ -263,8 +259,7 @@ screen_set_tags(struct screen *screen, uint32_t mask)
 {
 	struct screen *original_screen;
 	struct tag *tag, *unused_tag;
-	uint32_t added = (screen->mask | mask) & ~screen->mask,
-	         removed = (screen->mask | mask) & ~mask;
+	uint32_t added = (screen->mask | mask) & ~screen->mask, removed = (screen->mask | mask) & ~mask;
 
 	if (screen->mask == mask)
 		return;
@@ -274,7 +269,7 @@ screen_set_tags(struct screen *screen, uint32_t mask)
 	screen_remove_windows(screen);
 
 	/* Now, remove all the tags we want to add to this screen from their current
-     * screens. */
+	 * screens. */
 	removed = added;
 	while ((tag = next_tag(&removed))) {
 		original_screen = tag->screen;
@@ -295,8 +290,7 @@ screen_set_tags(struct screen *screen, uint32_t mask)
 }
 
 struct wl_resource *
-screen_bind(struct screen *screen,
-            struct wl_client *client, uint32_t id)
+screen_bind(struct screen *screen, struct wl_client *client, uint32_t id)
 {
 	struct wl_resource *resource;
 	struct tag *tag;

@@ -66,8 +66,7 @@ void screen_add_windows(struct screen *screen);
 void screen_remove_windows(struct screen *screen);
 
 /* Wayland interface */
-struct wl_resource *screen_bind(struct screen *screen,
-                                struct wl_client *client, uint32_t id);
+struct wl_resource *screen_bind(struct screen *screen, struct wl_client *client, uint32_t id);
 void screen_focus_title_notify(struct screen *screen);
 
 #endif

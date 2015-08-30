@@ -39,8 +39,7 @@ struct config_node {
 
 	union {
 		struct wl_list group;
-		struct
-		    {
+		struct {
 			bool (*set)(struct config_node *node, const char *value);
 		} property;
 		struct
@@ -52,23 +51,23 @@ struct config_node {
 	struct wl_list link;
 };
 
-#define CONFIG_GROUP(n)                                         \
-	struct config_node n##_group = {                        \
-		.name = #n,                                     \
-		.type = CONFIG_NODE_TYPE_GROUP,                 \
+#define CONFIG_GROUP(n) \
+	struct config_node n##_group = { \
+		.name = #n, \
+		.type = CONFIG_NODE_TYPE_GROUP, \
 		.group = { &n##_group.group, &n##_group.group } \
 	}
-#define CONFIG_PROPERTY(n, func)                   \
-	struct config_node n##_property = {        \
-		.name = #n,                        \
+#define CONFIG_PROPERTY(n, func) \
+	struct config_node n##_property = { \
+		.name = #n, \
 		.type = CONFIG_NODE_TYPE_PROPERTY, \
-		.property = {.set = func }         \
+		.property = { .set = func } \
 	}
-#define CONFIG_ACTION(n, func)                   \
-	struct config_node n##_action = {        \
-		.name = #n,                      \
+#define CONFIG_ACTION(n, func) \
+	struct config_node n##_action = { \
+		.name = #n, \
 		.type = CONFIG_NODE_TYPE_ACTION, \
-		.action = {.run = func }         \
+		.action = { .run = func } \
 	}
 
 bool config_parse();

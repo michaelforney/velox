@@ -34,8 +34,7 @@
 const unsigned master_max = 16;
 
 struct layout_impl {
-	void (*begin)(struct layout *layout, const struct swc_rectangle *area,
-	              unsigned num_windows);
+	void (*begin)(struct layout *layout, const struct swc_rectangle *area, unsigned num_windows);
 	void (*arrange)(struct layout *layout, struct window *window);
 };
 
@@ -70,10 +69,8 @@ static void decrease_num_masters(struct config_node *node);
 static void increase_num_columns(struct config_node *node);
 static void decrease_num_columns(struct config_node *node);
 
-static struct
-    {
-	struct
-	    {
+static struct {
+	struct {
 		struct config_node group,
 		    increase_master_size, decrease_master_size,
 		    increase_num_masters, decrease_num_masters,
@@ -113,8 +110,7 @@ layout_add_config_nodes()
 static void
 tile(struct col *col, struct window *window)
 {
-	col->tile.y = col->area->y + border_width
-	              + col->row_index * col->area->height / col->num_rows;
+	col->tile.y = col->area->y + border_width + col->row_index * col->area->height / col->num_rows;
 	swc_window_set_geometry(window->swc, &col->tile);
 
 	if (++col->row_index < col->num_rows)
@@ -136,13 +132,11 @@ grid_next(struct col *col)
 		col->tile.height = col->area->height / col->num_rows - 2 * border_width;
 	}
 
-	col->tile.x = col->area->x + border_width
-	              + col->area->width * grid->col_index / grid->num_cols;
+	col->tile.x = col->area->x + border_width + col->area->width * grid->col_index / grid->num_cols;
 }
 
 static void
-grid(struct grid *grid, const struct swc_rectangle *area,
-     unsigned num_windows, unsigned num_cols)
+grid(struct grid *grid, const struct swc_rectangle *area, unsigned num_windows, unsigned num_cols)
 {
 	if (num_windows == 0)
 		return;
@@ -154,8 +148,7 @@ grid(struct grid *grid, const struct swc_rectangle *area,
 	grid->col_index = 0;
 	grid->col.tile.x = area->x + border_width;
 	grid->col.tile.width = area->width / num_cols - 2 * border_width;
-	grid->col.tile.height = area->height / grid->col.num_rows
-	                        - 2 * border_width;
+	grid->col.tile.height = area->height / grid->col.num_rows - 2 * border_width;
 	grid->col.area = area;
 	grid->col.next = &grid_next;
 }
@@ -171,8 +164,7 @@ tall_next_col(struct col *col)
 }
 
 static void
-tall_begin(struct layout *base, const struct swc_rectangle *area,
-           unsigned num_windows)
+tall_begin(struct layout *base, const struct swc_rectangle *area, unsigned num_windows)
 {
 	struct tall_layout *layout = (void *)base;
 	unsigned master_width;
@@ -317,8 +309,7 @@ error0:
 
 /* Grid layout */
 static void
-grid_begin(struct layout *base, const struct swc_rectangle *area,
-           unsigned num_windows)
+grid_begin(struct layout *base, const struct swc_rectangle *area, unsigned num_windows)
 {
 	struct grid_layout *layout = (void *)base;
 
@@ -356,8 +347,7 @@ error0:
 
 /* Stack layout */
 static void
-stack_begin(struct layout *layout,
-            const struct swc_rectangle *area, unsigned num_windows)
+stack_begin(struct layout *layout, const struct swc_rectangle *area, unsigned num_windows)
 {
 }
 
@@ -389,8 +379,7 @@ error0:
 }
 
 void
-layout_begin(struct layout *layout, const struct swc_rectangle *area,
-             unsigned num_windows)
+layout_begin(struct layout *layout, const struct swc_rectangle *area, unsigned num_windows)
 {
 	layout->impl->begin(layout, area, num_windows);
 }

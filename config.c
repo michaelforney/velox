@@ -94,8 +94,9 @@ lookup(char *identifier)
 						return NULL;
 					next_group_node = node;
 					++identifier;
-				} else
+				} else {
 					return *identifier == '\0' ? node : NULL;
+				}
 
 				break;
 			}
@@ -170,8 +171,7 @@ spawn_action(char *command)
 	return &action->node;
 }
 
-struct
-    {
+struct {
 	const char *name;
 	struct config_node *(*create_action)(char *arguments);
 } action_types[] = {
@@ -254,8 +254,8 @@ button_binding(void *data, uint32_t time, uint32_t value, uint32_t state)
 }
 
 static void (*binding_handler[])(void *, uint32_t, uint32_t, uint32_t) = {
-	    [SWC_BINDING_KEY] = &key_binding,
-	    [SWC_BINDING_BUTTON] = &button_binding
+	[SWC_BINDING_KEY] = &key_binding,
+	[SWC_BINDING_BUTTON] = &button_binding
 };
 
 static bool
@@ -291,8 +291,8 @@ parse_button(char *s, uint32_t *value)
 }
 
 static bool (*parse_value[])(char *, uint32_t *) = {
-	    [SWC_BINDING_KEY] = &parse_key,
-	    [SWC_BINDING_BUTTON] = &parse_button
+	[SWC_BINDING_KEY] = &parse_key,
+	[SWC_BINDING_BUTTON] = &parse_button
 };
 
 static bool
@@ -309,8 +309,7 @@ parse_action(char *s, struct config_node **node)
 static bool
 handle_binding(enum swc_binding_type type, char *s)
 {
-	char *value_string, *mod_string, *mods_string,
-	    *actions_string, *action_identifier;
+	char *value_string, *mod_string, *mods_string, *actions_string, *action_identifier;
 	uint32_t value, mod, mods;
 	struct binding *binding;
 
@@ -386,8 +385,7 @@ handle_button(char *s)
 	return handle_binding(SWC_BINDING_BUTTON, s);
 }
 
-static const struct
-    {
+static const struct {
 	const char *name;
 	bool (*handle)(char *arguments);
 } commands[] = {

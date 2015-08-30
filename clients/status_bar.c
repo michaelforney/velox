@@ -68,8 +68,7 @@ struct status_bar {
 };
 
 struct item_interface {
-	void (*draw)(struct status_bar *status_bar, struct item *item,
-	             uint32_t x, uint32_t y);
+	void (*draw)(struct status_bar *status_bar, struct item *item, uint32_t x, uint32_t y);
 };
 
 struct style {
@@ -97,30 +96,19 @@ struct screen {
 
 /* Wayland listeners */
 static void registry_global(void *data, struct wl_registry *registry,
-                            uint32_t name, const char *implementation,
-                            uint32_t version);
-static void registry_global_remove(void *data, struct wl_registry *registry,
-                                   uint32_t name);
+                            uint32_t name, const char *implementation, uint32_t version);
+static void registry_global_remove(void *data, struct wl_registry *registry, uint32_t name);
 
-static void panel_docked(void *data, struct swc_panel *panel,
-                         uint32_t length);
+static void panel_docked(void *data, struct swc_panel *panel, uint32_t length);
 
-static void velox_screen_focus(void *data, struct velox_screen *velox_screen,
-                               const char *title);
-
-static void velox_tag_name(void *data, struct velox_tag *tag,
-                           const char *name);
-
-static void velox_tag_screen(void *data, struct velox_tag *tag,
-                             struct velox_screen *screen);
+static void velox_screen_focus(void *data, struct velox_screen *velox_screen, const char *title);
+static void velox_tag_name(void *data, struct velox_tag *tag, const char *name);
+static void velox_tag_screen(void *data, struct velox_tag *tag, struct velox_screen *screen);
 
 /* Item interfaces */
-static void text_draw(struct status_bar *status_bar, struct item *item,
-                      uint32_t x, uint32_t y);
-static void tag_draw(struct status_bar *status_bar, struct item *item,
-                     uint32_t x, uint32_t y);
-static void divider_draw(struct status_bar *status_bar, struct item *item,
-                         uint32_t x, uint32_t y);
+static void text_draw(struct status_bar *status_bar, struct item *item, uint32_t x, uint32_t y);
+static void tag_draw(struct status_bar *status_bar, struct item *item, uint32_t x, uint32_t y);
+static void divider_draw(struct status_bar *status_bar, struct item *item, uint32_t x, uint32_t y);
 
 static struct wl_display *display;
 static struct wl_registry *registry;
@@ -130,8 +118,7 @@ static struct velox *velox;
 
 static struct wl_list screens, tags;
 
-static struct
-    {
+static struct {
 	struct wld_context *context;
 	struct wld_renderer *renderer;
 	struct wld_font_context *font_context;
@@ -171,8 +158,8 @@ static const struct item_interface divider_interface = {
 /* Configuration parameters */
 static const int spacing = 12;
 static const char *const font_name = "Terminus:pixelsize=14";
-static const struct style normal = {.bg = 0xff1a1a1a, .fg = 0xff999999 };
-static const struct style selected = {.bg = 0xff338833, .fg = 0xffffffff };
+static const struct style normal = { .bg = 0xff1a1a1a, .fg = 0xff999999 };
+static const struct style selected = { .bg = 0xff338833, .fg = 0xffffffff };
 
 static timer_t timer;
 static bool running, need_draw;
@@ -203,8 +190,7 @@ xmalloc(size_t size)
 }
 
 static struct item *
-item_new(const struct item_interface *interface,
-         const struct item_data *data)
+item_new(const struct item_interface *interface, const struct item_data *data)
 {
 	struct item *item;
 
@@ -230,8 +216,7 @@ update_text_item_data(struct text_item_data *data)
 /* Wayland event handlers */
 static void
 registry_global(void *data, struct wl_registry *registry,
-                uint32_t name, const char *interface,
-                uint32_t version)
+                uint32_t name, const char *interface, uint32_t version)
 {
 	if (strcmp(interface, "wl_compositor") == 0) {
 		compositor = wl_registry_bind(registry, name, &wl_compositor_interface, 3);
@@ -243,8 +228,7 @@ registry_global(void *data, struct wl_registry *registry,
 		screen = xmalloc(sizeof *screen);
 		screen->focus_data.text = "";
 		screen->focus = NULL;
-		screen->swc = wl_registry_bind(registry, name,
-		                               &swc_screen_interface, 1);
+		screen->swc = wl_registry_bind(registry, name, &swc_screen_interface, 1);
 		if (!screen->swc)
 			die("Failed to bind swc_screen");
 		wl_list_insert(screens.prev, &screen->link);
@@ -267,8 +251,7 @@ registry_global(void *data, struct wl_registry *registry,
 }
 
 static void
-registry_global_remove(void *data, struct wl_registry *registry,
-                       uint32_t name)
+registry_global_remove(void *data, struct wl_registry *registry, uint32_t name)
 {
 }
 
@@ -284,8 +267,7 @@ panel_docked(void *data, struct swc_panel *panel, uint32_t length)
 }
 
 static void
-velox_tag_name(void *data, struct velox_tag *velox_tag,
-               const char *name)
+velox_tag_name(void *data, struct velox_tag *velox_tag, const char *name)
 {
 	struct tag *tag = data;
 
@@ -296,8 +278,7 @@ velox_tag_name(void *data, struct velox_tag *velox_tag,
 }
 
 static void
-velox_tag_screen(void *data, struct velox_tag *velox_tag,
-                 struct velox_screen *velox_screen)
+velox_tag_screen(void *data, struct velox_tag *velox_tag, struct velox_screen *velox_screen)
 {
 	struct tag *tag = data;
 
@@ -306,8 +287,7 @@ velox_tag_screen(void *data, struct velox_tag *velox_tag,
 }
 
 static void
-velox_screen_focus(void *data, struct velox_screen *velox_screen,
-                   const char *title)
+velox_screen_focus(void *data, struct velox_screen *velox_screen, const char *title)
 {
 	struct screen *screen = data;
 
@@ -327,37 +307,32 @@ velox_screen_focus(void *data, struct velox_screen *velox_screen,
 
 /* Item implementations */
 void
-text_draw(struct status_bar *bar, struct item *item,
-          uint32_t x, uint32_t y)
+text_draw(struct status_bar *bar, struct item *item, uint32_t x, uint32_t y)
 {
 	struct text_item_data *data = (void *)item->data;
 
-	wld_draw_text(wld.renderer, wld.font, normal.fg,
-	              x, y + wld.font->ascent + 1, data->text, -1, NULL);
+	wld_draw_text(wld.renderer, wld.font, normal.fg, x, y + wld.font->ascent + 1, data->text, -1, NULL);
 }
 
 void
-divider_draw(struct status_bar *bar, struct item *item,
-             uint32_t x, uint32_t y)
+divider_draw(struct status_bar *bar, struct item *item, uint32_t x, uint32_t y)
 {
-	wld_fill_rectangle(wld.renderer, normal.fg,
-	                   x + spacing / 2, y, 2, bar->height);
+	wld_fill_rectangle(wld.renderer, normal.fg, x + spacing / 2, y, 2, bar->height);
 }
 
 void
-tag_draw(struct status_bar *bar, struct item *item,
-         uint32_t x, uint32_t y)
+tag_draw(struct status_bar *bar, struct item *item, uint32_t x, uint32_t y)
 {
 	struct tag *tag = wl_container_of(item->data, tag, name_data);
 	struct screen *screen = wl_container_of(bar, screen, status_bar);
 	const struct style *style;
 
 	style = tag->screen == screen->velox ? &selected : &normal;
-	wld_fill_rectangle(wld.renderer, style->bg, x, y,
-	                   item->data->width, bar->height);
-	wld_draw_text(wld.renderer, wld.font, style->fg,
-	              x + spacing / 2, y + wld.font->ascent + 1,
-	              tag->name_data.text, -1, NULL);
+	wld_fill_rectangle(wld.renderer, style->bg, x, y, item->data->width, bar->height);
+
+	x += spacing / 2;
+	y += wld.font->ascent + 1;
+	wld_draw_text(wld.renderer, wld.font, style->fg, x, y, tag->name_data.text, -1, NULL);
 }
 
 static void
@@ -430,8 +405,7 @@ setup()
 	wl_display_roundtrip(display);
 
 	if (!compositor || !panel_manager || !velox) {
-		die("Missing required globals: wl_compositor, swc_panel_manager, "
-		    "velox");
+		die("Missing required globals: wl_compositor, swc_panel_manager, velox");
 	}
 
 	wld.context = wld_wayland_create_context(display, WLD_ANY);
@@ -453,15 +427,13 @@ setup()
 		screen->velox = velox_get_screen(velox, screen->swc);
 		if (!screen->velox)
 			die("Failed to get velox_screen");
-		velox_screen_add_listener(screen->velox, &velox_screen_listener,
-		                          screen);
+		velox_screen_add_listener(screen->velox, &velox_screen_listener, screen);
 
 		status_bar = &screen->status_bar;
 		status_bar->surface = wl_compositor_create_surface(compositor);
 		status_bar->panel = swc_panel_manager_create_panel(panel_manager, status_bar->surface);
 		swc_panel_add_listener(status_bar->panel, &panel_listener, status_bar);
-		swc_panel_dock(status_bar->panel, SWC_PANEL_EDGE_TOP,
-		               screen->swc, false);
+		swc_panel_dock(status_bar->panel, SWC_PANEL_EDGE_TOP, screen->swc, false);
 
 		/* Add items */
 		items = &screen->status_bar.items[ALIGN_LEFT];
@@ -498,8 +470,7 @@ setup()
 	wl_list_for_each (screen, &screens, link) {
 		if (!screen->status_bar.wld_surface)
 			die("");
-		swc_panel_set_strut(screen->status_bar.panel, screen->status_bar.height,
-		                    0, screen->status_bar.width);
+		swc_panel_set_strut(screen->status_bar.panel, screen->status_bar.height, 0, screen->status_bar.width);
 	}
 
 	fprintf(stderr, "done\n");
@@ -592,5 +563,3 @@ main(int argc, char *argv[])
 
 	return EXIT_SUCCESS;
 }
-
-// vim: fdm=syntax fo=croql et sw=4 sts=4 ts=8

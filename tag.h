@@ -42,8 +42,7 @@ struct tag {
 	struct wl_global *global;
 	struct wl_list resources;
 
-	struct
-	    {
+	struct {
 		struct config_node group, name, activate, toggle, apply;
 	} config;
 };
@@ -82,7 +81,6 @@ void tag_set(struct tag *tag, struct screen *screen);
  * correct resource is found using client.
  */
 void tag_send_screen(struct tag *tag, struct wl_client *client,
-                     struct wl_resource *tag_resource,
-                     struct wl_resource *screen_resource);
+                     struct wl_resource *tag_resource, struct wl_resource *screen_resource);
 
 #endif

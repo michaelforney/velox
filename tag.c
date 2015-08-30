@@ -95,8 +95,7 @@ apply(struct config_node *node)
 }
 
 static void
-bind_tag(struct wl_client *client, void *data,
-         uint32_t version, uint32_t id)
+bind_tag(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 {
 	struct tag *tag = data;
 	struct wl_resource *resource;
@@ -130,8 +129,7 @@ tag_new(unsigned index, const char *name)
 
 	tag->mask = TAG_MASK(index);
 	tag->screen = NULL;
-	tag->global = wl_global_create(velox.display, &velox_tag_interface, 1,
-	                               tag, &bind_tag);
+	tag->global = wl_global_create(velox.display, &velox_tag_interface, 1, tag, &bind_tag);
 
 	if (!tag->global)
 		goto error2;
@@ -188,7 +186,7 @@ tag_add(struct tag *tag, struct screen *screen)
 	assert(tag->screen == NULL);
 
 	/* Add the tag to the end of the tag list to minimize churn of the screen's
-     * active tag, and to prefer recently released tags. */
+	 * active tag, and to prefer recently released tags. */
 	wl_list_insert(screen ? screen->tags.prev : &velox.unused_tags, &tag->link);
 
 	if (screen) {
@@ -225,8 +223,7 @@ tag_set(struct tag *tag, struct screen *screen)
 
 void
 tag_send_screen(struct tag *tag, struct wl_client *client,
-                struct wl_resource *tag_resource,
-                struct wl_resource *screen_resource)
+                struct wl_resource *tag_resource, struct wl_resource *screen_resource)
 {
 	if (!tag_resource)
 		tag_resource = wl_resource_find_for_client(&tag->resources, client);

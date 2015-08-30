@@ -49,8 +49,7 @@ struct layout *stack_layout_new();
 
 void layout_add_config_nodes();
 
-void layout_begin(struct layout *layout, const struct swc_rectangle *area,
-                  unsigned num_windows);
+void layout_begin(struct layout *layout, const struct swc_rectangle *area, unsigned num_windows);
 void layout_arrange(struct layout *layout, struct window *window);
 
 #endif

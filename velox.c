@@ -81,8 +81,7 @@ get_screen(struct wl_client *client, struct wl_resource *resource,
 			goto found;
 	}
 
-	wl_resource_post_error(resource, VELOX_ERROR_INVALID_SCREEN,
-	                       "Invalid screen resource");
+	wl_resource_post_error(resource, VELOX_ERROR_INVALID_SCREEN, "Invalid screen resource");
 	return;
 
 found:
@@ -100,7 +99,7 @@ manage(struct window *window)
 	struct tag *tag;
 
 	/* TODO: Add support for rules to automatically assign a tag to certain
-     * windows. */
+	 * windows. */
 
 	wl_list_insert(&velox.hidden_windows, &window->link);
 	tag = wl_container_of(velox.active_screen->tags.next, tag, link);
@@ -114,6 +113,7 @@ void
 unmanage(struct window *window)
 {
 	struct screen *screen = window->tag->screen;
+
 	window_set_tag(window, NULL);
 	wl_list_remove(&window->link);
 	if (screen)
@@ -136,7 +136,7 @@ update()
 	struct window *window;
 
 	/* Arrange the windows first so that they aren't shown before they are the
-     * correct size. */
+	 * correct size. */
 	arrange();
 
 	wl_list_for_each (screen, &velox.screens, link) {
@@ -198,7 +198,7 @@ zoom(struct config_node *node)
 		return;
 
 	/* Move the focus to the beginning of the window list, or if it is already
-     * there, the window after the focus. */
+	 * there, the window after the focus. */
 	link = &screen->focus->link;
 
 	if (screen->windows.next == link) {
@@ -330,8 +330,7 @@ main(int argc, char *argv[])
 	if (wl_display_add_socket(velox.display, NULL) != 0)
 		goto error1;
 
-	velox.global = wl_global_create(velox.display, &velox_interface, 1, NULL,
-	                                &bind_velox);
+	velox.global = wl_global_create(velox.display, &velox_interface, 1, NULL, &bind_velox);
 
 	if (!velox.global)
 		goto error1;
@@ -348,8 +347,8 @@ main(int argc, char *argv[])
 			goto error2;
 	}
 
-	/* Mark tags as unused in reverse order, so that they are claimed in
-     * ascending order. */
+	/* Mark tags as unused in reverse order, so that they are claimed in ascending
+	 * order. */
 	for (index = NUM_TAGS - 1; index >= 0; --index)
 		tag_add(velox.tags[index], NULL);
 
