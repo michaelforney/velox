@@ -33,26 +33,25 @@
 
 struct window;
 
-struct tag
-{
-    char * name;
-    uint32_t mask;
-    struct screen * screen;
-    struct wl_list link;
+struct tag {
+	char *name;
+	uint32_t mask;
+	struct screen *screen;
+	struct wl_list link;
 
-    struct wl_global * global;
-    struct wl_list resources;
+	struct wl_global *global;
+	struct wl_list resources;
 
-    struct
-    {
-        struct config_node group, name, activate, toggle, apply;
-    } config;
+	struct
+	    {
+		struct config_node group, name, activate, toggle, apply;
+	} config;
 };
 
 void tag_add_config_nodes();
 
-struct tag * tag_new(unsigned index, const char * name);
-void tag_destroy(struct tag * tag);
+struct tag *tag_new(unsigned index, const char *name);
+void tag_destroy(struct tag *tag);
 
 /**
  * Add a tag to a screen.
@@ -60,12 +59,12 @@ void tag_destroy(struct tag * tag);
  * It must have been removed from its previous screen with tag_remove (even if
  * the previous screen was NULL).
  */
-void tag_add(struct tag * tag, struct screen * screen);
+void tag_add(struct tag *tag, struct screen *screen);
 
 /**
  * Remove a tag from a screen.
  */
-void tag_remove(struct tag * tag, struct screen * screen);
+void tag_remove(struct tag *tag, struct screen *screen);
 
 /**
  * Set a tag's screen by removing it from the original screen, then adding it to
@@ -74,7 +73,7 @@ void tag_remove(struct tag * tag, struct screen * screen);
  * This is exactly equivalent to tag_remove(tag, tag->screen) followed by
  * tag_add(tag, screen).
  */
-void tag_set(struct tag * tag, struct screen * screen);
+void tag_set(struct tag *tag, struct screen *screen);
 
 /**
  * Send a screen event for this tag.
@@ -82,9 +81,8 @@ void tag_set(struct tag * tag, struct screen * screen);
  * Either tag_resource, screen_resource, or both may be NULL in which case the
  * correct resource is found using client.
  */
-void tag_send_screen(struct tag * tag, struct wl_client * client,
-                     struct wl_resource * tag_resource,
-                     struct wl_resource * screen_resource);
+void tag_send_screen(struct tag *tag, struct wl_client *client,
+                     struct wl_resource *tag_resource,
+                     struct wl_resource *screen_resource);
 
 #endif
-

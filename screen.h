@@ -31,46 +31,43 @@
 
 struct swc_screen;
 
-struct view
-{
-    uint32_t tags;
+struct view {
+	uint32_t tags;
 };
 
-struct screen
-{
-    struct swc_screen * swc;
-    struct wl_listener event_listener;
-    struct wl_list link;
+struct screen {
+	struct swc_screen *swc;
+	struct wl_listener event_listener;
+	struct wl_list link;
 
-    struct wl_list tags;
-    uint32_t mask, last_mask;
+	struct wl_list tags;
+	uint32_t mask, last_mask;
 
-    struct wl_list layouts;
-    struct layout * layout[NUM_LAYERS];
+	struct wl_list layouts;
+	struct layout *layout[NUM_LAYERS];
 
-    struct wl_list windows;
-    unsigned num_windows[NUM_LAYERS];
-    struct window * focus;
+	struct wl_list windows;
+	unsigned num_windows[NUM_LAYERS];
+	struct window *focus;
 
-    struct wl_list resources;
+	struct wl_list resources;
 };
 
-struct screen * screen_new(struct swc_screen * swc);
+struct screen *screen_new(struct swc_screen *swc);
 
-void screen_arrange(struct screen * screen);
-void screen_set_tags(struct screen * screen, uint32_t tags);
+void screen_arrange(struct screen *screen);
+void screen_set_tags(struct screen *screen, uint32_t tags);
 
-void screen_focus_next(struct screen * screen);
-void screen_focus_prev(struct screen * screen);
-void screen_set_focus(struct screen * screen, struct window * window);
+void screen_focus_next(struct screen *screen);
+void screen_focus_prev(struct screen *screen);
+void screen_set_focus(struct screen *screen, struct window *window);
 
-void screen_add_windows(struct screen * screen);
-void screen_remove_windows(struct screen * screen);
+void screen_add_windows(struct screen *screen);
+void screen_remove_windows(struct screen *screen);
 
 /* Wayland interface */
-struct wl_resource * screen_bind(struct screen * screen,
-                                 struct wl_client * client, uint32_t id);
-void screen_focus_title_notify(struct screen * screen);
+struct wl_resource *screen_bind(struct screen *screen,
+                                struct wl_client *client, uint32_t id);
+void screen_focus_title_notify(struct screen *screen);
 
 #endif
-

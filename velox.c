@@ -41,199 +41,212 @@
 struct velox velox;
 unsigned border_width = 2;
 
-static void new_screen(struct swc_screen * swc)
+static void
+new_screen(struct swc_screen *swc)
 {
-    struct screen * screen;
+	struct screen *screen;
 
-    if (!(screen = screen_new(swc)))
-        return;
+	if (!(screen = screen_new(swc)))
+		return;
 
-    velox.active_screen = screen;
-    wl_list_insert(&velox.screens, &screen->link);
+	velox.active_screen = screen;
+	wl_list_insert(&velox.screens, &screen->link);
 }
 
-static void new_window(struct swc_window * swc)
+static void
+new_window(struct swc_window *swc)
 {
-    struct window * window;
+	struct window *window;
 
-    if (!(window = window_new(swc)))
-        return;
+	if (!(window = window_new(swc)))
+		return;
 
-    manage(window);
+	manage(window);
 }
 
 const struct swc_manager manager = {
-    .new_screen = &new_screen,
-    .new_window = &new_window,
+	.new_screen = &new_screen,
+	.new_window = &new_window,
 };
 
-static void get_screen(struct wl_client * client, struct wl_resource * resource,
-                       struct wl_resource * screen_resource, uint32_t id)
+static void
+get_screen(struct wl_client *client, struct wl_resource *resource,
+           struct wl_resource *screen_resource, uint32_t id)
 {
-    struct screen * screen;
-    struct swc_screen * swc_screen = wl_resource_get_user_data(screen_resource);
+	struct screen *screen;
+	struct swc_screen *swc_screen = wl_resource_get_user_data(screen_resource);
 
-    wl_list_for_each(screen, &velox.screens, link)
-    {
-        if (screen->swc == swc_screen)
-            goto found;
-    }
+	wl_list_for_each (screen, &velox.screens, link) {
+		if (screen->swc == swc_screen)
+			goto found;
+	}
 
-    wl_resource_post_error(resource, VELOX_ERROR_INVALID_SCREEN,
-                           "Invalid screen resource");
-    return;
+	wl_resource_post_error(resource, VELOX_ERROR_INVALID_SCREEN,
+	                       "Invalid screen resource");
+	return;
 
-  found:
-    if (!screen_bind(screen, client, id))
-        wl_client_post_no_memory(client);
+found:
+	if (!screen_bind(screen, client, id))
+		wl_client_post_no_memory(client);
 }
 
 static const struct velox_interface velox_implementation = {
-    .get_screen = &get_screen,
+	.get_screen = &get_screen,
 };
 
-void manage(struct window * window)
+void
+manage(struct window *window)
 {
-    struct tag * tag;
+	struct tag *tag;
 
-    /* TODO: Add support for rules to automatically assign a tag to certain
+	/* TODO: Add support for rules to automatically assign a tag to certain
      * windows. */
 
-    wl_list_insert(&velox.hidden_windows, &window->link);
-    tag = wl_container_of(velox.active_screen->tags.next, tag, link);
-    window_set_tag(window, tag);
-    if (window->tag->screen)
-        screen_set_focus(window->tag->screen, window);
-    update();
+	wl_list_insert(&velox.hidden_windows, &window->link);
+	tag = wl_container_of(velox.active_screen->tags.next, tag, link);
+	window_set_tag(window, tag);
+	if (window->tag->screen)
+		screen_set_focus(window->tag->screen, window);
+	update();
 }
 
-void unmanage(struct window * window)
+void
+unmanage(struct window *window)
 {
-    struct screen * screen = window->tag->screen;
-    window_set_tag(window, NULL);
-    wl_list_remove(&window->link);
-    if (screen)
-        screen_arrange(screen);
+	struct screen *screen = window->tag->screen;
+	window_set_tag(window, NULL);
+	wl_list_remove(&window->link);
+	if (screen)
+		screen_arrange(screen);
 }
 
-void arrange()
+void
+arrange()
 {
-    struct screen * screen;
+	struct screen *screen;
 
-    wl_list_for_each(screen, &velox.screens, link)
-        screen_arrange(screen);
+	wl_list_for_each (screen, &velox.screens, link)
+		screen_arrange(screen);
 }
 
-void update()
+void
+update()
 {
-    struct screen * screen;
-    struct window * window;
+	struct screen *screen;
+	struct window *window;
 
-    /* Arrange the windows first so that they aren't shown before they are the
+	/* Arrange the windows first so that they aren't shown before they are the
      * correct size. */
-    arrange();
+	arrange();
 
-    wl_list_for_each(screen, &velox.screens, link)
-    {
-        wl_list_for_each(window, &screen->windows, link)
-            window_show(window);
-    }
+	wl_list_for_each (screen, &velox.screens, link) {
+		wl_list_for_each (window, &screen->windows, link)
+			window_show(window);
+	}
 
-    wl_list_for_each(window, &velox.hidden_windows, link)
-        window_hide(window);
+	wl_list_for_each (window, &velox.hidden_windows, link)
+		window_hide(window);
 }
 
-struct tag * next_tag(uint32_t * tags)
+struct tag *
+next_tag(uint32_t *tags)
 {
-    unsigned index = __builtin_ffsl(*tags);
-    struct tag * tag;
+	unsigned index = __builtin_ffsl(*tags);
+	struct tag *tag;
 
-    if (index == 0)
-        return NULL;
+	if (index == 0)
+		return NULL;
 
-    tag = velox.tags[index - 1];
-    *tags &= ~tag->mask;
+	tag = velox.tags[index - 1];
+	*tags &= ~tag->mask;
 
-    return tag;
+	return tag;
 }
 
-struct tag * find_unused_tag()
+struct tag *
+find_unused_tag()
 {
-    struct tag * tag;
+	struct tag *tag;
 
-    if (wl_list_empty(&velox.unused_tags))
-        return NULL;
+	if (wl_list_empty(&velox.unused_tags))
+		return NULL;
 
-    tag = wl_container_of(velox.unused_tags.next, tag, link);
-    return tag;
+	tag = wl_container_of(velox.unused_tags.next, tag, link);
+	return tag;
 }
 
 /**** Actions ****/
-static void focus_next(struct config_node * node)
+static void
+focus_next(struct config_node *node)
 {
-    screen_focus_next(velox.active_screen);
+	screen_focus_next(velox.active_screen);
 }
 
-static void focus_prev(struct config_node * node)
+static void
+focus_prev(struct config_node *node)
 {
-    screen_focus_prev(velox.active_screen);
+	screen_focus_prev(velox.active_screen);
 }
 
-static void zoom(struct config_node * node)
+static void
+zoom(struct config_node *node)
 {
-    struct screen * screen = velox.active_screen;
-    struct wl_list * link;
+	struct screen *screen = velox.active_screen;
+	struct wl_list *link;
 
-    if (!screen->focus)
-        return;
+	if (!screen->focus)
+		return;
 
-    /* Move the focus to the beginning of the window list, or if it is already
+	/* Move the focus to the beginning of the window list, or if it is already
      * there, the window after the focus. */
-    link = &screen->focus->link;
+	link = &screen->focus->link;
 
-    if (screen->windows.next == link)
-    {
-        if (link->next == &screen->windows)
-            return;
+	if (screen->windows.next == link) {
+		if (link->next == &screen->windows)
+			return;
 
-        link = link->next;
-    }
+		link = link->next;
+	}
 
-    wl_list_remove(link);
-    wl_list_insert(&screen->windows, link);
-    arrange();
+	wl_list_remove(link);
+	wl_list_insert(&screen->windows, link);
+	arrange();
 }
 
-static void close_focused_window(struct config_node * node)
+static void
+close_focused_window(struct config_node *node)
 {
-    if (velox.active_screen->focus)
-        swc_window_close(velox.active_screen->focus->swc);
+	if (velox.active_screen->focus)
+		swc_window_close(velox.active_screen->focus->swc);
 }
 
-static void layout_next(struct config_node * node)
+static void
+layout_next(struct config_node *node)
 {
-    struct screen * screen = velox.active_screen;
-    struct layout ** layout = &screen->layout[TILE];
-    struct wl_list * link;
+	struct screen *screen = velox.active_screen;
+	struct layout **layout = &screen->layout[TILE];
+	struct wl_list *link;
 
-    if ((link = (*layout)->link.next) == &screen->layouts)
-        link = link->next;
-    *layout = wl_container_of(link, *layout, link);
-    screen_arrange(screen);
+	if ((link = (*layout)->link.next) == &screen->layouts)
+		link = link->next;
+	*layout = wl_container_of(link, *layout, link);
+	screen_arrange(screen);
 }
 
-static void previous_tags(struct config_node * node)
+static void
+previous_tags(struct config_node *node)
 {
-    uint32_t mask = velox.active_screen->last_mask;
+	uint32_t mask = velox.active_screen->last_mask;
 
-    velox.active_screen->last_mask = velox.active_screen->mask;
-    screen_set_tags(velox.active_screen, mask);
-    update();
+	velox.active_screen->last_mask = velox.active_screen->mask;
+	screen_set_tags(velox.active_screen, mask);
+	update();
 }
 
-static void quit(struct config_node * node)
+static void
+quit(struct config_node *node)
 {
-    wl_display_terminate(velox.display);
+	wl_display_terminate(velox.display);
 }
 
 static CONFIG_ACTION(focus_next, &focus_next);
@@ -244,121 +257,123 @@ static CONFIG_ACTION(layout_next, &layout_next);
 static CONFIG_ACTION(previous_tags, &previous_tags);
 static CONFIG_ACTION(quit, &quit);
 
-static void add_config_nodes()
+static void
+add_config_nodes()
 {
-    wl_list_insert(config_root, &focus_next_action.link);
-    wl_list_insert(config_root, &focus_prev_action.link);
-    wl_list_insert(config_root, &zoom_action.link);
-    wl_list_insert(config_root, &close_focused_window_action.link);
-    wl_list_insert(config_root, &layout_next_action.link);
-    wl_list_insert(config_root, &previous_tags_action.link);
-    wl_list_insert(config_root, &quit_action.link);
+	wl_list_insert(config_root, &focus_next_action.link);
+	wl_list_insert(config_root, &focus_prev_action.link);
+	wl_list_insert(config_root, &zoom_action.link);
+	wl_list_insert(config_root, &close_focused_window_action.link);
+	wl_list_insert(config_root, &layout_next_action.link);
+	wl_list_insert(config_root, &previous_tags_action.link);
+	wl_list_insert(config_root, &quit_action.link);
 
-    layout_add_config_nodes();
-    tag_add_config_nodes();
-    window_add_config_nodes();
+	layout_add_config_nodes();
+	tag_add_config_nodes();
+	window_add_config_nodes();
 }
 
-static void start_clients()
+static void
+start_clients()
 {
-    const char * dir, * status_bar = "status_bar";
+	const char *dir, *status_bar = "status_bar";
 
-    if (!(dir = getenv("VELOX_LIBEXEC")))
-        dir = VELOX_LIBEXEC;
+	if (!(dir = getenv("VELOX_LIBEXEC")))
+		dir = VELOX_LIBEXEC;
 
-    char status_bar_path[strlen(dir) + 1 + strlen(status_bar) + 1];
-    sprintf(status_bar_path, "%s/%s", dir, status_bar);
+	char status_bar_path[strlen(dir) + 1 + strlen(status_bar) + 1];
+	sprintf(status_bar_path, "%s/%s", dir, status_bar);
 
-    if (fork() == 0)
-    {
-        execl(status_bar_path, status_bar, NULL);
-        exit(EXIT_FAILURE);
-    }
+	if (fork() == 0) {
+		execl(status_bar_path, status_bar, NULL);
+		exit(EXIT_FAILURE);
+	}
 }
 
-static int handle_chld(int num, void * data)
+static int
+handle_chld(int num, void *data)
 {
-    /* Clean up zombie processes. */
-    while (waitpid(-1, NULL, WNOHANG) > 0);
-    return 0;
+	/* Clean up zombie processes. */
+	while (waitpid(-1, NULL, WNOHANG) > 0)
+		;
+	return 0;
 }
 
-static void bind_velox(struct wl_client * client, void * data,
-                       uint32_t version, uint32_t id)
+static void
+bind_velox(struct wl_client *client, void *data,
+           uint32_t version, uint32_t id)
 {
-    struct wl_resource * resource;
+	struct wl_resource *resource;
 
-    if (version >= 1)
-        version = 1;
+	if (version >= 1)
+		version = 1;
 
-    if (!(resource = wl_resource_create(client, &velox_interface, version, id)))
-    {
-        wl_client_post_no_memory(client);
-        return;
-    }
+	if (!(resource = wl_resource_create(client, &velox_interface, version, id))) {
+		wl_client_post_no_memory(client);
+		return;
+	}
 
-    wl_resource_set_implementation(resource, &velox_implementation, NULL, NULL);
+	wl_resource_set_implementation(resource, &velox_implementation, NULL, NULL);
 }
 
-int main(int argc, char * argv[])
+int
+main(int argc, char *argv[])
 {
-    int index;
-    char tag_name[] = "1";
+	int index;
+	char tag_name[] = "1";
 
-    velox.display = wl_display_create();
+	velox.display = wl_display_create();
 
-    if (!velox.display)
-        goto error0;
+	if (!velox.display)
+		goto error0;
 
-    if (wl_display_add_socket(velox.display, NULL) != 0)
-        goto error1;
+	if (wl_display_add_socket(velox.display, NULL) != 0)
+		goto error1;
 
-    velox.global = wl_global_create(velox.display, &velox_interface, 1, NULL,
-                                    &bind_velox);
+	velox.global = wl_global_create(velox.display, &velox_interface, 1, NULL,
+	                                &bind_velox);
 
-    if (!velox.global)
-        goto error1;
+	if (!velox.global)
+		goto error1;
 
-    velox.event_loop = wl_display_get_event_loop(velox.display);
-    wl_event_loop_add_signal(velox.event_loop, SIGCHLD, &handle_chld, NULL);
-    wl_list_init(&velox.screens);
-    wl_list_init(&velox.hidden_windows);
-    wl_list_init(&velox.unused_tags);
-    add_config_nodes();
+	velox.event_loop = wl_display_get_event_loop(velox.display);
+	wl_event_loop_add_signal(velox.event_loop, SIGCHLD, &handle_chld, NULL);
+	wl_list_init(&velox.screens);
+	wl_list_init(&velox.hidden_windows);
+	wl_list_init(&velox.unused_tags);
+	add_config_nodes();
 
-    for (index = 0; index < NUM_TAGS; ++index, ++tag_name[0])
-    {
-        if (!(velox.tags[index] = tag_new(index, tag_name)))
-            goto error2;
-    }
+	for (index = 0; index < NUM_TAGS; ++index, ++tag_name[0]) {
+		if (!(velox.tags[index] = tag_new(index, tag_name)))
+			goto error2;
+	}
 
-    /* Mark tags as unused in reverse order, so that they are claimed in
+	/* Mark tags as unused in reverse order, so that they are claimed in
      * ascending order. */
-    for (index = NUM_TAGS - 1; index >= 0; --index)
-        tag_add(velox.tags[index], NULL);
+	for (index = NUM_TAGS - 1; index >= 0; --index)
+		tag_add(velox.tags[index], NULL);
 
-    if (!swc_initialize(velox.display, NULL, &manager))
-        goto error2;
+	if (!swc_initialize(velox.display, NULL, &manager))
+		goto error2;
 
-    if (!config_parse())
-        goto error3;
+	if (!config_parse())
+		goto error3;
 
-    start_clients();
+	start_clients();
 
-    wl_display_run(velox.display);
-    swc_finalize();
+	wl_display_run(velox.display);
+	swc_finalize();
 
-    return EXIT_SUCCESS;
+	return EXIT_SUCCESS;
 
-  error3:
-    swc_finalize();
-  error2:
-    while (index > 0)
-        tag_destroy(velox.tags[--index]);
-    wl_global_destroy(velox.global);
-  error1:
-    wl_display_destroy(velox.display);
-  error0:
-    return EXIT_FAILURE;
+error3:
+	swc_finalize();
+error2:
+	while (index > 0)
+		tag_destroy(velox.tags[--index]);
+	wl_global_destroy(velox.global);
+error1:
+	wl_display_destroy(velox.display);
+error0:
+	return EXIT_FAILURE;
 }
-

@@ -27,57 +27,53 @@
 #include <stdbool.h>
 #include <wayland-util.h>
 
-enum config_node_type
-{
-    CONFIG_NODE_TYPE_GROUP,
-    CONFIG_NODE_TYPE_PROPERTY,
-    CONFIG_NODE_TYPE_ACTION
+enum config_node_type {
+	CONFIG_NODE_TYPE_GROUP,
+	CONFIG_NODE_TYPE_PROPERTY,
+	CONFIG_NODE_TYPE_ACTION
 };
 
-struct config_node
-{
-    const char * name;
-    enum config_node_type type;
+struct config_node {
+	const char *name;
+	enum config_node_type type;
 
-    union
-    {
-        struct wl_list group;
-        struct
-        {
-            bool (* set)(struct config_node * node, const char * value);
-        } property;
-        struct
-        {
-            void (* run)(struct config_node * node);
-        } action;
-    };
+	union {
+		struct wl_list group;
+		struct
+		    {
+			bool (*set)(struct config_node *node, const char *value);
+		} property;
+		struct
+		    {
+			void (*run)(struct config_node *node);
+		} action;
+	};
 
-    struct wl_list link;
+	struct wl_list link;
 };
 
-#define CONFIG_GROUP(n)                                                     \
-    struct config_node n ## _group = {                                      \
-        .name = #n,                                                         \
-        .type = CONFIG_NODE_TYPE_GROUP,                                     \
-        .group = { &n ## _group.group, &n ## _group.group }                 \
-    }
-#define CONFIG_PROPERTY(n, func)                                            \
-    struct config_node n ## _property = {                                   \
-        .name = #n,                                                         \
-        .type = CONFIG_NODE_TYPE_PROPERTY,                                  \
-        .property = { .set = func }                                         \
-    }
-#define CONFIG_ACTION(n, func)                                              \
-    struct config_node n ## _action = {                                     \
-        .name = #n,                                                         \
-        .type = CONFIG_NODE_TYPE_ACTION,                                    \
-        .action = { .run = func }                                           \
-    }
+#define CONFIG_GROUP(n)                                         \
+	struct config_node n##_group = {                        \
+		.name = #n,                                     \
+		.type = CONFIG_NODE_TYPE_GROUP,                 \
+		.group = { &n##_group.group, &n##_group.group } \
+	}
+#define CONFIG_PROPERTY(n, func)                   \
+	struct config_node n##_property = {        \
+		.name = #n,                        \
+		.type = CONFIG_NODE_TYPE_PROPERTY, \
+		.property = {.set = func }         \
+	}
+#define CONFIG_ACTION(n, func)                   \
+	struct config_node n##_action = {        \
+		.name = #n,                      \
+		.type = CONFIG_NODE_TYPE_ACTION, \
+		.action = {.run = func }         \
+	}
 
 bool config_parse();
-bool config_set_unsigned(unsigned * value, const char * string, int base);
+bool config_set_unsigned(unsigned *value, const char *string, int base);
 
-extern struct wl_list * config_root;
+extern struct wl_list *config_root;
 
 #endif
-

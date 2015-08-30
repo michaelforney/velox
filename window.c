@@ -33,67 +33,75 @@
 static uint32_t border_color_active = 0xff338833;
 static uint32_t border_color_inactive = 0xff888888;
 
-static bool border_width_set(struct config_node * node, const char * value)
+static bool
+border_width_set(struct config_node *node, const char *value)
 {
-    return config_set_unsigned(&border_width, value, 0);
+	return config_set_unsigned(&border_width, value, 0);
 }
 
-static bool border_color_active_set(struct config_node * node,
-                                    const char * value)
+static bool
+border_color_active_set(struct config_node *node,
+                        const char *value)
 {
-    return config_set_unsigned(&border_color_active, value, 16);
+	return config_set_unsigned(&border_color_active, value, 16);
 }
 
-static bool border_color_inactive_set(struct config_node * node,
-                                      const char * value)
+static bool
+border_color_inactive_set(struct config_node *node,
+                          const char *value)
 {
-    return config_set_unsigned(&border_color_inactive, value, 16);
+	return config_set_unsigned(&border_color_inactive, value, 16);
 }
 
-static void begin_move(struct config_node * node)
+static void
+begin_move(struct config_node *node)
 {
-    struct window * focus = velox.active_screen->focus;
+	struct window *focus = velox.active_screen->focus;
 
-    if (!focus)
-        return;
+	if (!focus)
+		return;
 
-    window_set_layer(focus, STACK);
-    swc_window_begin_move(focus->swc);
+	window_set_layer(focus, STACK);
+	swc_window_begin_move(focus->swc);
 }
 
-static void end_move(struct config_node * node)
+static void
+end_move(struct config_node *node)
 {
-    struct window * focus = velox.active_screen->focus;
+	struct window *focus = velox.active_screen->focus;
 
-    if (focus)
-        swc_window_end_move(focus->swc);
+	if (focus)
+		swc_window_end_move(focus->swc);
 }
 
-static void begin_resize(struct config_node * node)
+static void
+begin_resize(struct config_node *node)
 {
-    struct window * focus = velox.active_screen->focus;
+	struct window *focus = velox.active_screen->focus;
 
-    if (!focus)
-        return;
+	if (!focus)
+		return;
 
-    window_set_layer(focus, STACK);
-    swc_window_begin_resize(focus->swc, SWC_WINDOW_EDGE_AUTO);
+	window_set_layer(focus, STACK);
+	swc_window_begin_resize(focus->swc, SWC_WINDOW_EDGE_AUTO);
 }
 
-static void end_resize(struct config_node * node)
+static void
+end_resize(struct config_node *node)
 {
-    struct window * focus = velox.active_screen->focus;
+	struct window *focus = velox.active_screen->focus;
 
-    if (focus)
-        swc_window_end_resize(focus->swc);
+	if (focus)
+		swc_window_end_resize(focus->swc);
 }
 
-static void switch_layer(struct config_node * node)
+static void
+switch_layer(struct config_node *node)
 {
-    struct window * focus = velox.active_screen->focus;
+	struct window *focus = velox.active_screen->focus;
 
-    if (focus)
-        window_set_layer(focus, (focus->layer + 1) % NUM_LAYERS);
+	if (focus)
+		window_set_layer(focus, (focus->layer + 1) % NUM_LAYERS);
 }
 
 static CONFIG_GROUP(window);
@@ -106,145 +114,150 @@ static CONFIG_ACTION(begin_resize, &begin_resize);
 static CONFIG_ACTION(end_resize, &end_resize);
 static CONFIG_ACTION(switch_layer, &switch_layer);
 
-void window_add_config_nodes()
+void
+window_add_config_nodes()
 {
-    wl_list_insert(&window_group.group, &border_width_property.link);
-    wl_list_insert(&window_group.group, &border_color_active_property.link);
-    wl_list_insert(&window_group.group, &border_color_inactive_property.link);
-    wl_list_insert(&window_group.group, &begin_move_action.link);
-    wl_list_insert(&window_group.group, &end_move_action.link);
-    wl_list_insert(&window_group.group, &begin_resize_action.link);
-    wl_list_insert(&window_group.group, &end_resize_action.link);
-    wl_list_insert(&window_group.group, &switch_layer_action.link);
-    wl_list_insert(config_root, &window_group.link);
+	wl_list_insert(&window_group.group, &border_width_property.link);
+	wl_list_insert(&window_group.group, &border_color_active_property.link);
+	wl_list_insert(&window_group.group, &border_color_inactive_property.link);
+	wl_list_insert(&window_group.group, &begin_move_action.link);
+	wl_list_insert(&window_group.group, &end_move_action.link);
+	wl_list_insert(&window_group.group, &begin_resize_action.link);
+	wl_list_insert(&window_group.group, &end_resize_action.link);
+	wl_list_insert(&window_group.group, &switch_layer_action.link);
+	wl_list_insert(config_root, &window_group.link);
 }
 
-static void destroy(void * data)
+static void
+destroy(void *data)
 {
-    struct window * window = data;
+	struct window *window = data;
 
-    unmanage(window);
-    free(window);
+	unmanage(window);
+	free(window);
 }
 
-static void title_changed(void * data)
+static void
+title_changed(void *data)
 {
-    struct window * window = data;
+	struct window *window = data;
 
-    /* If this window focused on a screen, make sure bound clients are
+	/* If this window focused on a screen, make sure bound clients are
      * aware of this title change. */
-    if (window->tag->screen && window->tag->screen->focus == window)
-        screen_focus_title_notify(window->tag->screen);
+	if (window->tag->screen && window->tag->screen->focus == window)
+		screen_focus_title_notify(window->tag->screen);
 }
 
-static void parent_changed(void * data)
+static void
+parent_changed(void *data)
 {
-    struct window * window = data;
+	struct window *window = data;
 
-    if (window->swc->parent)
-        window_set_layer(window, STACK);
+	if (window->swc->parent)
+		window_set_layer(window, STACK);
 
-    /* TODO: We should probably center this window in the parent. */
+	/* TODO: We should probably center this window in the parent. */
 }
 
-static void entered(void * data)
+static void
+entered(void *data)
 {
-    struct window * window = data;
+	struct window *window = data;
 
-    window_focus(window);
-    window->tag->screen->focus = window;
+	window_focus(window);
+	window->tag->screen->focus = window;
 }
 
 static const struct swc_window_handler window_handler = {
-    .destroy = &destroy,
-    .title_changed = &title_changed,
-    .parent_changed = &parent_changed,
-    .entered = &entered,
+	.destroy = &destroy,
+	.title_changed = &title_changed,
+	.parent_changed = &parent_changed,
+	.entered = &entered,
 };
 
-struct window * window_new(struct swc_window * swc)
+struct window *
+window_new(struct swc_window *swc)
 {
-    struct window * window;
+	struct window *window;
 
-    if (!(window = malloc(sizeof *window)))
-        return NULL;
+	if (!(window = malloc(sizeof *window)))
+		return NULL;
 
-    window->swc = swc;
-    window->tag = NULL;
-    swc_window_set_handler(swc, &window_handler, window);
-    window_set_layer(window, TILE);
+	window->swc = swc;
+	window->tag = NULL;
+	swc_window_set_handler(swc, &window_handler, window);
+	window_set_layer(window, TILE);
 
-    return window;
+	return window;
 }
 
-void window_focus(struct window * window)
+void
+window_focus(struct window *window)
 {
-    /* This will become stale if the focused window is destroyed. However, we
+	/* This will become stale if the focused window is destroyed. However, we
      * make sure to change the focus of a screen in screen_remove_windows when
      * its focus is removed (before it is actually destroyed). */
-    static struct window * focused_window;
+	static struct window *focused_window;
 
-    if (focused_window)
-    {
-        swc_window_set_border(focused_window->swc,
-                              border_color_inactive, border_width);
-    }
+	if (focused_window) {
+		swc_window_set_border(focused_window->swc,
+		                      border_color_inactive, border_width);
+	}
 
-    if (window)
-    {
-        swc_window_set_border(window->swc, border_color_active, border_width);
-        swc_window_focus(window->swc);
-    }
-    else
-        swc_window_focus(NULL);
+	if (window) {
+		swc_window_set_border(window->swc, border_color_active, border_width);
+		swc_window_focus(window->swc);
+	} else
+		swc_window_focus(NULL);
 
-    focused_window = window;
+	focused_window = window;
 }
 
-void window_show(struct window * window)
+void
+window_show(struct window *window)
 {
-    swc_window_show(window->swc);
+	swc_window_show(window->swc);
 }
 
-void window_hide(struct window * window)
+void
+window_hide(struct window *window)
 {
-    swc_window_hide(window->swc);
+	swc_window_hide(window->swc);
 }
 
-void window_set_tag(struct window * window, struct tag * tag)
+void
+window_set_tag(struct window *window, struct tag *tag)
 {
-    struct tag * original_tag = window->tag;
+	struct tag *original_tag = window->tag;
 
-    window->tag = tag;
+	window->tag = tag;
 
-    if (original_tag && original_tag->screen)
-        screen_remove_windows(original_tag->screen);
+	if (original_tag && original_tag->screen)
+		screen_remove_windows(original_tag->screen);
 
-    if (tag && tag->screen)
-        screen_add_windows(tag->screen);
+	if (tag && tag->screen)
+		screen_add_windows(tag->screen);
 }
 
-void window_set_layer(struct window * window, int layer)
+void
+window_set_layer(struct window *window, int layer)
 {
-    int old_layer = window->layer;
+	int old_layer = window->layer;
 
-    window->layer = layer;
+	window->layer = layer;
 
-    switch (layer)
-    {
-        case TILE:
-            swc_window_set_tiled(window->swc);
-            break;
-        case STACK:
-            swc_window_set_stacked(window->swc);
-            break;
-    }
+	switch (layer) {
+	case TILE:
+		swc_window_set_tiled(window->swc);
+		break;
+	case STACK:
+		swc_window_set_stacked(window->swc);
+		break;
+	}
 
-    if (window->tag && window->tag->screen)
-    {
-        --window->tag->screen->num_windows[old_layer];
-        ++window->tag->screen->num_windows[layer];
-        update();
-    }
+	if (window->tag && window->tag->screen) {
+		--window->tag->screen->num_windows[old_layer];
+		++window->tag->screen->num_windows[layer];
+		update();
+	}
 }
-

@@ -28,7 +28,6 @@
 
 struct wl_resource;
 
-void remove_resource(struct wl_resource * resource);
+void remove_resource(struct wl_resource *resource);
 
 #endif
-

@@ -28,25 +28,23 @@
 
 struct swc_window;
 
-struct window
-{
-    struct swc_window * swc;
-    struct wl_listener event_listener;
-    struct wl_list link;
+struct window {
+	struct swc_window *swc;
+	struct wl_listener event_listener;
+	struct wl_list link;
 
-    int layer;
-    struct tag * tag;
+	int layer;
+	struct tag *tag;
 };
 
 void window_add_config_nodes();
 
-struct window * window_new(struct swc_window * swc);
-void window_focus(struct window * window);
-void window_show(struct window * window);
-void window_hide(struct window * window);
+struct window *window_new(struct swc_window *swc);
+void window_focus(struct window *window);
+void window_show(struct window *window);
+void window_hide(struct window *window);
 
-void window_set_tag(struct window * window, struct tag * tag);
-void window_set_layer(struct window * window, int layer);
+void window_set_tag(struct window *window, struct tag *tag);
+void window_set_layer(struct window *window, int layer);
 
 #endif
-

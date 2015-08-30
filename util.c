@@ -25,8 +25,8 @@
 
 #include <wayland-server.h>
 
-void remove_resource(struct wl_resource * resource)
+void
+remove_resource(struct wl_resource *resource)
 {
-    wl_list_remove(wl_resource_get_link(resource));
+	wl_list_remove(wl_resource_get_link(resource));
 }
-

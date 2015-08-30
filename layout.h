@@ -30,30 +30,27 @@ struct screen;
 struct window;
 struct swc_rectangle;
 
-enum layer
-{
-    TILE,
-    STACK,
+enum layer {
+	TILE,
+	STACK,
 
-    NUM_LAYERS
+	NUM_LAYERS
 };
 
-struct layout
-{
-    const struct layout_impl * impl;
-    struct wl_list link;
+struct layout {
+	const struct layout_impl *impl;
+	struct wl_list link;
 };
 
-struct layout * tall_layout_new();
-struct layout * grid_layout_new();
+struct layout *tall_layout_new();
+struct layout *grid_layout_new();
 
-struct layout * stack_layout_new();
+struct layout *stack_layout_new();
 
 void layout_add_config_nodes();
 
-void layout_begin(struct layout * layout, const struct swc_rectangle * area,
+void layout_begin(struct layout *layout, const struct swc_rectangle *area,
                   unsigned num_windows);
-void layout_arrange(struct layout * layout, struct window * window);
+void layout_arrange(struct layout *layout, struct window *window);
 
 #endif
-

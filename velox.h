@@ -30,29 +30,27 @@
 
 struct window;
 
-struct velox
-{
-    struct wl_display * display;
-    struct wl_event_loop * event_loop;
-    struct screen * active_screen;
-    struct wl_list screens;
-    struct wl_list hidden_windows;
-    struct wl_list unused_tags;
-    struct tag * tags[NUM_TAGS];
+struct velox {
+	struct wl_display *display;
+	struct wl_event_loop *event_loop;
+	struct screen *active_screen;
+	struct wl_list screens;
+	struct wl_list hidden_windows;
+	struct wl_list unused_tags;
+	struct tag *tags[NUM_TAGS];
 
-    struct wl_global * global;
+	struct wl_global *global;
 };
 
 extern struct velox velox;
 extern unsigned border_width;
 
-void manage(struct window * window);
-void unmanage(struct window * window);
+void manage(struct window *window);
+void unmanage(struct window *window);
 void arrange();
 void update();
 
-struct tag * next_tag(uint32_t * tags);
-struct tag * find_unused_tag();
+struct tag *next_tag(uint32_t *tags);
+struct tag *find_unused_tag();
 
 #endif
-
