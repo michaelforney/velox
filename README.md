@@ -43,7 +43,7 @@ interprets its value as a hexadecimal color, while `tag.1.name` simply sets the
 name of the tag to the given string.
 
 ### The `action` command
-    action <identifier> <type> <type-specifier-arguments>
+    action <identifier> <type> <type-specific-arguments>
 
 The `action` command creates a new action that can be invoked using key
 bindings. The first argument is an identifier to use for the action to be
