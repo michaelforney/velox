@@ -240,15 +240,11 @@ screen_focus_prev(struct screen *screen)
 void
 screen_set_focus(struct screen *screen, struct window *window)
 {
-	struct wl_resource *resource;
-
 	if (window)
 		assert(window->tag->screen == screen);
 
 	screen->focus = window;
-
-	wl_resource_for_each (resource, &screen->resources)
-		send_focus(screen, resource);
+	screen_focus_notify(screen);
 
 	if (screen == velox.active_screen)
 		window_focus(screen->focus);
@@ -311,7 +307,7 @@ screen_bind(struct screen *screen, struct wl_client *client, uint32_t id)
 }
 
 void
-screen_focus_title_notify(struct screen *screen)
+screen_focus_notify(struct screen *screen)
 {
 	struct wl_resource *resource;
 
