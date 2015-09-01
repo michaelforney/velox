@@ -15,12 +15,16 @@
     <interface name="velox_screen" version="1">
         <event name="focus">
             <arg name="title" type="string" allow-null="true" />
+            <arg name="tag" type="object" interface="velox_tag" allow-null="true" />
         </event>
     </interface>
 
     <interface name="velox_tag" version="1">
         <event name="name">
             <arg name="name" type="string" />
+        </event>
+        <event name="state">
+            <arg name="num_windows" type="uint" />
         </event>
 
         <event name="screen">

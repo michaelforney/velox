@@ -243,9 +243,21 @@ window_set_tag(struct window *window, struct tag *tag)
 
 	window->tag = tag;
 
+	if (old_tag)
+		tag_update_num_windows(old_tag, -1);
+	if (tag)
+		tag_update_num_windows(tag, +1);
+
+	/* If the focused window changes tag, but not screen, make sure the
+	 * screen notifies any clients of the new tag. */
+	if (tag && old_tag && tag->screen && tag->screen == old_tag->screen) {
+		if (tag->screen->focus == window)
+			screen_focus_notify(tag->screen);
+		return;
+	}
+
 	if (old_tag && old_tag->screen)
 		screen_remove_windows(old_tag->screen);
-
 	if (tag && tag->screen)
 		screen_add_windows(tag->screen);
 }

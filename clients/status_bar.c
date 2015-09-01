@@ -82,6 +82,7 @@ struct tag {
 
 	struct text_item_data name_data;
 	char *name;
+	unsigned num_windows;
 };
 
 struct screen {
@@ -91,7 +92,10 @@ struct screen {
 	struct wl_list link;
 
 	struct text_item_data focus_data;
-	char *focus;
+	struct {
+		char *title;
+		struct velox_tag *tag;
+	} focus;
 };
 
 /* Wayland listeners */
@@ -101,8 +105,9 @@ static void registry_global_remove(void *data, struct wl_registry *registry, uin
 
 static void panel_docked(void *data, struct swc_panel *panel, uint32_t length);
 
-static void velox_screen_focus(void *data, struct velox_screen *velox_screen, const char *title);
+static void velox_screen_focus(void *data, struct velox_screen *velox_screen, const char *title, struct velox_tag *tag);
 static void velox_tag_name(void *data, struct velox_tag *tag, const char *name);
+static void velox_tag_state(void *data, struct velox_tag *tag, uint32_t num_windows);
 static void velox_tag_screen(void *data, struct velox_tag *tag, struct velox_screen *screen);
 
 /* Item interfaces */
@@ -140,6 +145,7 @@ static const struct velox_screen_listener velox_screen_listener = {
 
 static const struct velox_tag_listener velox_tag_listener = {
 	.name = &velox_tag_name,
+	.state = &velox_tag_state,
 	.screen = &velox_tag_screen,
 };
 
@@ -227,7 +233,8 @@ registry_global(void *data, struct wl_registry *registry,
 
 		screen = xmalloc(sizeof *screen);
 		screen->focus_data.text = "";
-		screen->focus = NULL;
+		screen->focus.title = NULL;
+		screen->focus.tag = NULL;
 		screen->swc = wl_registry_bind(registry, name, &swc_screen_interface, 1);
 		if (!screen->swc)
 			die("Failed to bind swc_screen");
@@ -242,6 +249,7 @@ registry_global(void *data, struct wl_registry *registry,
 		tag->name_data.text = "";
 		tag->name_data.base.width = 0;
 		tag->screen = NULL;
+		tag->num_windows = 0;
 		tag->velox = wl_registry_bind(registry, name, &velox_tag_interface, 1);
 		if (!tag->velox)
 			die("Failed to bind velox_tag");
@@ -278,6 +286,14 @@ velox_tag_name(void *data, struct velox_tag *velox_tag, const char *name)
 }
 
 static void
+velox_tag_state(void *data, struct velox_tag *velox_tag, uint32_t num_windows)
+{
+	struct tag *tag = data;
+
+	tag->num_windows = num_windows;
+}
+
+static void
 velox_tag_screen(void *data, struct velox_tag *velox_tag, struct velox_screen *velox_screen)
 {
 	struct tag *tag = data;
@@ -287,20 +303,21 @@ velox_tag_screen(void *data, struct velox_tag *velox_tag, struct velox_screen *v
 }
 
 static void
-velox_screen_focus(void *data, struct velox_screen *velox_screen, const char *title)
+velox_screen_focus(void *data, struct velox_screen *velox_screen, const char *title, struct velox_tag *tag)
 {
 	struct screen *screen = data;
 
-	free(screen->focus);
+	free(screen->focus.title);
 
 	if (title) {
-		screen->focus = strdup(title);
-		title = screen->focus;
+		screen->focus.title = strdup(title);
+		title = screen->focus.title ? screen->focus.title : "";
 	} else {
-		screen->focus = NULL;
+		screen->focus.title = NULL;
 		title = "";
 	}
 
+	screen->focus.tag = tag;
 	screen->focus_data.text = title;
 	update_text_item_data(&screen->focus_data);
 }
@@ -329,6 +346,13 @@ tag_draw(struct status_bar *bar, struct item *item, uint32_t x, uint32_t y)
 
 	style = tag->screen == screen->velox ? &selected : &normal;
 	wld_fill_rectangle(wld.renderer, style->bg, x, y, item->data->width, bar->height);
+	if (tag->num_windows > 0)
+		wld_fill_rectangle(wld.renderer, style->fg, x, y, item->data->width, 1);
+	if (tag->velox == screen->focus.tag) {
+		wld_fill_rectangle(wld.renderer, style->fg, x, y + 1, 3, 1);
+		wld_fill_rectangle(wld.renderer, style->fg, x, y + 2, 2, 1);
+		wld_fill_rectangle(wld.renderer, style->fg, x, y + 3, 1, 1);
+	}
 
 	x += spacing / 2;
 	y += wld.font->ascent + 1;

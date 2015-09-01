@@ -113,6 +113,7 @@ bind_tag(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	wl_resource_set_destructor(resource, &remove_resource);
 	wl_list_insert(&tag->resources, wl_resource_get_link(resource));
 	velox_tag_send_name(resource, tag->name);
+	velox_tag_send_state(resource, tag->num_windows);
 	tag_send_screen(tag, client, resource, NULL);
 }
 
@@ -129,6 +130,7 @@ tag_new(unsigned index, const char *name)
 
 	tag->mask = TAG_MASK(index);
 	tag->screen = NULL;
+	tag->num_windows = 0;
 	tag->global = wl_global_create(velox.display, &velox_tag_interface, 1, tag, &bind_tag);
 
 	if (!tag->global)
@@ -235,4 +237,14 @@ tag_send_screen(struct tag *tag, struct wl_client *client,
 	}
 
 	velox_tag_send_screen(tag_resource, screen_resource);
+}
+
+void
+tag_update_num_windows(struct tag *tag, int change)
+{
+	struct wl_resource *resource;
+
+	tag->num_windows += change;
+	wl_resource_for_each (resource, &tag->resources)
+		velox_tag_send_state(resource, tag->num_windows);
 }

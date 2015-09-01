@@ -38,6 +38,7 @@ struct tag {
 	uint32_t mask;
 	struct screen *screen;
 	struct wl_list link;
+	unsigned num_windows;
 
 	struct wl_global *global;
 	struct wl_list resources;
@@ -82,5 +83,7 @@ void tag_set(struct tag *tag, struct screen *screen);
  */
 void tag_send_screen(struct tag *tag, struct wl_client *client,
                      struct wl_resource *tag_resource, struct wl_resource *screen_resource);
+
+void tag_update_num_windows(struct tag *tag, int change);
 
 #endif

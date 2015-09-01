@@ -83,7 +83,18 @@ remove_window(struct screen *screen, struct window *window)
 static void
 send_focus(struct screen *screen, struct wl_resource *resource)
 {
-	velox_screen_send_focus(resource, screen->focus ? screen->focus->swc->title : NULL);
+	const char *title;
+	struct wl_resource *tag;
+
+	if (screen->focus) {
+		title = screen->focus->swc->title;
+		tag = wl_resource_find_for_client(&screen->focus->tag->resources, wl_resource_get_client(resource));
+	} else {
+		title = NULL;
+		tag = NULL;
+	}
+
+	velox_screen_send_focus(resource, title, tag);
 }
 
 struct screen *
