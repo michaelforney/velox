@@ -478,6 +478,7 @@ config_parse()
 			goto error1;
 	}
 
+	fclose(file);
 	return true;
 
 error1:
