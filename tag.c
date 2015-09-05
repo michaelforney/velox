@@ -89,8 +89,10 @@ apply(struct config_node *node)
 	struct tag *tag = wl_container_of(node, tag, config.apply);
 	struct window *window = velox.active_screen->focus;
 
-	if (window)
-		window_set_tag(window, tag);
+	if (!window)
+		return;
+
+	window_set_tag(window, tag);
 	update();
 }
 
