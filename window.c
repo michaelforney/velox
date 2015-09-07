@@ -177,11 +177,29 @@ entered(void *data)
 	window->tag->screen->focus = window;
 }
 
+static void
+move(void *data)
+{
+	struct window *window = data;
+
+	window_set_layer(window, STACK);
+}
+
+static void
+resize(void *data)
+{
+	struct window *window = data;
+
+	window_set_layer(window, STACK);
+}
+
 static const struct swc_window_handler window_handler = {
 	.destroy = &destroy,
 	.title_changed = &title_changed,
 	.parent_changed = &parent_changed,
 	.entered = &entered,
+	.move = &move,
+	.resize = &resize,
 };
 
 struct window *
