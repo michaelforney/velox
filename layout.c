@@ -62,51 +62,6 @@ struct grid_layout {
 	struct grid grid;
 };
 
-static void increase_master_size(struct config_node *node);
-static void decrease_master_size(struct config_node *node);
-static void increase_num_masters(struct config_node *node);
-static void decrease_num_masters(struct config_node *node);
-static void increase_num_columns(struct config_node *node);
-static void decrease_num_columns(struct config_node *node);
-
-static struct {
-	struct {
-		struct config_node group,
-		    increase_master_size, decrease_master_size,
-		    increase_num_masters, decrease_num_masters,
-		    increase_num_columns, decrease_num_columns;
-	} config;
-} tall = {
-	.config = {
-	    { "tall", CONFIG_NODE_TYPE_GROUP },
-	    { "increase_master_size", CONFIG_NODE_TYPE_ACTION, {.action.run = &increase_master_size } },
-	    { "decrease_master_size", CONFIG_NODE_TYPE_ACTION, {.action.run = &decrease_master_size } },
-	    { "increase_num_masters", CONFIG_NODE_TYPE_ACTION, {.action.run = &increase_num_masters } },
-	    { "decrease_num_masters", CONFIG_NODE_TYPE_ACTION, {.action.run = &decrease_num_masters } },
-	    { "increase_num_columns", CONFIG_NODE_TYPE_ACTION, {.action.run = &increase_num_columns } },
-	    { "decrease_num_columns", CONFIG_NODE_TYPE_ACTION, {.action.run = &decrease_num_columns } },
-	}
-};
-
-void
-layout_add_config_nodes()
-{
-	wl_list_init(&tall.config.group.group);
-	wl_list_insert(&tall.config.group.group,
-	               &tall.config.increase_master_size.link);
-	wl_list_insert(&tall.config.group.group,
-	               &tall.config.decrease_master_size.link);
-	wl_list_insert(&tall.config.group.group,
-	               &tall.config.increase_num_masters.link);
-	wl_list_insert(&tall.config.group.group,
-	               &tall.config.decrease_num_masters.link);
-	wl_list_insert(&tall.config.group.group,
-	               &tall.config.increase_num_columns.link);
-	wl_list_insert(&tall.config.group.group,
-	               &tall.config.decrease_num_columns.link);
-	wl_list_insert(config_root, &tall.config.group.link);
-}
-
 static void
 tile(struct col *col, struct window *window)
 {
@@ -216,78 +171,6 @@ tall_layout(struct layout *base)
 	return (void *)base;
 }
 
-void
-increase_master_size(struct config_node *node)
-{
-	struct tall_layout *layout;
-
-	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
-		return;
-
-	layout->master_size = MIN(layout->master_size + 1, master_max);
-	arrange();
-}
-
-void
-decrease_master_size(struct config_node *node)
-{
-	struct tall_layout *layout;
-
-	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
-		return;
-
-	layout->master_size = MAX(layout->master_size - 1, 0);
-	arrange();
-}
-
-void
-increase_num_masters(struct config_node *node)
-{
-	struct tall_layout *layout;
-
-	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
-		return;
-
-	++layout->num_masters;
-	arrange();
-}
-
-void
-decrease_num_masters(struct config_node *node)
-{
-	struct tall_layout *layout;
-
-	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
-		return;
-
-	layout->num_masters = MAX(layout->num_masters - 1, 1);
-	arrange();
-}
-
-void
-increase_num_columns(struct config_node *node)
-{
-	struct tall_layout *layout;
-
-	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
-		return;
-
-	++layout->num_columns;
-	arrange();
-}
-
-void
-decrease_num_columns(struct config_node *node)
-{
-	struct tall_layout *layout;
-
-	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
-		return;
-
-	layout->num_columns = MAX(layout->num_columns - 1, 1);
-	arrange();
-}
-
 struct layout *
 tall_layout_new()
 {
@@ -345,6 +228,97 @@ error0:
 	return NULL;
 }
 
+static void
+increase_master_size(struct config_node *node)
+{
+	struct tall_layout *layout;
+
+	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+		return;
+
+	layout->master_size = MIN(layout->master_size + 1, master_max);
+	arrange();
+}
+
+static void
+decrease_master_size(struct config_node *node)
+{
+	struct tall_layout *layout;
+
+	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+		return;
+
+	layout->master_size = MAX(layout->master_size - 1, 0);
+	arrange();
+}
+
+static void
+increase_num_masters(struct config_node *node)
+{
+	struct tall_layout *layout;
+
+	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+		return;
+
+	++layout->num_masters;
+	arrange();
+}
+
+static void
+decrease_num_masters(struct config_node *node)
+{
+	struct tall_layout *layout;
+
+	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+		return;
+
+	layout->num_masters = MAX(layout->num_masters - 1, 1);
+	arrange();
+}
+
+static void
+increase_num_columns(struct config_node *node)
+{
+	struct tall_layout *layout;
+
+	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+		return;
+
+	++layout->num_columns;
+	arrange();
+}
+
+static void
+decrease_num_columns(struct config_node *node)
+{
+	struct tall_layout *layout;
+
+	if (!(layout = tall_layout(velox.active_screen->layout[TILE])))
+		return;
+
+	layout->num_columns = MAX(layout->num_columns - 1, 1);
+	arrange();
+}
+
+static struct {
+	struct {
+		struct config_node group,
+		    increase_master_size, decrease_master_size,
+		    increase_num_masters, decrease_num_masters,
+		    increase_num_columns, decrease_num_columns;
+	} config;
+} tall = {
+	.config = {
+	    { "tall", CONFIG_NODE_TYPE_GROUP },
+	    { "increase_master_size", CONFIG_NODE_TYPE_ACTION, { .action.run = increase_master_size } },
+	    { "decrease_master_size", CONFIG_NODE_TYPE_ACTION, { .action.run = decrease_master_size } },
+	    { "increase_num_masters", CONFIG_NODE_TYPE_ACTION, { .action.run = increase_num_masters } },
+	    { "decrease_num_masters", CONFIG_NODE_TYPE_ACTION, { .action.run = decrease_num_masters } },
+	    { "increase_num_columns", CONFIG_NODE_TYPE_ACTION, { .action.run = increase_num_columns } },
+	    { "decrease_num_columns", CONFIG_NODE_TYPE_ACTION, { .action.run = decrease_num_columns } },
+	}
+};
+
 /* Stack layout */
 static void
 stack_begin(struct layout *layout, const struct swc_rectangle *area, unsigned num_windows)
@@ -376,6 +350,25 @@ stack_layout_new()
 
 error0:
 	return NULL;
+}
+
+void
+layout_add_config_nodes()
+{
+	wl_list_init(&tall.config.group.group);
+	wl_list_insert(&tall.config.group.group,
+	               &tall.config.increase_master_size.link);
+	wl_list_insert(&tall.config.group.group,
+	               &tall.config.decrease_master_size.link);
+	wl_list_insert(&tall.config.group.group,
+	               &tall.config.increase_num_masters.link);
+	wl_list_insert(&tall.config.group.group,
+	               &tall.config.decrease_num_masters.link);
+	wl_list_insert(&tall.config.group.group,
+	               &tall.config.increase_num_columns.link);
+	wl_list_insert(&tall.config.group.group,
+	               &tall.config.decrease_num_columns.link);
+	wl_list_insert(config_root, &tall.config.group.link);
 }
 
 void
