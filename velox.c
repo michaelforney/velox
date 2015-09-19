@@ -177,19 +177,19 @@ find_unused_tag()
 
 /**** Actions ****/
 static void
-focus_next(struct config_node *node)
+focus_next(struct config_node *node, const struct variant *v)
 {
 	screen_focus_next(velox.active_screen);
 }
 
 static void
-focus_prev(struct config_node *node)
+focus_prev(struct config_node *node, const struct variant *v)
 {
 	screen_focus_prev(velox.active_screen);
 }
 
 static void
-zoom(struct config_node *node)
+zoom(struct config_node *node, const struct variant *v)
 {
 	struct screen *screen = velox.active_screen;
 	struct wl_list *link;
@@ -214,7 +214,7 @@ zoom(struct config_node *node)
 }
 
 static void
-layout_next(struct config_node *node)
+layout_next(struct config_node *node, const struct variant *v)
 {
 	struct screen *screen = velox.active_screen;
 	struct layout **layout = &screen->layout[TILE];
@@ -227,7 +227,7 @@ layout_next(struct config_node *node)
 }
 
 static void
-previous_tags(struct config_node *node)
+previous_tags(struct config_node *node, const struct variant *v)
 {
 	uint32_t mask = velox.active_screen->last_mask;
 
@@ -237,7 +237,7 @@ previous_tags(struct config_node *node)
 }
 
 static void
-quit(struct config_node *node)
+quit(struct config_node *node, const struct variant *v)
 {
 	wl_display_terminate(velox.display);
 }

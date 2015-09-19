@@ -140,7 +140,7 @@ struct spawn_action {
 };
 
 static void
-spawn(struct config_node *node)
+spawn(struct config_node *node, const struct variant *v)
 {
 	struct spawn_action *action = wl_container_of(node, action, node);
 
@@ -237,9 +237,9 @@ key_binding(void *data, uint32_t time, uint32_t value, uint32_t state)
 	struct binding *binding = data;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED && binding->press)
-		binding->press->action.run(binding->press);
+		binding->press->action.run(binding->press, NULL);
 	else if (binding->release)
-		binding->release->action.run(binding->release);
+		binding->release->action.run(binding->release, NULL);
 }
 
 static void
@@ -248,9 +248,9 @@ button_binding(void *data, uint32_t time, uint32_t value, uint32_t state)
 	struct binding *binding = data;
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED && binding->press)
-		binding->press->action.run(binding->press);
+		binding->press->action.run(binding->press, NULL);
 	else if (binding->release)
-		binding->release->action.run(binding->release);
+		binding->release->action.run(binding->release, NULL);
 }
 
 static void (*binding_handler[])(void *, uint32_t, uint32_t, uint32_t) = {
