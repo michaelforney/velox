@@ -1,6 +1,7 @@
 /* velox: velox.c
  *
  * Copyright (c) 2014 Michael Forney
+ * Copyright (c) 2015 Jente Hidskes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,17 +94,53 @@ static const struct velox_interface velox_implementation = {
 	.get_screen = &get_screen,
 };
 
+static void
+apply_rules(struct window *window)
+{
+	struct rule *rule;
+	const char *identifier;
+
+	wl_list_for_each (rule, &velox.rules, link) {
+		switch (rule->type) {
+		case RULE_TYPE_WINDOW_TITLE:
+			identifier = window->swc->title;
+			break;
+		case RULE_TYPE_APP_ID:
+			identifier = window->swc->app_id;
+			break;
+		default:
+			identifier = NULL;
+			break;
+		}
+
+		if (!identifier)
+			continue;
+
+		// TODO: support quoted window titles.
+		if (strcmp(identifier, rule->identifier) == 0) {
+			struct config_node *node = rule->action;
+			const struct variant v = {
+				.type = VARIANT_WINDOW,
+				.window = window
+			};
+
+			node->action.run(node, &v);
+		}
+	}
+}
+
 void
 manage(struct window *window)
 {
 	struct tag *tag;
 
-	/* TODO: Add support for rules to automatically assign a tag to certain
-	 * windows. */
-
 	wl_list_insert(&velox.hidden_windows, &window->link);
-	tag = wl_container_of(velox.active_screen->tags.next, tag, link);
-	window_set_tag(window, tag);
+
+	apply_rules(window);
+	if (!window->tag) {
+		tag = wl_container_of(velox.active_screen->tags.next, tag, link);
+		window_set_tag(window, tag);
+	}
 	if (window->tag->screen)
 		screen_set_focus(window->tag->screen, window);
 	update();
@@ -331,6 +368,7 @@ main(int argc, char *argv[])
 	wl_list_init(&velox.screens);
 	wl_list_init(&velox.hidden_windows);
 	wl_list_init(&velox.unused_tags);
+	wl_list_init(&velox.rules);
 	add_config_nodes();
 
 	for (index = 0; index < NUM_TAGS; ++index, ++tag_name[0]) {

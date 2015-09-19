@@ -1,6 +1,7 @@
 /* velox: config.c
  *
  * Copyright (c) 2014 Michael Forney
+ * Copyright (c) 2015 Jente Hidskes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -385,6 +386,62 @@ handle_button(char *s)
 	return handle_binding(SWC_BINDING_BUTTON, s);
 }
 
+static bool
+handle_rule(char *s)
+{
+	char *identifier, *type, *newline;
+	struct rule *rule;
+	struct config_node *action;
+
+	if (!(type = strtok_r(s, whitespace, &s))) {
+		fprintf(stderr, "No rule type specified\n");
+		goto error0;
+	}
+
+	if (!(identifier = strtok_r(NULL, whitespace, &s))) {
+		fprintf(stderr, "No window identifier specified\n");
+		goto error0;
+	}
+
+	s += strspn(s, whitespace);
+	if ((newline = strchr(s, '\n')))
+		*newline = '\0';
+
+	if (!(action = lookup(s)) || action->type != CONFIG_NODE_TYPE_ACTION) {
+		fprintf(stderr, "Could not find action '%s'\n", s);
+		goto error0;
+	}
+
+	if (!(rule = malloc(sizeof *rule)))
+		goto error0;
+
+	if (!(rule->identifier = strdup(identifier))) {
+		goto error1;
+	}
+
+	rule->action = action;
+
+	if (strcmp(type, "title") == 0)
+		rule->type = RULE_TYPE_WINDOW_TITLE;
+	else if (strcmp(type, "app_id") == 0)
+		rule->type = RULE_TYPE_APP_ID;
+	else {
+		fprintf(stderr, "Unknown type '%s'\n", type);
+		goto error2;
+	}
+
+	wl_list_insert(&velox.rules, &rule->link);
+
+	return true;
+
+error2:
+	free(rule->identifier);
+error1:
+	free(rule);
+error0:
+	return false;
+}
+
 static const struct {
 	const char *name;
 	bool (*handle)(char *arguments);
@@ -392,7 +449,8 @@ static const struct {
 	{ "set", &handle_set },
 	{ "action", &handle_action },
 	{ "key", &handle_key },
-	{ "button", &handle_button }
+	{ "button", &handle_button },
+	{ "rule", &handle_rule },
 };
 
 bool
