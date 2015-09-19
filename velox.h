@@ -1,6 +1,7 @@
 /* velox: velox.h
  *
  * Copyright (c) 2014 Michael Forney
+ * Copyright (c) 2015 Jente Hidskes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +31,17 @@
 
 struct window;
 
+struct rule {
+	enum {
+		RULE_TYPE_WINDOW_TITLE,
+		RULE_TYPE_APP_ID,
+	} type;
+	char *identifier;
+	struct config_node *action;
+
+	struct wl_list link;
+};
+
 struct velox {
 	struct wl_display *display;
 	struct wl_event_loop *event_loop;
@@ -37,6 +49,7 @@ struct velox {
 	struct wl_list screens;
 	struct wl_list hidden_windows;
 	struct wl_list unused_tags;
+	struct wl_list rules;
 	struct tag *tags[NUM_TAGS];
 
 	struct wl_global *global;
