@@ -143,10 +143,6 @@ static void
 spawn(struct config_node *node)
 {
 	struct spawn_action *action = wl_container_of(node, action, node);
-	char *newline;
-
-	if ((newline = strchr(action->command, '\n')))
-		*newline = '\0';
 
 	if (fork() == 0) {
 		close(0);
@@ -161,6 +157,10 @@ static struct config_node *
 spawn_action(char *command)
 {
 	struct spawn_action *action;
+	char *newline;
+
+	if ((newline = strchr(command, '\n')))
+		*newline = '\0';
 
 	if (!(action = malloc(sizeof *action)))
 		return NULL;
