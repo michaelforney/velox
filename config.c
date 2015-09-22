@@ -40,6 +40,15 @@ struct wl_list *config_root = &root_group.group;
 static uint32_t mod = SWC_MOD_LOGO;
 static const char whitespace[] = " \t\n";
 
+static void
+strip_newline(char *s)
+{
+	char *newline;
+
+	if ((newline = strchr(s, '\n')))
+		*newline = '\0';
+}
+
 static bool
 parse_modifier(const char *string, uint32_t *modifier)
 {
@@ -158,10 +167,8 @@ static struct config_node *
 spawn_action(char *command)
 {
 	struct spawn_action *action;
-	char *newline;
 
-	if ((newline = strchr(command, '\n')))
-		*newline = '\0';
+	strip_newline(command);
 
 	if (!(action = malloc(sizeof *action)))
 		return NULL;
@@ -389,7 +396,7 @@ handle_button(char *s)
 static bool
 handle_rule(char *s)
 {
-	char *identifier, *type, *newline;
+	char *identifier, *type;
 	struct rule *rule;
 	struct config_node *action;
 
@@ -404,8 +411,7 @@ handle_rule(char *s)
 	}
 
 	s += strspn(s, whitespace);
-	if ((newline = strchr(s, '\n')))
-		*newline = '\0';
+	strip_newline(s);
 
 	if (!(action = lookup(s)) || action->type != CONFIG_NODE_TYPE_ACTION) {
 		fprintf(stderr, "Could not find action '%s'\n", s);
