@@ -63,7 +63,7 @@ set_name(struct config_node *node, const char *value)
 }
 
 static void
-activate(struct config_node *node)
+activate(struct config_node *node, const struct variant *v)
 {
 	struct tag *tag = wl_container_of(node, tag, config.activate);
 	struct screen *screen = velox.active_screen;
@@ -74,7 +74,7 @@ activate(struct config_node *node)
 }
 
 static void
-toggle(struct config_node *node)
+toggle(struct config_node *node, const struct variant *v)
 {
 	struct tag *tag = wl_container_of(node, tag, config.toggle);
 	struct screen *screen = velox.active_screen;
@@ -84,15 +84,15 @@ toggle(struct config_node *node)
 }
 
 static void
-apply(struct config_node *node)
+apply(struct config_node *node, const struct variant *v)
 {
 	struct tag *tag = wl_container_of(node, tag, config.apply);
-	struct window *window = velox.active_screen->focus;
+	struct window *w = window_or_focus(v);
 
-	if (!window)
+	if (!w)
 		return;
 
-	window_set_tag(window, tag);
+	window_set_tag(w, tag);
 	update();
 }
 

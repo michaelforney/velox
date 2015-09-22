@@ -229,7 +229,7 @@ error0:
 }
 
 static void
-increase_master_size(struct config_node *node)
+increase_master_size(struct config_node *node, const struct variant *v)
 {
 	struct tall_layout *layout;
 
@@ -241,7 +241,7 @@ increase_master_size(struct config_node *node)
 }
 
 static void
-decrease_master_size(struct config_node *node)
+decrease_master_size(struct config_node *node, const struct variant *v)
 {
 	struct tall_layout *layout;
 
@@ -253,7 +253,7 @@ decrease_master_size(struct config_node *node)
 }
 
 static void
-increase_num_masters(struct config_node *node)
+increase_num_masters(struct config_node *node, const struct variant *v)
 {
 	struct tall_layout *layout;
 
@@ -265,7 +265,7 @@ increase_num_masters(struct config_node *node)
 }
 
 static void
-decrease_num_masters(struct config_node *node)
+decrease_num_masters(struct config_node *node, const struct variant *v)
 {
 	struct tall_layout *layout;
 
@@ -277,7 +277,7 @@ decrease_num_masters(struct config_node *node)
 }
 
 static void
-increase_num_columns(struct config_node *node)
+increase_num_columns(struct config_node *node, const struct variant *v)
 {
 	struct tall_layout *layout;
 
@@ -289,7 +289,7 @@ increase_num_columns(struct config_node *node)
 }
 
 static void
-decrease_num_columns(struct config_node *node)
+decrease_num_columns(struct config_node *node, const struct variant *v)
 {
 	struct tall_layout *layout;
 

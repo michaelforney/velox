@@ -20,6 +20,9 @@ set tag.9.name                      9
 action spawn_terminal   spawn   st-wl
 action spawn_run        spawn   dmenu_run-wl -b -fn Terminus:pixelsize=14 -nb "#1a1a1a" -nf "#999999" -sb "#338833" -sf "#ffffff"
 
+#      type    identifier   action
+rule   title   st           tag.2.apply
+
 #   key         modifiers           action
 key j           mod                 focus_next
 key k           mod                 focus_prev

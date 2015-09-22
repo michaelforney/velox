@@ -27,6 +27,7 @@
 #include <wayland-server.h>
 
 struct swc_window;
+struct variant;
 
 struct window {
 	struct swc_window *swc;
@@ -46,5 +47,7 @@ void window_hide(struct window *window);
 
 void window_set_tag(struct window *window, struct tag *tag);
 void window_set_layer(struct window *window, int layer);
+
+struct window *window_or_focus(const struct variant *v);
 
 #endif

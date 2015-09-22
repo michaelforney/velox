@@ -52,63 +52,71 @@ border_color_inactive_set(struct config_node *node, const char *value)
 }
 
 static void
-begin_move(struct config_node *node)
+begin_move(struct config_node *node, const struct variant *v)
 {
-	struct window *focus = velox.active_screen->focus;
+	struct window *w = window_or_focus(v);
 
-	if (!focus)
+	if (!w)
 		return;
 
-	window_set_layer(focus, STACK);
-	swc_window_begin_move(focus->swc);
+	window_set_layer(w, STACK);
+	swc_window_begin_move(w->swc);
 }
 
 static void
-end_move(struct config_node *node)
+end_move(struct config_node *node, const struct variant *v)
 {
-	struct window *focus = velox.active_screen->focus;
+	struct window *w = window_or_focus(v);
 
-	if (focus)
-		swc_window_end_move(focus->swc);
-}
-
-static void
-begin_resize(struct config_node *node)
-{
-	struct window *focus = velox.active_screen->focus;
-
-	if (!focus)
+	if (!w)
 		return;
 
-	window_set_layer(focus, STACK);
-	swc_window_begin_resize(focus->swc, SWC_WINDOW_EDGE_AUTO);
+	swc_window_end_move(w->swc);
 }
 
 static void
-end_resize(struct config_node *node)
+begin_resize(struct config_node *node, const struct variant *v)
 {
-	struct window *focus = velox.active_screen->focus;
+	struct window *w = window_or_focus(v);
 
-	if (focus)
-		swc_window_end_resize(focus->swc);
+	if (!w)
+		return;
+
+	window_set_layer(w, STACK);
+	swc_window_begin_resize(w->swc, SWC_WINDOW_EDGE_AUTO);
 }
 
 static void
-switch_layer(struct config_node *node)
+end_resize(struct config_node *node, const struct variant *v)
 {
-	struct window *focus = velox.active_screen->focus;
+	struct window *w = window_or_focus(v);
 
-	if (focus)
-		window_set_layer(focus, (focus->layer + 1) % NUM_LAYERS);
+	if (!w)
+		return;
+
+	swc_window_end_resize(w->swc);
 }
 
 static void
-close_window(struct config_node *node)
+switch_layer(struct config_node *node, const struct variant *v)
 {
-	struct window *focus = velox.active_screen->focus;
+	struct window *w = window_or_focus(v);
 
-	if (focus)
-		swc_window_close(focus->swc);
+	if (!w)
+		return;
+
+	window_set_layer(w, (w->layer + 1) % NUM_LAYERS);
+}
+
+static void
+close_window(struct config_node *node, const struct variant *v)
+{
+	struct window *w = window_or_focus(v);
+
+	if (!w)
+		return;
+
+	swc_window_close(w->swc);
 }
 
 static CONFIG_GROUP(window);
@@ -304,4 +312,10 @@ window_set_layer(struct window *window, int layer)
 		++window->tag->screen->num_windows[layer];
 		update();
 	}
+}
+
+struct window *
+window_or_focus(const struct variant *v)
+{
+	return v && v->type == VARIANT_WINDOW ? v->window : velox.active_screen->focus;
 }

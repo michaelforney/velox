@@ -33,6 +33,15 @@ enum config_node_type {
 	CONFIG_NODE_TYPE_ACTION
 };
 
+struct variant {
+	enum {
+		VARIANT_WINDOW,
+	} type;
+	union {
+		struct window *window;
+	};
+};
+
 struct config_node {
 	const char *name;
 	enum config_node_type type;
@@ -42,9 +51,8 @@ struct config_node {
 		struct {
 			bool (*set)(struct config_node *node, const char *value);
 		} property;
-		struct
-		    {
-			void (*run)(struct config_node *node);
+		struct {
+			void (*run)(struct config_node *node, const struct variant *v);
 		} action;
 	};
 

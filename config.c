@@ -1,6 +1,7 @@
 /* velox: config.c
  *
  * Copyright (c) 2014 Michael Forney
+ * Copyright (c) 2015 Jente Hidskes
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +39,15 @@ struct wl_list *config_root = &root_group.group;
 
 static uint32_t mod = SWC_MOD_LOGO;
 static const char whitespace[] = " \t\n";
+
+static void
+strip_newline(char *s)
+{
+	char *newline;
+
+	if ((newline = strchr(s, '\n')))
+		*newline = '\0';
+}
 
 static bool
 parse_modifier(const char *string, uint32_t *modifier)
@@ -136,11 +146,11 @@ handle_set(char *s)
 
 struct spawn_action {
 	struct config_node node;
-	const char *command;
+	char *command;
 };
 
 static void
-spawn(struct config_node *node)
+spawn(struct config_node *node, const struct variant *v)
 {
 	struct spawn_action *action = wl_container_of(node, action, node);
 
@@ -157,10 +167,8 @@ static struct config_node *
 spawn_action(char *command)
 {
 	struct spawn_action *action;
-	char *newline;
 
-	if ((newline = strchr(command, '\n')))
-		*newline = '\0';
+	strip_newline(command);
 
 	if (!(action = malloc(sizeof *action)))
 		return NULL;
@@ -237,9 +245,9 @@ key_binding(void *data, uint32_t time, uint32_t value, uint32_t state)
 	struct binding *binding = data;
 
 	if (state == WL_KEYBOARD_KEY_STATE_PRESSED && binding->press)
-		binding->press->action.run(binding->press);
+		binding->press->action.run(binding->press, NULL);
 	else if (binding->release)
-		binding->release->action.run(binding->release);
+		binding->release->action.run(binding->release, NULL);
 }
 
 static void
@@ -248,9 +256,9 @@ button_binding(void *data, uint32_t time, uint32_t value, uint32_t state)
 	struct binding *binding = data;
 
 	if (state == WL_POINTER_BUTTON_STATE_PRESSED && binding->press)
-		binding->press->action.run(binding->press);
+		binding->press->action.run(binding->press, NULL);
 	else if (binding->release)
-		binding->release->action.run(binding->release);
+		binding->release->action.run(binding->release, NULL);
 }
 
 static void (*binding_handler[])(void *, uint32_t, uint32_t, uint32_t) = {
@@ -385,6 +393,61 @@ handle_button(char *s)
 	return handle_binding(SWC_BINDING_BUTTON, s);
 }
 
+static bool
+handle_rule(char *s)
+{
+	char *identifier, *type;
+	struct rule *rule;
+	struct config_node *action;
+
+	if (!(type = strtok_r(s, whitespace, &s))) {
+		fprintf(stderr, "No rule type specified\n");
+		goto error0;
+	}
+
+	if (!(identifier = strtok_r(NULL, whitespace, &s))) {
+		fprintf(stderr, "No window identifier specified\n");
+		goto error0;
+	}
+
+	s += strspn(s, whitespace);
+	strip_newline(s);
+
+	if (!(action = lookup(s)) || action->type != CONFIG_NODE_TYPE_ACTION) {
+		fprintf(stderr, "Could not find action '%s'\n", s);
+		goto error0;
+	}
+
+	if (!(rule = malloc(sizeof *rule)))
+		goto error0;
+
+	if (!(rule->identifier = strdup(identifier))) {
+		goto error1;
+	}
+
+	rule->action = action;
+
+	if (strcmp(type, "title") == 0)
+		rule->type = RULE_TYPE_WINDOW_TITLE;
+	else if (strcmp(type, "app_id") == 0)
+		rule->type = RULE_TYPE_APP_ID;
+	else {
+		fprintf(stderr, "Unknown type '%s'\n", type);
+		goto error2;
+	}
+
+	wl_list_insert(&velox.rules, &rule->link);
+
+	return true;
+
+error2:
+	free(rule->identifier);
+error1:
+	free(rule);
+error0:
+	return false;
+}
+
 static const struct {
 	const char *name;
 	bool (*handle)(char *arguments);
@@ -392,7 +455,8 @@ static const struct {
 	{ "set", &handle_set },
 	{ "action", &handle_action },
 	{ "key", &handle_key },
-	{ "button", &handle_button }
+	{ "button", &handle_button },
+	{ "rule", &handle_rule },
 };
 
 bool
