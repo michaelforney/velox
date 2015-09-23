@@ -30,7 +30,7 @@ that toggles visibility of the third tag.
 
 The format is fairly simple. Each line consists of a command, followed by
 command-specific arguments. The currently available commands are `set`,
-`action`, `key`, and `button`.
+`action`, `key`, `button` and `rule`.
 
 ### The `set` command
     set <property> <value>
@@ -84,6 +84,20 @@ custom actions created with the `action` command.
 The `button` command works identically to `key`, except that instead of a
 keysym, it takes a button name. Valid button names are `left`, `right`,
 `middle`, `side`, and `extra`.
+
+### The `rule` command
+    rule <type> <identifier> action
+
+The `rule` command creates a new rule that will be matched when a new window is
+created. This is useful to, for example, spawn certain windows on certain tags.
+The first argument is one of `title` or `app_id` and indicates which property of
+the window should be matched upon. The second argument is an identifier to match
+the type with; if the type is `title` it is the window title, if the type is
+`app_id` it is the application id. The last argument is the action to execute
+when the newly created window matches with the rule. An example to always spawn a
+window with title `st` on tag 2, is:
+
+    rule title st tag.2.apply
 
 See velox.conf.sample for an example of a basic configuration file.
 
