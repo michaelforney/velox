@@ -146,7 +146,7 @@ handle_set(char *s)
 
 struct spawn_action {
 	struct config_node node;
-	const char *command;
+	char *command;
 };
 
 static void
