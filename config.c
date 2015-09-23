@@ -171,12 +171,18 @@ spawn_action(char *command)
 	strip_newline(command);
 
 	if (!(action = malloc(sizeof *action)))
-		return NULL;
+		goto error0;
 
 	action->node.action.run = &spawn;
-	action->command = strdup(command);
+	if (!(action->command = strdup(command)))
+		goto error1;
 
 	return &action->node;
+
+error1:
+	free(action);
+error0:
+	return NULL;
 }
 
 struct {
@@ -195,7 +201,7 @@ handle_action(char *s)
 
 	if (!(identifier = strtok_r(s, whitespace, &s))) {
 		fprintf(stderr, "No action identifier specified\n");
-		return false;
+		goto error0;
 	}
 
 	name = strrchr(identifier, '.');
@@ -205,7 +211,7 @@ handle_action(char *s)
 
 		if (!(group_node = lookup(identifier))) {
 			fprintf(stderr, "Invalid group identifier '%s'\n", identifier);
-			return false;
+			goto error0;
 		}
 	} else {
 		name = identifier;
@@ -214,7 +220,7 @@ handle_action(char *s)
 
 	if (!(type = strtok_r(NULL, whitespace, &s))) {
 		fprintf(stderr, "No action type specified\n");
-		return false;
+		goto error0;
 	}
 
 	s += strspn(s, whitespace);
@@ -223,16 +229,22 @@ handle_action(char *s)
 		if (strcmp(type, action_types[index].name) == 0) {
 			if (!(node = action_types[index].create_action(s))) {
 				fprintf(stderr, "Failed to create action '%s'\n", name);
-				return false;
+				goto error0;
 			}
 
-			node->name = strdup(name);
+			if (!(node->name = strdup(name)))
+				goto error1;
 			node->type = CONFIG_NODE_TYPE_ACTION;
 			wl_list_insert(&group_node->group, &node->link);
 		}
 	}
 
 	return true;
+
+error1:
+	free(node);
+error0:
+	return false;
 }
 
 struct binding {
