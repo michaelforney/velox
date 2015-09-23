@@ -30,7 +30,7 @@ that toggles visibility of the third tag.
 
 The format is fairly simple. Each line consists of a command, followed by
 command-specific arguments. The currently available commands are `set`,
-`action`, `key`, and `button`.
+`action`, `key`, `button` and `rule`.
 
 ### The `set` command
     set <property> <value>
@@ -85,7 +85,22 @@ The `button` command works identically to `key`, except that instead of a
 keysym, it takes a button name. Valid button names are `left`, `right`,
 `middle`, `side`, and `extra`.
 
+### The `rule` command
+    rule <type> <identifier> action
+
+The `rule` command creates a new rule that will match new windows when they are
+created. This is useful to, for example, spawn certain windows on certain tags.
+The first argument is one of `title` or `app_id` and indicates which property of
+the window should be matched. The second argument is the value to match the
+window property against. If the type is `title` it is compared with the window
+title, and if the type is `app_id` it compared with the application ID (see the
+`xdg_shell` protocol for more details). The last argument is the action to
+execute when the newly created window matches the rule. This action is invoked
+with the new window as an argument. An example to always spawn a window with
+title `st` on tag 2, is:
+
+    rule title st tag.2.apply
+
 See velox.conf.sample for an example of a basic configuration file.
 
 <!-- vim: set ft=markdown tw=80 spell : -->
-
