@@ -417,7 +417,14 @@ handle_rule(char *s)
 		goto error0;
 	}
 
-	if (!(identifier = strtok_r(NULL, whitespace, &s))) {
+	if (strchr(s, '"')) {
+		strtok_r(NULL, "\"", &s);
+		identifier = strtok_r(NULL, "\"", &s);
+	} else {
+		identifier = strtok_r(NULL, whitespace, &s);
+	}
+
+	if (!identifier) {
 		fprintf(stderr, "No window identifier specified\n");
 		goto error0;
 	}

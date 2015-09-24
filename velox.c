@@ -116,7 +116,6 @@ apply_rules(struct window *window)
 		if (!identifier)
 			continue;
 
-		// TODO: support quoted window titles.
 		if (strcmp(identifier, rule->identifier) == 0) {
 			struct config_node *node = rule->action;
 			const struct variant v = {
