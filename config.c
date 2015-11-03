@@ -40,15 +40,6 @@ struct wl_list *config_root = &root_group.group;
 static uint32_t mod = SWC_MOD_LOGO;
 static const char whitespace[] = " \t\n";
 
-static void
-strip_newline(char *s)
-{
-	char *newline;
-
-	if ((newline = strchr(s, '\n')))
-		*newline = '\0';
-}
-
 static bool
 parse_modifier(const char *string, uint32_t *modifier)
 {
@@ -167,8 +158,6 @@ static struct config_node *
 spawn_action(char *command)
 {
 	struct spawn_action *action;
-
-	strip_newline(command);
 
 	if (!(action = malloc(sizeof *action)))
 		goto error0;
@@ -423,7 +412,6 @@ handle_rule(char *s)
 	}
 
 	s += strspn(s, whitespace);
-	strip_newline(s);
 
 	if (!(action = lookup(s)) || action->type != CONFIG_NODE_TYPE_ACTION) {
 		fprintf(stderr, "Could not find action '%s'\n", s);
@@ -517,13 +505,16 @@ config_parse()
 	unsigned index;
 	bool handled;
 	size_t size;
+	ssize_t len;
 
 	wl_list_insert(&root_group.group, &mod_property.link);
 
 	if (!(file = open_config()))
 		goto error0;
 
-	while (getline(&line, &size, file) != -1) {
+	while ((len = getline(&line, &size, file)) != -1) {
+		if (line[len - 1] == '\n')
+			line[len - 1] = '\0';
 		s = line + strspn(line, whitespace);
 
 		if (*s == '#' || *s == '\0')
