@@ -406,8 +406,28 @@ handle_rule(char *s)
 		goto error0;
 	}
 
-	if (!(identifier = strtok_r(NULL, whitespace, &s))) {
-		fprintf(stderr, "No window identifier specified\n");
+	s += strspn(s, whitespace);
+	switch (*s) {
+	case '"':
+		identifier = ++s;
+		if (!(s = strchr(s, '"'))) {
+			fprintf(stderr, "No closing quote found\n");
+			goto error0;
+		}
+		*s++ = '\0';
+		break;
+	case '\0':
+		fprintf(stderr, "No identifier specified\n");
+		goto error0;
+	default:
+		identifier = s;
+		s += strcspn(s, whitespace);
+		if (*s)
+			*s++ = '\0';
+	}
+
+	if (!*s) {
+		fprintf(stderr, "No action specified\n");
 		goto error0;
 	}
 
