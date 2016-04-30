@@ -31,7 +31,6 @@ struct variant;
 
 struct window {
 	struct swc_window *swc;
-	struct wl_listener event_listener;
 	struct wl_list link;
 
 	int layer;

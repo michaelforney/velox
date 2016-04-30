@@ -37,7 +37,6 @@ struct view {
 
 struct screen {
 	struct swc_screen *swc;
-	struct wl_listener event_listener;
 	struct wl_list link;
 
 	struct wl_list tags;
