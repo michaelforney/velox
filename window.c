@@ -306,6 +306,7 @@ window_set_layer(struct window *window, int layer)
 		break;
 	case STACK:
 		swc_window_set_stacked(window->swc);
+		swc_window_set_size(window->swc, 0, 0);
 		break;
 	}
 
