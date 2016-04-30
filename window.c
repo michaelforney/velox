@@ -220,8 +220,10 @@ window_new(struct swc_window *swc)
 
 	window->swc = swc;
 	window->tag = NULL;
-	swc_window_set_handler(swc, &window_handler, window);
+	window->layer = STACK;
+
 	window_set_layer(window, TILE);
+	swc_window_set_handler(swc, &window_handler, window);
 
 	return window;
 }
