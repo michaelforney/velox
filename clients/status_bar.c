@@ -433,18 +433,20 @@ setup()
 	}
 
 	wld.context = wld_wayland_create_context(display, WLD_ANY);
-
 	if (!wld.context)
 		die("Failed to create WLD context");
 
 	wld.renderer = wld_create_renderer(wld.context);
-
 	if (!wld.renderer)
 		die("Failed to create WLD renderer");
 
 	/* Font */
 	wld.font_context = wld_font_create_context();
+	if (!wld.font_context)
+		die("Failed to create WLD font context");
 	wld.font = wld_font_open_name(wld.font_context, font_name);
+	if (!wld.font)
+		die("Failed to open font");
 
 	/* Create the panels */
 	wl_list_for_each (screen, &screens, link) {
