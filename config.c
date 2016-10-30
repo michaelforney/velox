@@ -26,6 +26,7 @@
 #include "util.h"
 #include "velox.h"
 
+#include <fcntl.h>
 #include <linux/input.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -144,14 +145,16 @@ static void
 spawn(struct config_node *node, const struct variant *v)
 {
 	struct spawn_action *action = wl_container_of(node, action, node);
+	int null;
 
-	if (fork() == 0) {
-		close(0);
-		close(1);
-		close(2);
-		execl("/bin/sh", "sh", "-c", action->command, NULL);
-		exit(EXIT_FAILURE);
-	}
+	if (fork() != 0)
+		return;
+	null = open("/dev/null", O_RDWR);
+	if (null < 0 || dup2(null, 0) < 0 || dup2(null, 1) < 0 || dup2(null, 2) < 0 || close(null) < 0)
+		goto fail;
+	execl("/bin/sh", "sh", "-c", action->command, NULL);
+fail:
+	exit(127);
 }
 
 static struct config_node *
