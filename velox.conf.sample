@@ -17,8 +17,8 @@ set tag.8.name                      8
 set tag.9.name                      9
 
 #      name             type    arguments
-action spawn_terminal   spawn   st-wl
-action spawn_run        spawn   dmenu_run-wl -b -fn Terminus:pixelsize=14 -nb "#1a1a1a" -nf "#999999" -sb "#338833" -sf "#ffffff"
+action spawn_terminal   spawn   st
+action spawn_run        spawn   dmenu_run -b
 
 #   key         modifiers           action
 key j           mod                 focus_next
