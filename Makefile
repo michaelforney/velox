@@ -2,7 +2,7 @@
 
 include config.mk
 
-PREFIX          ?= /usr/local
+PREFIX          ?= /usr
 BINDIR          ?= $(PREFIX)/bin
 DATADIR         ?= $(PREFIX)/share
 LIBDIR          ?= $(PREFIX)/lib
