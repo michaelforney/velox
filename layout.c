@@ -176,7 +176,7 @@ tall_layout_new()
 {
 	struct tall_layout *layout;
 
-	if (!(layout = malloc(sizeof *layout)))
+	if (!(layout = malloc(sizeof(*layout))))
 		goto error0;
 
 	layout->base.impl = &tall_impl;
@@ -217,7 +217,7 @@ grid_layout_new()
 {
 	struct grid_layout *layout;
 
-	if (!(layout = malloc(sizeof *layout)))
+	if (!(layout = malloc(sizeof(*layout))))
 		goto error0;
 
 	layout->base.impl = &grid_impl;
@@ -341,7 +341,7 @@ stack_layout_new()
 {
 	struct layout *layout;
 
-	if (!(layout = malloc(sizeof *layout)))
+	if (!(layout = malloc(sizeof(*layout))))
 		goto error0;
 
 	layout->impl = &stack_impl;

@@ -162,7 +162,7 @@ spawn_action(char *command)
 {
 	struct spawn_action *action;
 
-	if (!(action = malloc(sizeof *action)))
+	if (!(action = malloc(sizeof(*action))))
 		goto error0;
 
 	action->node.action.run = &spawn;
@@ -325,7 +325,7 @@ handle_binding(enum swc_binding_type type, char *s)
 	uint32_t value, mod, mods;
 	struct binding *binding;
 
-	if (!(binding = malloc(sizeof *binding))) {
+	if (!(binding = malloc(sizeof(*binding)))) {
 		fprintf(stderr, "Failed to allocate binding\n");
 		return false;
 	}
@@ -441,7 +441,7 @@ handle_rule(char *s)
 		goto error0;
 	}
 
-	if (!(rule = malloc(sizeof *rule)))
+	if (!(rule = malloc(sizeof(*rule))))
 		goto error0;
 
 	if (strcmp(type, "title") == 0) {
@@ -501,7 +501,7 @@ open_config()
 	FILE *file;
 	char path[256];
 
-	snprintf(path, sizeof path, "%s/.velox.conf", getenv("HOME"));
+	snprintf(path, sizeof(path), "%s/.velox.conf", getenv("HOME"));
 
 	if ((file = fopen(path, "r")))
 		goto found;

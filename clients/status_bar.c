@@ -200,7 +200,7 @@ item_new(const struct item_interface *interface, const struct item_data *data)
 {
 	struct item *item;
 
-	if (!(item = malloc(sizeof *item)))
+	if (!(item = malloc(sizeof(*item))))
 		die("Failed to allocate item");
 
 	item->interface = interface;
@@ -231,7 +231,7 @@ registry_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "swc_screen") == 0) {
 		struct screen *screen;
 
-		screen = xmalloc(sizeof *screen);
+		screen = xmalloc(sizeof(*screen));
 		screen->focus_data.text = "";
 		screen->focus.title = NULL;
 		screen->focus.tag = NULL;
@@ -244,7 +244,7 @@ registry_global(void *data, struct wl_registry *registry,
 	} else if (strcmp(interface, "velox_tag") == 0) {
 		struct tag *tag;
 
-		tag = xmalloc(sizeof *tag);
+		tag = xmalloc(sizeof(*tag));
 		tag->name = NULL;
 		tag->name_data.text = "";
 		tag->name_data.base.width = 0;
@@ -528,7 +528,7 @@ run()
 	running = true;
 
 	while (true) {
-		if (poll(fds, sizeof fds / sizeof fds[0], -1) == -1)
+		if (poll(fds, sizeof(fds) / sizeof(fds[0]), -1) == -1)
 			break;
 
 		if (fds[0].revents & POLLIN) {
@@ -544,7 +544,7 @@ run()
 
 			sigwaitinfo(&signals, NULL);
 
-			strftime(clock_text, sizeof clock_text, "%A %T %F", local_time);
+			strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
 			update_text_item_data(&clock_data);
 		}
 

@@ -105,7 +105,7 @@ screen_new(struct swc_screen *swc)
 	struct layout *layout, *tmp;
 	unsigned index;
 
-	if (!(screen = malloc(sizeof *screen)))
+	if (!(screen = malloc(sizeof(*screen))))
 		goto error0;
 
 	wl_list_init(&screen->layouts);
@@ -125,7 +125,7 @@ screen_new(struct swc_screen *swc)
 	screen->last_mask = screen->mask;
 
 	wl_list_init(&screen->windows);
-	memset(screen->num_windows, 0, sizeof screen->num_windows);
+	memset(screen->num_windows, 0, sizeof(screen->num_windows));
 	screen->focus = NULL;
 
 	screen->swc = swc;
@@ -205,7 +205,7 @@ screen_remove_windows(struct screen *screen)
 			screen_set_focus(screen, NULL);
 			wl_list_insert_list(&velox.hidden_windows, &screen->windows);
 			wl_list_init(&screen->windows);
-			memset(screen->num_windows, 0, sizeof screen->num_windows);
+			memset(screen->num_windows, 0, sizeof(screen->num_windows));
 			return;
 		}
 	}
