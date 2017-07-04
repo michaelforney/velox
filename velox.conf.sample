@@ -19,6 +19,7 @@ set tag.9.name                      9
 #      name             type    arguments
 action spawn_terminal   spawn   st
 action spawn_run        spawn   dmenu_run -b
+action spawn_browser    spawn   netsurf
 
 #   key         modifiers           action
 key j           mod                 focus_next
@@ -40,6 +41,7 @@ key l           mod,ctrl            tall.decrease_num_columns
 
 key Return      mod,shift           spawn_terminal
 key r           mod                 spawn_run
+key b           mod                 spawn_browser
 
 key 1           mod                 tag.1.activate
 key 2           mod                 tag.2.activate
