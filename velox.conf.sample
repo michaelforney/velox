@@ -17,9 +17,9 @@ set tag.8.name                      8
 set tag.9.name                      9
 
 #      name             type    arguments
-action spawn_terminal   spawn   st
-action spawn_run        spawn   dmenu_run -b
-action spawn_browser    spawn   netsurf
+action spawn_terminal   spawn   exec st
+action spawn_run        spawn   exec dmenu_run -b
+action spawn_browser    spawn   exec netsurf
 
 #   key         modifiers           action
 key j           mod                 focus_next
