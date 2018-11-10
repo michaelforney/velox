@@ -346,19 +346,20 @@ bind_velox(struct wl_client *client, void *data,
 int
 main(int argc, char *argv[])
 {
+	const char *socket;
 	int index;
 	char tag_name[] = "1";
 
 	velox.display = wl_display_create();
-
 	if (!velox.display)
 		goto error0;
 
-	if (wl_display_add_socket(velox.display, NULL) != 0)
+	socket = wl_display_add_socket_auto(velox.display);
+	if (!socket)
 		goto error1;
+	setenv("WAYLAND_DISPLAY", socket, 1);
 
 	velox.global = wl_global_create(velox.display, &velox_interface, 1, NULL, &bind_velox);
-
 	if (!velox.global)
 		goto error1;
 
