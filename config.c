@@ -182,7 +182,7 @@ error0:
 	return NULL;
 }
 
-struct {
+static const struct {
 	const char *name;
 	struct config_node *(*create_action)(char *arguments);
 } action_types[] = {
