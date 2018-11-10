@@ -28,11 +28,11 @@
 
 #include <fcntl.h>
 #include <linux/input.h>
+#include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <swc.h>
-#include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
 static CONFIG_GROUP(root);
@@ -144,17 +144,22 @@ struct spawn_action {
 static void
 spawn(struct config_node *node, const struct variant *v)
 {
+	extern char **environ;
 	struct spawn_action *action = wl_container_of(node, action, node);
-	int null;
+	posix_spawn_file_actions_t file_actions;
+	pid_t pid;
 
-	if (fork() != 0)
+	if (posix_spawn_file_actions_init(&file_actions))
 		return;
-	null = open("/dev/null", O_RDWR);
-	if (null < 0 || dup2(null, 0) < 0 || dup2(null, 1) < 0 || dup2(null, 2) < 0 || close(null) < 0)
-		goto fail;
-	execl("/bin/sh", "sh", "-c", action->command, NULL);
-fail:
-	exit(127);
+	if (posix_spawn_file_actions_addopen(&file_actions, 0, "/dev/null", O_RDWR, 0))
+		goto destroy;
+	if (posix_spawn_file_actions_adddup2(&file_actions, 0, 1))
+		goto destroy;
+	if (posix_spawn_file_actions_adddup2(&file_actions, 0, 2))
+		goto destroy;
+	posix_spawn(&pid, "/bin/sh", &file_actions, NULL, (char *[]){"sh", "-c", action->command, NULL}, environ);
+destroy:
+	posix_spawn_file_actions_destroy(&file_actions);
 }
 
 static struct config_node *
