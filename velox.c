@@ -32,12 +32,12 @@
 
 #include <limits.h>
 #include <signal.h>
+#include <spawn.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 #include <swc.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <wayland-server.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -305,8 +305,10 @@ add_config_nodes(void)
 static void
 start_clients(void)
 {
+	extern char **environ;
 	char path[PATH_MAX];
 	const char *dir;
+	pid_t pid;
 	int ret;
 
 	if (!(dir = getenv("VELOX_LIBEXEC")))
@@ -315,10 +317,7 @@ start_clients(void)
 	ret = snprintf(path, sizeof(path), "%s/status_bar", dir);
 	if (ret < 0 || ret >= sizeof(path))
 		return;
-	if (fork() == 0) {
-		execl(path, path, NULL);
-		exit(EXIT_FAILURE);
-	}
+	posix_spawn(&pid, path, NULL, NULL, (char *[]){path, NULL}, environ);
 }
 
 static int
