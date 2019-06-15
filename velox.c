@@ -30,6 +30,7 @@
 #include "window.h"
 #include "protocol/velox-server-protocol.h"
 
+#include <limits.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -304,16 +305,18 @@ add_config_nodes(void)
 static void
 start_clients(void)
 {
-	const char *dir, *status_bar = "status_bar";
+	char path[PATH_MAX];
+	const char *dir;
+	int ret;
 
 	if (!(dir = getenv("VELOX_LIBEXEC")))
 		dir = VELOX_LIBEXEC;
 
-	char status_bar_path[strlen(dir) + 1 + strlen(status_bar) + 1];
-	sprintf(status_bar_path, "%s/%s", dir, status_bar);
-
+	ret = snprintf(path, sizeof(path), "%s/status_bar", dir);
+	if (ret < 0 || ret >= sizeof(path))
+		return;
 	if (fork() == 0) {
-		execl(status_bar_path, status_bar, NULL);
+		execl(path, path, NULL);
 		exit(EXIT_FAILURE);
 	}
 }
