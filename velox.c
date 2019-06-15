@@ -33,6 +33,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <swc.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -187,7 +188,7 @@ update()
 struct tag *
 next_tag(uint32_t *tags)
 {
-	unsigned index = __builtin_ffsl(*tags);
+	unsigned index = ffs(*tags);
 	struct tag *tag;
 
 	if (index == 0)
