@@ -78,7 +78,7 @@ struct config_node {
 		.action = { .run = func } \
 	}
 
-bool config_parse();
+bool config_parse(void);
 bool config_set_unsigned(unsigned *value, const char *string, int base);
 
 extern struct wl_list *config_root;

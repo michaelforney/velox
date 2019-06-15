@@ -48,7 +48,7 @@ struct tag {
 	} config;
 };
 
-void tag_add_config_nodes();
+void tag_add_config_nodes(void);
 
 struct tag *tag_new(unsigned index, const char *name);
 void tag_destroy(struct tag *tag);

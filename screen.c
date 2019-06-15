@@ -33,7 +33,7 @@
 #include <string.h>
 #include <swc.h>
 
-static struct layout *(*default_layouts[])() = {
+static struct layout *(*default_layouts[])(void) = {
 	&tall_layout_new,
 	&grid_layout_new,
 };

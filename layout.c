@@ -172,7 +172,7 @@ tall_layout(struct layout *base)
 }
 
 struct layout *
-tall_layout_new()
+tall_layout_new(void)
 {
 	struct tall_layout *layout;
 
@@ -213,7 +213,7 @@ static const struct layout_impl grid_impl = {
 };
 
 struct layout *
-grid_layout_new()
+grid_layout_new(void)
 {
 	struct grid_layout *layout;
 
@@ -337,7 +337,7 @@ static const struct layout_impl stack_impl = {
 };
 
 struct layout *
-stack_layout_new()
+stack_layout_new(void)
 {
 	struct layout *layout;
 
@@ -353,7 +353,7 @@ error0:
 }
 
 void
-layout_add_config_nodes()
+layout_add_config_nodes(void)
 {
 	wl_list_init(&tall.config.group.group);
 	wl_list_insert(&tall.config.group.group,

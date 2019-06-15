@@ -42,12 +42,12 @@ struct layout {
 	struct wl_list link;
 };
 
-struct layout *tall_layout_new();
-struct layout *grid_layout_new();
+struct layout *tall_layout_new(void);
+struct layout *grid_layout_new(void);
 
-struct layout *stack_layout_new();
+struct layout *stack_layout_new(void);
 
-void layout_add_config_nodes();
+void layout_add_config_nodes(void);
 
 void layout_begin(struct layout *layout, const struct swc_rectangle *area, unsigned num_windows);
 void layout_arrange(struct layout *layout, struct window *window);

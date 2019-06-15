@@ -401,7 +401,7 @@ draw(struct status_bar *bar)
 }
 
 static void
-setup()
+setup(void)
 {
 	struct status_bar *status_bar;
 	struct screen *screen;
@@ -505,7 +505,7 @@ setup()
 }
 
 static void
-run()
+run(void)
 {
 	sigset_t signals;
 	struct itimerspec timer_value = {

@@ -37,7 +37,7 @@ struct window {
 	struct tag *tag;
 };
 
-void window_add_config_nodes();
+void window_add_config_nodes(void);
 
 struct window *window_new(struct swc_window *swc);
 void window_focus(struct window *window);

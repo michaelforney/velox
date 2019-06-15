@@ -131,7 +131,7 @@ static CONFIG_ACTION(switch_layer, &switch_layer);
 static CONFIG_ACTION(close, &close_window);
 
 void
-window_add_config_nodes()
+window_add_config_nodes(void)
 {
 	wl_list_insert(&window_group.group, &border_width_property.link);
 	wl_list_insert(&window_group.group, &border_color_active_property.link);

@@ -38,7 +38,7 @@
 static CONFIG_GROUP(tag);
 
 void
-tag_add_config_nodes()
+tag_add_config_nodes(void)
 {
 	wl_list_insert(config_root, &tag_group.link);
 }

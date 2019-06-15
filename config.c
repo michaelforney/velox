@@ -501,7 +501,7 @@ config_set_unsigned(unsigned *value, const char *string, int base)
 }
 
 static FILE *
-open_config()
+open_config(void)
 {
 	FILE *file;
 	char path[256];
@@ -526,7 +526,7 @@ found:
 }
 
 bool
-config_parse()
+config_parse(void)
 {
 	FILE *file;
 	char *line = NULL, *s, *command_name;

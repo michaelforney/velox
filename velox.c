@@ -158,7 +158,7 @@ unmanage(struct window *window)
 }
 
 void
-arrange()
+arrange(void)
 {
 	struct screen *screen;
 
@@ -167,7 +167,7 @@ arrange()
 }
 
 void
-update()
+update(void)
 {
 	struct screen *screen;
 	struct window *window;
@@ -201,7 +201,7 @@ next_tag(uint32_t *tags)
 }
 
 struct tag *
-find_unused_tag()
+find_unused_tag(void)
 {
 	struct tag *tag;
 
@@ -287,7 +287,7 @@ static CONFIG_ACTION(previous_tags, &previous_tags);
 static CONFIG_ACTION(quit, &quit);
 
 static void
-add_config_nodes()
+add_config_nodes(void)
 {
 	wl_list_insert(config_root, &focus_next_action.link);
 	wl_list_insert(config_root, &focus_prev_action.link);
@@ -302,7 +302,7 @@ add_config_nodes()
 }
 
 static void
-start_clients()
+start_clients(void)
 {
 	const char *dir, *status_bar = "status_bar";
 

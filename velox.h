@@ -60,10 +60,10 @@ extern unsigned border_width;
 
 void manage(struct window *window);
 void unmanage(struct window *window);
-void arrange();
-void update();
+void arrange(void);
+void update(void);
 
 struct tag *next_tag(uint32_t *tags);
-struct tag *find_unused_tag();
+struct tag *find_unused_tag(void);
 
 #endif
