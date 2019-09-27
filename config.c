@@ -68,7 +68,14 @@ mod_set(struct config_node *node, const char *value)
 	return parse_modifier(value, &mod);
 }
 
+static bool
+tap_to_click_set(struct config_node *node, const char *value)
+{
+	return config_set_unsigned(&tap_to_click, value, 10);
+}
+
 static CONFIG_PROPERTY(mod, &mod_set);
+static CONFIG_PROPERTY(tap_to_click, &tap_to_click_set);
 
 static bool
 section_match(const char *p, const char *q)
@@ -536,6 +543,7 @@ config_parse(void)
 	ssize_t len;
 
 	wl_list_insert(&root_group.group, &mod_property.link);
+	wl_list_insert(&root_group.group, &tap_to_click_property.link);
 
 	if (!(file = open_config()))
 		goto error0;

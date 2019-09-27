@@ -57,6 +57,7 @@ struct velox {
 
 extern struct velox velox;
 extern unsigned border_width;
+extern unsigned tap_to_click;
 
 void manage(struct window *window);
 void unmanage(struct window *window);

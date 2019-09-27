@@ -20,7 +20,7 @@ TARGETS         := velox.pc velox
 SUBDIRS         := protocol clients
 CLEAN_FILES     := $(TARGETS)
 
-VELOX_PACKAGES  = swc xkbcommon
+VELOX_PACKAGES  = swc xkbcommon libinput
 VELOX_SOURCES   =               \
     config.c                    \
     layout.c                    \

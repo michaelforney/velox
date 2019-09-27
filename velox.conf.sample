@@ -6,6 +6,8 @@ set window.border_color_active      0xff338833
 set window.border_color_inactive    0xff888888
 set window.border_width             2
 
+set tap_to_click                    1
+
 set tag.1.name                      1
 set tag.2.name                      2
 set tag.3.name                      3

@@ -30,6 +30,7 @@
 #include "window.h"
 #include "protocol/velox-server-protocol.h"
 
+#include <libinput.h>
 #include <limits.h>
 #include <signal.h>
 #include <spawn.h>
@@ -43,6 +44,7 @@
 
 struct velox velox;
 unsigned border_width = 2;
+unsigned tap_to_click = 1;
 
 static void
 new_screen(struct swc_screen *swc)
@@ -67,9 +69,17 @@ new_window(struct swc_window *swc)
 	manage(window);
 }
 
+static void
+new_device(struct libinput_device *device)
+{
+	libinput_device_config_tap_set_enabled(device, tap_to_click ?
+		LIBINPUT_CONFIG_TAP_ENABLED : LIBINPUT_CONFIG_TAP_DISABLED);
+}
+
 const struct swc_manager manager = {
 	.new_screen = &new_screen,
 	.new_window = &new_window,
+	.new_device = &new_device,
 };
 
 static void
