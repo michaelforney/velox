@@ -20,7 +20,7 @@ TARGETS         := velox.pc velox
 SUBDIRS         := protocol clients
 CLEAN_FILES     := $(TARGETS)
 
-VELOX_PACKAGES  = swc xkbcommon libinput
+VELOX_PACKAGES  = swc xkbcommon
 VELOX_SOURCES   =               \
     config.c                    \
     layout.c                    \
@@ -30,6 +30,10 @@ VELOX_SOURCES   =               \
     velox.c                     \
     window.c                    \
     protocol/velox-protocol.c
+
+ifneq ($(shell uname),NetBSD)
+VELOX_PACKAGES += libinput
+endif
 
 ifeq ($(if $(V),$(V),0), 0)
     define quiet

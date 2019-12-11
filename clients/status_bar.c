@@ -27,7 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <poll.h>
+#ifndef __NetBSD__
 #include <sys/signalfd.h>
+#endif
 #include <time.h>
 #include <wayland-client.h>
 #include <wld/wayland.h>
@@ -521,8 +523,10 @@ run(void)
 
 	fds[0].fd = wl_display_get_fd(display);
 	fds[0].events = POLLIN;
+#ifdef SFD_CLOEXEC
 	fds[1].fd = signalfd(-1, &signals, SFD_CLOEXEC);
 	fds[1].events = POLLIN;
+#endif
 
 	timer_settime(timer, 0, &timer_value, NULL);
 	running = true;

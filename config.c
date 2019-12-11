@@ -27,7 +27,15 @@
 #include "velox.h"
 
 #include <fcntl.h>
+#if defined(__linux__) || defined(__FreeBSD__)
 #include <linux/input.h>
+#else
+#define BTN_LEFT	(0x110)
+#define BTN_RIGHT	(0x111)
+#define BTN_MIDDLE	(0x112)
+#define BTN_SIDE	(0x113)
+#define BTN_EXTRA	(0x114)
+#endif
 #include <spawn.h>
 #include <stdio.h>
 #include <stdlib.h>
