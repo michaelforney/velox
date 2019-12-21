@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <swc.h>
+#include <wayland-server.h>
 #include <xkbcommon/xkbcommon.h>
 
 static CONFIG_GROUP(root);
