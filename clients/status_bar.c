@@ -21,15 +21,19 @@
  * SOFTWARE.
  */
 
-#define _NETBSD_SOURCE
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __linux__
+#include <poll.h>
+#include <sys/signalfd.h>
+#else
+#define _NETBSD_SOURCE
 #include <sys/event.h>
-#include <sys/time.h>
 #include <err.h>
+#endif
 #include <time.h>
 #include <wayland-client.h>
 #include <wld/wayland.h>
@@ -506,21 +510,56 @@ setup(void)
 	wl_display_flush(display);
 }
 
+#ifdef __linux__
 static void
-run(void)
+run_eventloop(sigset_t *signals)
 {
-	sigset_t signals;
-	struct itimerspec timer_value = {
-		.it_interval = { 1, 0 },
-		.it_value = { 0, 1 }
-	};
-	struct kevent events[2];
-	int i, kq, nev;
+	struct pollfd fds[2];
 	struct screen *screen;
 
-	sigemptyset(&signals);
-	sigaddset(&signals, SIGALRM);
-	sigprocmask(SIG_BLOCK, &signals, NULL);
+	fds[0].fd = wl_display_get_fd(display);
+	fds[0].events = POLLIN;
+	fds[1].fd = signalfd(-1, &signals, SFD_CLOEXEC);
+	fds[1].events = POLLIN;
+
+	while (true) {
+		if (poll(fds, sizeof(fds) / sizeof(fds[0]), -1) == -1)
+			break;
+
+		if (fds[0].revents & POLLIN) {
+			if (wl_display_dispatch(display) == -1) {
+				fprintf(stderr, "Wayland dispatch error: %s\n",
+				        strerror(wl_display_get_error(display)));
+				break;
+			}
+		}
+		if (fds[1].revents & POLLIN) {
+			time_t raw_time = time(NULL);
+			struct tm *local_time = localtime(&raw_time);
+
+			sigwaitinfo(signals, NULL);
+
+			strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
+			update_text_item_data(&clock_data);
+		}
+
+		if (need_draw) {
+			wl_list_for_each (screen, &screens, link)
+				draw(&screen->status_bar);
+			need_draw = false;
+		}
+
+		wl_display_flush(display);
+	}
+
+}
+#else
+static void
+run_eventloop(sigset_t *signals)
+{
+	struct screen *screen;
+	struct kevent events[2];
+	int i, kq, nev;
 
 	if ((kq = kqueue()) == -1) {
 		err(EXIT_FAILURE, "could not create kqueue");
@@ -533,10 +572,7 @@ run(void)
 		err(EXIT_FAILURE, "kqueue failure");
 	}
 
-	timer_settime(timer, 0, &timer_value, NULL);
-	running = true;
-
-	while (true) {
+	for (;;) {
 		if ((nev = kevent(kq, NULL, 0, events, 2, NULL)) == -1) {
 			err(EXIT_FAILURE, "kevent failure");
 			break;
@@ -556,7 +592,7 @@ run(void)
 				time_t raw_time = time(NULL);
 				struct tm *local_time = localtime(&raw_time);
 
-				sigwaitinfo(&signals, NULL);
+				sigwaitinfo(signals, NULL);
 
 				strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
 				update_text_item_data(&clock_data);
@@ -571,6 +607,27 @@ run(void)
 
 		wl_display_flush(display);
 	}
+
+}
+#endif
+
+static void
+run(void)
+{
+	sigset_t signals;
+	struct itimerspec timer_value = {
+		.it_interval = { 1, 0 },
+		.it_value = { 0, 1 }
+	};
+
+	sigemptyset(&signals);
+	sigaddset(&signals, SIGALRM);
+	sigprocmask(SIG_BLOCK, &signals, NULL);
+
+	timer_settime(timer, 0, &timer_value, NULL);
+	running = true;
+
+	run_eventloop(&signals);
 }
 
 int
