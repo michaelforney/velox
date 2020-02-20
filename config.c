@@ -27,7 +27,7 @@
 #include "velox.h"
 
 #include <fcntl.h>
-#if defined(__linux__) || defined(__FreeBSD__)
+#ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
 #else
 #define BTN_LEFT	(0x110)

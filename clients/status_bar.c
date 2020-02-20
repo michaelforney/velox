@@ -26,13 +26,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef __linux__
-#include <poll.h>
-#include <sys/signalfd.h>
-#else
-#define _NETBSD_SOURCE
+#ifdef HAVE_KQUEUE
 #include <sys/event.h>
 #include <err.h>
+#else
+#include <poll.h>
+#include <sys/signalfd.h>
 #endif
 #include <time.h>
 #include <wayland-client.h>
@@ -510,7 +509,65 @@ setup(void)
 	wl_display_flush(display);
 }
 
-#ifdef __linux__
+
+#ifdef HAVE_KQUEUE
+static void
+run_eventloop(sigset_t *signals)
+{
+	struct screen *screen;
+	struct kevent events[2];
+	int i, kq, nev;
+
+	if ((kq = kqueue()) == -1) {
+		err(EXIT_FAILURE, "could not create kqueue");
+	}
+
+	EV_SET(&events[0], wl_display_get_fd(display), EVFILT_READ, EV_ADD, 0, -1, 0);
+	EV_SET(&events[1], SIGALRM, EVFILT_SIGNAL, EV_ADD, 0, -1, 1);
+
+	if ((nev = kevent(kq, events, 2, NULL, 0, NULL)) == -1) {
+		err(EXIT_FAILURE, "kqueue failure");
+	}
+
+	while (running) {
+		if ((nev = kevent(kq, NULL, 0, events, 2, NULL)) == -1) {
+			err(EXIT_FAILURE, "kevent failure");
+			break;
+		}
+		if (nev == 0) {
+			continue;
+		}
+		for (i = 0; i < nev; ++i) {
+			if (events[i].udata == 0) {
+				if (wl_display_dispatch(display) == -1) {
+					fprintf(stderr, "Wayland dispatch error: %s\n",
+						strerror(wl_display_get_error(display)));
+					running = false;
+					break;
+				}
+			}
+			if (events[i].udata == 1) {
+				time_t raw_time = time(NULL);
+				struct tm *local_time = localtime(&raw_time);
+
+				sigwaitinfo(signals, NULL);
+
+				strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
+				update_text_item_data(&clock_data);
+			}
+		}
+
+		if (need_draw) {
+			wl_list_for_each (screen, &screens, link)
+				draw(&screen->status_bar);
+			need_draw = false;
+		}
+
+		wl_display_flush(display);
+	}
+
+}
+#else
 static void
 run_eventloop(sigset_t *signals)
 {
@@ -541,62 +598,6 @@ run_eventloop(sigset_t *signals)
 
 			strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
 			update_text_item_data(&clock_data);
-		}
-
-		if (need_draw) {
-			wl_list_for_each (screen, &screens, link)
-				draw(&screen->status_bar);
-			need_draw = false;
-		}
-
-		wl_display_flush(display);
-	}
-
-}
-#else
-static void
-run_eventloop(sigset_t *signals)
-{
-	struct screen *screen;
-	struct kevent events[2];
-	int i, kq, nev;
-
-	if ((kq = kqueue()) == -1) {
-		err(EXIT_FAILURE, "could not create kqueue");
-	}
-
-	EV_SET(&events[0], wl_display_get_fd(display), EVFILT_READ, EV_ADD, 0, -1, 0);
-	EV_SET(&events[1], SIGALRM, EVFILT_SIGNAL, EV_ADD, 0, -1, 1);
-
-	if ((nev = kevent(kq, events, 2, NULL, 0, NULL)) == -1) {
-		err(EXIT_FAILURE, "kqueue failure");
-	}
-
-	for (;;) {
-		if ((nev = kevent(kq, NULL, 0, events, 2, NULL)) == -1) {
-			err(EXIT_FAILURE, "kevent failure");
-			break;
-		}
-		if (nev == 0) {
-			continue;
-		}
-		for (i = 0; i < nev; ++i) {
-			if (events[i].udata == 0) {
-				if (wl_display_dispatch(display) == -1) {
-					fprintf(stderr, "Wayland dispatch error: %s\n",
-						strerror(wl_display_get_error(display)));
-					break;
-				}
-			}
-			if (events[i].udata == 1) {
-				time_t raw_time = time(NULL);
-				struct tm *local_time = localtime(&raw_time);
-
-				sigwaitinfo(signals, NULL);
-
-				strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
-				update_text_item_data(&clock_data);
-			}
 		}
 
 		if (need_draw) {

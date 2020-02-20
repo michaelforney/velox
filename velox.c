@@ -30,7 +30,7 @@
 #include "window.h"
 #include "protocol/velox-server-protocol.h"
 
-#ifndef __NetBSD__
+#ifdef HAVE_LIBINPUT
 #include <libinput.h>
 #endif
 #include <limits.h>
@@ -74,7 +74,7 @@ new_window(struct swc_window *swc)
 static void
 new_device(struct libinput_device *device)
 {
-#ifndef __NetBSD__
+#ifdef HAVE_LIBINPUT
 	libinput_device_config_tap_set_enabled(device, tap_to_click ?
 		LIBINPUT_CONFIG_TAP_ENABLED : LIBINPUT_CONFIG_TAP_DISABLED);
 #endif

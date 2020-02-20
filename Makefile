@@ -66,6 +66,18 @@ else
     FINAL_CPPFLAGS += -DNDEBUG
 endif
 
+ifeq ($(shell uname),Linux)
+    FINAL_CPPFLAGS += -DHAVE_LINUX_INPUT_H
+    FINAL_CPPFLAGS += -DHAVE_LIBINPUT
+else ifeq ($(shell uname),FreeBSD)
+    FINAL_CPPFLAGS += -DHAVE_LINUX_INPUT_H
+    FINAL_CPPFLAGS += -DHAVE_LIBINPUT
+    FINAL_CPPFLAGS += -DHAVE_KQUEUE
+else ifeq ($(shell uname),NetBSD)
+    FINAL_CPPFLAGS += -D_NETBSD_SOURCE
+    FINAL_CPPFLAGS += -DHAVE_KQUEUE
+endif
+
 compile     = $(call quiet,CC) $(FINAL_CPPFLAGS) $(FINAL_CFLAGS) -c -o $@ $< \
               -MMD -MP -MF .deps/$(basename $<).d -MT $(basename $@).o
 link        = $(call quiet,CCLD,$(CC)) $(LDFLAGS) -o $@ $^
