@@ -26,14 +26,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef HAVE_KQUEUE
-#include <sys/event.h>
-#include <err.h>
-#else
 #include <poll.h>
-#include <sys/signalfd.h>
-#endif
 #include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <wayland-client.h>
 #include <wld/wayland.h>
 #include <wld/wld.h>
@@ -177,6 +173,7 @@ static bool running, need_draw;
 static char clock_text[32];
 static struct item_data divider_data = {.width = 14 };
 static struct text_item_data clock_data = {.text = clock_text };
+static int pfd[2];
 
 static void __attribute__((noreturn)) die(const char *const format, ...)
 {
@@ -509,79 +506,74 @@ setup(void)
 	wl_display_flush(display);
 }
 
-
-#ifdef HAVE_KQUEUE
 static void
-run_eventloop(sigset_t *signals)
+sigalrm_handler(int sig)
 {
-	struct screen *screen;
-	struct kevent events[2];
-	int i, kq, nev;
+	int p_errno = errno; /* Preserve errno */
+	int ret;
 
-	if ((kq = kqueue()) == -1) {
-		err(EXIT_FAILURE, "could not create kqueue");
-	}
-
-	EV_SET(&events[0], wl_display_get_fd(display), EVFILT_READ, EV_ADD, 0, -1, 0);
-	EV_SET(&events[1], SIGALRM, EVFILT_SIGNAL, EV_ADD, 0, -1, 1);
-
-	if ((nev = kevent(kq, events, 2, NULL, 0, NULL)) == -1) {
-		err(EXIT_FAILURE, "kqueue failure");
-	}
-
-	while (running) {
-		if ((nev = kevent(kq, NULL, 0, events, 2, NULL)) == -1) {
-			err(EXIT_FAILURE, "kevent failure");
-			break;
-		}
-		if (nev == 0) {
-			continue;
-		}
-		for (i = 0; i < nev; ++i) {
-			if (events[i].udata == 0) {
-				if (wl_display_dispatch(display) == -1) {
-					fprintf(stderr, "Wayland dispatch error: %s\n",
-						strerror(wl_display_get_error(display)));
-					running = false;
-					break;
-				}
-			}
-			if (events[i].udata == 1) {
-				time_t raw_time = time(NULL);
-				struct tm *local_time = localtime(&raw_time);
-
-				sigwaitinfo(signals, NULL);
-
-				strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
-				update_text_item_data(&clock_data);
-			}
-		}
-
-		if (need_draw) {
-			wl_list_for_each (screen, &screens, link)
-				draw(&screen->status_bar);
-			need_draw = false;
-		}
-
-		wl_display_flush(display);
-	}
-
+	if ((ret = write(pfd[1], ".", 1)) != 1)
+		die("self-pipe write failed\n");
+	errno = p_errno;
 }
-#else
-static void
-run_eventloop(sigset_t *signals)
+
+static int
+set_nonblock(int fd)
 {
+	int flags;
+
+	if ((flags = fcntl(fd, F_GETFL)) == -1) {
+		return -1;
+	}
+
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+		return -1;
+	}
+	return 0;
+}
+
+
+static void
+run(void)
+{
+	struct itimerspec timer_value = {
+		.it_interval = { 1, 0 },
+		.it_value = { 0, 1 }
+	};
 	struct pollfd fds[2];
 	struct screen *screen;
+	struct sigaction sa = {0};
+
+	if (pipe(pfd) == -1)
+		die("creating pipe failed: %s\n", strerror(errno));
+
+	if (set_nonblock(pfd[0]) == -1)
+		die("could not set O_NONBLOCK on pipe fd: %s\n", strerror(errno));
+
+	if (set_nonblock(pfd[1]) == -1)
+		die("could not set O_NONBLOCK on pipe fd\n", strerror(errno));
+
+	sa.sa_flags = SA_RESTART;
+	sa.sa_handler = sigalrm_handler;
+
+	if (sigaction(SIGALRM, &sa, NULL) == -1)
+		die("sigaction failed\n", strerror(errno));
 
 	fds[0].fd = wl_display_get_fd(display);
 	fds[0].events = POLLIN;
-	fds[1].fd = signalfd(-1, &signals, SFD_CLOEXEC);
+	fds[1].fd = pfd[0];
 	fds[1].events = POLLIN;
 
+	timer_settime(timer, 0, &timer_value, NULL);
+	running = true;
+
 	while (true) {
-		if (poll(fds, sizeof(fds) / sizeof(fds[0]), -1) == -1)
-			break;
+		if (poll(fds, 2, -1) == -1) {
+			if (errno != EINTR) {
+				perror("poll");
+				break;
+			}
+		}
 
 		if (fds[0].revents & POLLIN) {
 			if (wl_display_dispatch(display) == -1) {
@@ -591,11 +583,14 @@ run_eventloop(sigset_t *signals)
 			}
 		}
 		if (fds[1].revents & POLLIN) {
-			time_t raw_time = time(NULL);
-			struct tm *local_time = localtime(&raw_time);
+			uint8_t discard;
+			time_t raw_time;
+			struct tm *local_time;
+			int nbytes;
 
-			sigwaitinfo(signals, NULL);
-
+			while ((nbytes = read(pfd[0], &discard, 1)) > 0);
+			raw_time = time(NULL);
+			local_time = localtime(&raw_time);
 			strftime(clock_text, sizeof(clock_text), "%A %T %F", local_time);
 			update_text_item_data(&clock_data);
 		}
@@ -608,27 +603,6 @@ run_eventloop(sigset_t *signals)
 
 		wl_display_flush(display);
 	}
-
-}
-#endif
-
-static void
-run(void)
-{
-	sigset_t signals;
-	struct itimerspec timer_value = {
-		.it_interval = { 1, 0 },
-		.it_value = { 0, 1 }
-	};
-
-	sigemptyset(&signals);
-	sigaddset(&signals, SIGALRM);
-	sigprocmask(SIG_BLOCK, &signals, NULL);
-
-	timer_settime(timer, 0, &timer_value, NULL);
-	running = true;
-
-	run_eventloop(&signals);
 }
 
 int
