@@ -27,6 +27,7 @@
 #include "velox.h"
 #include "window.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <swc.h>
 #include <sys/param.h>
