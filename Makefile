@@ -104,6 +104,14 @@ install: $(SUBDIRS:%=install-%) $(TARGETS) \
 	install -m 755 velox $(DESTDIR)$(BINDIR)
 	install -m 644 velox.pc $(DESTDIR)$(PKGCONFIGDIR)
 
+.PHONY: uninstall
+uninstall: $(DESTDIR)$(BINDIR) $(DESTDIR)$(DATADIR) \
+	$(DESTDIR)$(LIBEXECDIR) $(DESTDIR)$(PKGCONFIGDIR)
+	rm -f $(DESTDIR)$(BINDIR)/velox
+	rm -rf $(DESTDIR)$(DATADIR)/velox
+	rm -rf $(DESTDIR)$(LIBEXECDIR)/velox
+	rm -f $(DESTDIR)$(PKGCONFIGDIR)/velox.pc
+
 .PHONY: clean
 clean:
 	rm -rf $(CLEAN_FILES)
