@@ -15,7 +15,7 @@ similar to the multi-monitor workspace switching in xmonad.
 To ensure that we never attempt to show a window in two places at once, we have
 to impose several constraints. First, each window must have exactly one tag. In
 practice, I've found that I rarely intentionally mark a window with more than
-one tag anyway. Second, when you select a tag that is currently display on a
+one tag anyway. Secondly, when you select a tag that is currently displaying on a
 different screen, the tag is first deselected from that screen.
 
 Configuration
