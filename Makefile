@@ -20,7 +20,7 @@ TARGETS         := velox.pc velox
 SUBDIRS         := protocol clients
 CLEAN_FILES     := $(TARGETS)
 
-VELOX_PACKAGES  = swc xkbcommon libinput
+VELOX_PACKAGES  = swc xkbcommon
 VELOX_SOURCES   =               \
     config.c                    \
     layout.c                    \
@@ -30,6 +30,10 @@ VELOX_SOURCES   =               \
     velox.c                     \
     window.c                    \
     protocol/velox-protocol.c
+
+ifneq ($(shell uname),NetBSD)
+VELOX_PACKAGES += libinput
+endif
 
 ifeq ($(if $(V),$(V),0), 0)
     define quiet
@@ -60,6 +64,18 @@ ifeq ($(ENABLE_DEBUG),1)
     FINAL_CFLAGS += -g
 else
     FINAL_CPPFLAGS += -DNDEBUG
+endif
+
+ifeq ($(shell uname),Linux)
+    FINAL_CPPFLAGS += -DHAVE_LINUX_INPUT_H
+    FINAL_CPPFLAGS += -DHAVE_LIBINPUT
+else ifeq ($(shell uname),FreeBSD)
+    FINAL_CPPFLAGS += -DHAVE_LINUX_INPUT_H
+    FINAL_CPPFLAGS += -DHAVE_LIBINPUT
+    FINAL_CPPFLAGS += -DHAVE_KQUEUE
+else ifeq ($(shell uname),NetBSD)
+    FINAL_CPPFLAGS += -D_NETBSD_SOURCE
+    FINAL_CPPFLAGS += -DHAVE_KQUEUE
 endif
 
 compile     = $(call quiet,CC) $(FINAL_CPPFLAGS) $(FINAL_CFLAGS) -c -o $@ $< \
