@@ -21,7 +21,7 @@ different screen, the tag is first deselected from that screen.
 Configuration
 -------------
 velox uses a text file for its configuration. The configuration file is
-searched for first in `${HOME}/.velox.conf` and then `/etc/velox.conf`.
+searched for first in `${XDG_CONFIG_HOME}/velox.conf`, `${HOME}/.velox.conf` and then `/etc/velox.conf`.
 
 Internally, the configuration structure is organized as a tree. For example, the
 identifier `window.border_width` refers to the property controlling the border

@@ -513,8 +513,12 @@ open_config(void)
 {
 	FILE *file;
 	char path[256];
-
-	snprintf(path, sizeof(path), "%s/.velox.conf", getenv("HOME"));
+	
+	if(getenv("XDG_CONFIG_HOME") == NULL) {
+		snprintf(path, sizeof(path), "%s/.velox.conf", getenv("HOME"));
+	} else {
+		snprintf(path, sizeof(path), "%s/velox.conf", getenv("XDG_CONFIG_HOME"));
+	}
 
 	if ((file = fopen(path, "r")))
 		goto found;
