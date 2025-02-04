@@ -3,5 +3,5 @@
 CC              = gcc
 CFLAGS          = -pipe
 
-ENABLE_DEBUG    = 1
+ENABLE_DEBUG    = 0
 
